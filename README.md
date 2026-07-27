@@ -1,7 +1,7 @@
 # Personal Dashboard
 
 Aplikasi personal untuk *capture cepat* bookmark, fleeting note, dan cheat code/snippet.
-Lihat [PRD.md](./PRD.md) untuk detail keputusan produk & arsitektur.
+Lihat [docs/PRD.md](./docs/PRD.md) untuk detail keputusan produk & arsitektur.
 
 ## Tech stack
 

@@ -1,9 +1,11 @@
 # PWA icons
 
-Placeholder folder — sebelum deploy, letakkan:
+- `icon.svg` — ikon utama (skalabel ke semua ukuran)
+- `maskable.svg` — varian dengan safe-zone 60% untuk purpose `maskable` (Android)
 
-- `icon-192.png` (192×192)
-- `icon-512.png` (512×512)
-- `icon-512-maskable.png` (512×512, safe-zone di tengah 80%)
+Untuk hasil terbaik di Android home screen, ganti keduanya dengan raster PNG
+(mis. 192×192 + 512×512) — banyak launcher masih lebih baik render PNG daripada SVG.
+Kalau diganti PNG, sinkronkan juga `static/manifest.webmanifest` dan blok `manifest.icons`
+di `vite.config.ts`.
 
-Referensi maskable: https://maskable.app
+Generator maskable interaktif: https://maskable.app
