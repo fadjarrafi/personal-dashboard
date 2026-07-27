@@ -57,6 +57,7 @@
 </script>
 
 <form
+	id="capture-form"
 	bind:this={form}
 	method="post"
 	action="?/create"

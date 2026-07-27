@@ -70,10 +70,11 @@
 			{#if data.filters.type}<input type="hidden" name="type" value={data.filters.type} />{/if}
 			{#if data.filters.tag}<input type="hidden" name="tag" value={data.filters.tag} />{/if}
 			<input
+				id="global-search"
 				class="input input-bordered join-item flex-1"
 				name="q"
 				bind:value={q}
-				placeholder="Cari judul, isi, atau URL…"
+				placeholder="Cari judul, isi, atau URL…  (tekan / untuk fokus)"
 				autocomplete="off"
 			/>
 			<button class="btn btn-primary join-item" type="submit">Cari</button>
@@ -117,3 +118,13 @@
 </div>
 
 <ItemDetailModal item={selected} onClose={closeModal} />
+
+<a
+	href="#capture-form"
+	class="btn btn-primary btn-circle btn-lg fixed bottom-5 right-5 z-40 shadow-lg lg:hidden"
+	aria-label="Tambah baru"
+	title="Tambah baru"
+	style="padding-bottom: env(safe-area-inset-bottom);"
+>
+	<span class="text-2xl leading-none">+</span>
+</a>

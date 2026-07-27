@@ -3,6 +3,7 @@
 	import 'highlight.js/styles/github-dark.css';
 	import { page } from '$app/state';
 	import Toast from '$lib/components/Toast.svelte';
+	import Shortcuts from '$lib/components/Shortcuts.svelte';
 	import type { LayoutData } from './$types';
 
 	let { data, children }: { data: LayoutData; children: any } = $props();
@@ -18,6 +19,7 @@
 </script>
 
 <Toast flash={data.flash} />
+{#if data.user}<Shortcuts />{/if}
 
 <div class="mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-4">
 	{#if data.user}
