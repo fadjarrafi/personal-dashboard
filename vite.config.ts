@@ -61,5 +61,16 @@ export default defineConfig({
 	ssr: {
 		// Biarkan tesseract.js di-import via dynamic import runtime, jangan pre-bundle.
 		external: ['tesseract.js']
+	},
+	build: {
+		rollupOptions: {
+			// tesseract.js dipanggil lewat `await import('tesseract.js')` di
+			// src/lib/server/receiptExtract.ts. Rollup tetap mencoba men-resolve
+			// dynamic import ini saat build (walaupun `ssr.external` diset), lalu
+			// gagal karena tesseract.js membawa worker + wasm yang tidak bisa
+			// di-bundle. Externalize eksplisit -> output pakai require()/dynamic
+			// import runtime yang di-resolve oleh Node dari node_modules.
+			external: ['tesseract.js']
+		}
 	}
 });
