@@ -1,206 +1,252 @@
-# Deploy — Cloudflare Tunnel (VPS Ubuntu di Proxmox)
+# Deploy — VPS lokal (Ubuntu) via Cloudflare Tunnel + PM2
 
-Panduan ini menggantikan [docs/DEPLOY.md](./DEPLOY.md) §7 (nginx + certbot).
-**Tidak** ada nginx dan **tidak** ada certbot — Cloudflare edge yang meng-terminate
-TLS, dan cloudflared (di suatu tempat di LAN) menjangkau app secara langsung.
+Panduan ini mencerminkan setup nyata yang dipakai: VPS Ubuntu di Proxmox,
+domain di-proxy Cloudflare Tunnel, proses aplikasi dijalankan PM2.
 
-Domain di contoh: `personal.fadjarrafi.my.id`. Ganti dengan milik Anda.
+Domain contoh: `personal.fadjarrafi.my.id`. Ganti dengan milik Anda.
+Path contoh: `/var/www/html/personal-dashboard`. Sesuaikan bila berbeda.
 
-## Prasyarat
+---
 
-- Teman/kamu sudah membuat tunnel Cloudflare dengan **Public Hostname**:
-  - Hostname: `personal.fadjarrafi.my.id`
-  - Service: `http://<TARGET>:5173`
-- `<TARGET>` bisa `localhost` (jika cloudflared di VPS yang sama)
-  atau IP LAN VPS (jika cloudflared di host/VM lain di Proxmox).
+## 1. Cloudflare Tunnel — public hostname
 
-## 1. Ikuti DEPLOY.md §1–§6 kecuali:
+Di Cloudflare Zero Trust dashboard, di tunnel yang sudah ada, tambah
+**Public Hostname**:
 
-- **Skip** `sudo apt install nginx certbot python3-certbot-nginx` di §1.
-- **Skip** §7 seluruhnya (nginx + certbot).
+- **Subdomain**: `personal`
+- **Domain**: `fadjarrafi.my.id`
+- **Service**: `HTTP` → `<TARGET>:5173`
 
-## 2. `.env` produksi (menggantikan §4)
+`<TARGET>`:
+- `localhost` — jika cloudflared berjalan di VPS yang sama
+- IP LAN VPS — jika cloudflared di host/VM lain di Proxmox
+
+## 2. Setelan Cloudflare dashboard
+
+Di zona `fadjarrafi.my.id`:
+
+- **Speed → Optimization**:
+  - Rocket Loader → **Off** (memecah SvelteKit hydration)
+  - Auto Minify JS/CSS/HTML → **Off** (SvelteKit sudah minify saat build)
+- **Caching → Cache Rules** — tambah rule "**Bypass cache untuk personal**":
+  - When incoming requests match: `Hostname equals personal.fadjarrafi.my.id`
+  - Then → **Bypass cache**
+
+## 3. Prasyarat VPS
+
+Ubuntu, akses `sudo`. Install Node 22 atau 24 (LTS) via nvm — hindari
+Node 26+ karena `better-sqlite3` belum kompatibel dengannya.
 
 ```bash
-sudo -u dashboard tee /srv/personal-dashboard/shared/.env >/dev/null <<'EOF'
-DATABASE_URL=/srv/personal-dashboard/shared/data/app.db
-SESSION_SECRET=REPLACE_WITH_openssl_rand_-base64_48
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+# reload shell
+nvm install 22 && nvm alias default 22
+node -v      # v22.x.x
+sudo apt install -y build-essential python3 sqlite3
+```
+
+## 4. Clone repo
+
+```bash
+sudo mkdir -p /var/www/html
+sudo chown -R $USER:$USER /var/www/html
+cd /var/www/html
+git clone https://github.com/<user>/personal-dashboard.git
+cd personal-dashboard
+npm install
+```
+
+Kalau `EACCES` di `mkdir node_modules` — folder milik root. Fix:
+`sudo chown -R $USER:$USER /var/www/html/personal-dashboard` lalu ulangi.
+
+## 5. `.env` produksi
+
+```bash
+tee .env >/dev/null <<EOF
+DATABASE_URL=/var/www/html/personal-dashboard/data/app.db
+SESSION_SECRET=$(openssl rand -base64 48)
 NODE_ENV=production
 
-# Port harus SAMA dengan yang teman kamu masukkan di Cloudflare Tunnel
+# Port harus SAMA dengan target di Cloudflare Tunnel (§1).
 PORT=5173
 
-# Pilih SATU sesuai lokasi cloudflared:
-#   (A) cloudflared di VPS yang sama:
-# HOST=127.0.0.1
-#   (B) cloudflared di host/VM lain di LAN Proxmox:
-HOST=0.0.0.0
+# 127.0.0.1 kalau cloudflared di VPS ini juga; 0.0.0.0 kalau di host LAN lain.
+HOST=127.0.0.1
 
 # WAJIB — SvelteKit adapter-node menolak POST/form action kalau
 # Origin header dari browser ≠ ORIGIN env ini.
 ORIGIN=https://personal.fadjarrafi.my.id
 
-# Supaya SvelteKit tahu request aslinya HTTPS dan host publik,
-# bukan HTTP:5173 dari sisi cloudflared.
+# Supaya SvelteKit tahu request aslinya HTTPS + host publik.
 PROTOCOL_HEADER=x-forwarded-proto
 HOST_HEADER=x-forwarded-host
 
 BODY_SIZE_LIMIT=524288
 EOF
-sudo chmod 600 /srv/personal-dashboard/shared/.env
-sudo chown dashboard:dashboard /srv/personal-dashboard/shared/.env
+chmod 600 .env
 ```
 
-Generate `SESSION_SECRET`:
+Kalau `HOST=0.0.0.0`, buka firewall LAN saja (bukan publik):
 
 ```bash
-openssl rand -base64 48
+sudo ufw allow from 192.168.0.0/16 to any port 5173 proto tcp
 ```
 
-## 3. Firewall (hanya jika HOST=0.0.0.0)
-
-Kalau cloudflared **di host lain di LAN**, buka port 5173 hanya untuk LAN:
+## 6. Migrasi + user pertama
 
 ```bash
-# Ganti 10.0.0.0/8 dengan CIDR LAN Proxmox Anda (mis. 192.168.1.0/24)
-sudo ufw allow from 10.0.0.0/8 to any port 5173 proto tcp
-sudo ufw reload
+npx tsx src/lib/server/db/migrate.ts
+npx tsx scripts/seed.ts you@mail.com yourStrongPassword
 ```
 
-Jangan buka `:5173` ke internet — trafik publik harus lewat Cloudflare saja.
-Kalau `HOST=127.0.0.1`, tidak perlu ubah firewall (port hanya bind loopback).
-
-## 4. Jalankan sebagai service (PM2)
-
-Build produksi dulu, sekali:
+## 7. Build produksi
 
 ```bash
-cd /var/www/html/personal-dashboard   # sesuaikan path
 npm run build
 ```
 
-Install PM2 global dan pakai template ecosystem dari repo:
+## 8. PM2 — install, config, run
 
 ```bash
 npm install -g pm2
 cp deploy/pm2/ecosystem.config.cjs .
 pm2 start ecosystem.config.cjs
 pm2 status
-pm2 logs personal-dashboard --lines 50
+pm2 logs personal-dashboard --lines 30
 ```
 
-Aktifkan auto-start saat boot:
+Aktifkan auto-start setelah reboot:
 
 ```bash
 pm2 save
 pm2 startup
-# → cetak satu baris `sudo env PATH=... pm2 startup systemd -u <user> --hp /home/<user>`
-# jalankan persis baris tersebut. Ini mendaftarkan PM2 sebagai systemd unit,
-# jadi setelah reboot PM2 (dan app) hidup lagi otomatis.
+# → cetak baris `sudo env PATH=... pm2 startup systemd -u <user> --hp /home/<user>`
+# jalankan baris tersebut persis.
 ```
 
-Uji lokal, tanpa lewat Cloudflare:
+## 9. Cron backup
+
+Jadwalkan backup DB harian jam 03:00:
 
 ```bash
-curl -sSf -H 'Host: personal.fadjarrafi.my.id' http://127.0.0.1:5173/ | head -c 200
+crontab -e
 ```
 
-> Alternatif: **systemd** (tanpa PM2). Kalau lebih suka, pakai template unit
-> di [deploy/systemd/personal-dashboard.service](../deploy/systemd/personal-dashboard.service)
-> dan ikuti [DEPLOY.md §6](./DEPLOY.md#6-pasang-systemd-unit). Fungsional identik;
-> pilih salah satu, bukan keduanya.
+Tambahkan (sesuaikan path Node jika berbeda dari nvm default):
 
-### Update setelah deploy berikutnya
+```cron
+0 3 * * * cd /var/www/html/personal-dashboard && /home/$USER/.nvm/versions/node/v22/bin/npm run db:backup >> /var/log/dashboard-backup.log 2>&1
+```
+
+Buat log writable:
+
+```bash
+sudo touch /var/log/dashboard-backup.log
+sudo chown $USER:$USER /var/log/dashboard-backup.log
+```
+
+## 10. Verifikasi
+
+```bash
+curl -sSf http://127.0.0.1:5173/ | head -c 200
+```
+
+Lalu di browser buka `https://personal.fadjarrafi.my.id`:
+
+1. Login berhasil.
+2. Chrome DevTools → Application → Manifest tanpa error; Service Worker `activated`.
+3. Lighthouse → PWA → *Installable* hijau.
+4. Chrome Android → menu → **Install app** → ikon di home screen → open standalone.
+5. Tambah bookmark/note/snippet dari HP & desktop dalam < 5 detik.
+6. Copy snippet 1 klik dari list.
+
+---
+
+## Update dari GitHub
+
+Alur normal setelah ada commit baru di remote:
 
 ```bash
 cd /var/www/html/personal-dashboard
-git pull                # atau extract release baru
-npm ci --omit=dev
+
+# 1. tarik perubahan
+git pull
+
+# 2. sinkronkan dependencies (kalau package-lock.json berubah)
+npm install
+
+# 3. build ulang
 npm run build
-npx tsx src/lib/server/db/migrate.ts   # idempotent, aman diulang
+
+# 4. terapkan migrasi database (idempotent — aman diulang)
+npx tsx src/lib/server/db/migrate.ts
+
+# 5. restart PM2 dengan env terbaru
 pm2 restart personal-dashboard --update-env
 ```
 
-## 5. Setelan Cloudflare (dashboard)
+Kalau ada perubahan di `ecosystem.config.cjs` (mis. dari `deploy/pm2/`):
 
-Buka Cloudflare Dashboard → domain `fadjarrafi.my.id`:
+```bash
+cp deploy/pm2/ecosystem.config.cjs .
+pm2 delete personal-dashboard
+pm2 start ecosystem.config.cjs
+pm2 save
+```
 
-### Speed → Optimization → Content Optimization
-- **Auto Minify**: **Off** untuk JS/CSS/HTML (SvelteKit sudah minify saat build; Auto Minify bisa merusak module chunks).
-- **Rocket Loader**: **Off** (menunda eksekusi JS, memecahkan SvelteKit hydration).
+Kalau ada perubahan di `.env.example` yang menuntut var baru: bandingkan
+dengan `.env` lokal, tambahkan yang hilang, lalu `pm2 restart --update-env`.
 
-### Caching → Cache Rules
-Tambah rule "**Bypass cache untuk personal**":
-- **When incoming requests match**:
-  `Hostname equals personal.fadjarrafi.my.id`
-- **Then**:
-  - Cache eligibility: **Bypass cache**
+### Rollback cepat
 
-Alasan: app SSR, mengandung sesi user. Cache Cloudflare bisa menyajikan HTML
-milik user lain (di kasus 1-user aman, tapi Anda juga tidak ingin dashboard
-"macet" di versi lama saat deploy). Aset immutable di `/_app/immutable/`
-tetap di-cache browser via header `Cache-Control` bawaan SvelteKit.
+```bash
+cd /var/www/html/personal-dashboard
+git log --oneline -5              # cari commit sebelumnya
+git reset --hard <commit-sha>     # ⚠️ destruktif untuk file tracked
+npm install
+npm run build
+pm2 restart personal-dashboard --update-env
+```
 
-### SSL/TLS
-- Mode: biarkan bawaan tunnel. Tunnel Cloudflare menangani TLS end-to-end
-  dari edge ke cloudflared, jadi setting SSL/TLS mode di dashboard tidak
-  relevan untuk hostname ini.
+`data/app.db` tidak tersentuh oleh `git reset` karena folder `data/`
+di-`.gitignore`. Kalau migrasi baru sudah keburu jalan, rollback skema harus
+manual (restore dari `data/backups/`).
 
-## 6. Verifikasi §10 PRD
+---
 
-1. Buka `https://personal.fadjarrafi.my.id` → login berhasil.
-2. Chrome DevTools → **Application → Manifest** → tidak ada error; **Service Workers → sw.js** terdaftar `activated`.
-3. Lighthouse → PWA → *Installable* hijau.
-4. Buka di Chrome Android → menu "Install app" muncul → coba install → ikon muncul di home screen → open standalone.
-5. Login dari HP + desktop, tambah note/bookmark/snippet dalam < 5 detik.
-6. Cari "kata" dari kotak search di desktop — hasil FTS instan.
-7. Copy snippet 1 klik.
-8. Cron backup: `sudo -u dashboard crontab -l` menunjukkan job, coba trigger manual `sudo -u dashboard bash -lc 'cd /srv/personal-dashboard/current && npm run db:backup'`.
+## Troubleshooting
 
-## Troubleshooting spesifik Cloudflare Tunnel
+**502 dari Cloudflare**
+Cek tunnel `HEALTHY` di Cloudflare Zero Trust dashboard dan target port = 5173.
 
-**502 Bad Gateway dari Cloudflare**:
-- Cek cloudflared status di host tempat ia berjalan.
-- Cek Cloudflare Dashboard → Zero Trust → Networks → Tunnels → tunnel ini → status "HEALTHY".
-- Verifikasi rule Public Hostname target port = **5173** (bukan 3000).
+**403 di POST (form login gagal / redirect loop)**
+`ORIGIN` di `.env` tidak match. Fix: `ORIGIN=https://personal.fadjarrafi.my.id`
+persis tanpa trailing slash, lalu `pm2 restart personal-dashboard --update-env`.
+Log akan tercetak: *cross-site POST form submissions are forbidden*.
 
-**Form login gagal / redirect loop, status 403 di POST**:
-- ORIGIN env di `.env` tidak match. Cek log:
-  `pm2 logs personal-dashboard` (PM2) atau `journalctl -u personal-dashboard`
-  (systemd) — SvelteKit akan mencetak `cross-site POST form submissions are forbidden`.
-  Fix: `ORIGIN=https://personal.fadjarrafi.my.id` persis (tanpa trailing slash),
-  lalu `pm2 restart personal-dashboard --update-env`.
+**Aset JS 404 / MIME salah**
+Rocket Loader atau Auto Minify masih menyala di Cloudflare (§2).
 
-**Aset JS 404 atau MIME wrong**:
-- Rocket Loader / Auto Minify masih menyala. Matikan (§5).
+**Service worker tidak update setelah deploy**
+Cache Rule "Bypass cache" (§2) belum aktif untuk hostname ini, atau
+purge manual di Cloudflare → Caching → Purge Everything.
 
-**Service worker tidak update setelah deploy**:
-- Cloudflare cache `sw.js`. Terapkan Cache Rule Bypass (§5) atau purge cache
-  untuk path `/sw.js` setiap deploy.
+**`better-sqlite3` gagal load / NODE_MODULE_VERSION mismatch**
+Node versi berubah antara `npm install` dan runtime. Bangun ulang:
+`npm rebuild better-sqlite3`.
 
-**"Access denied" atau "Cross-origin" saat mencoba install PWA**:
-- Manifest dan `sw.js` harus disajikan dari origin yang **sama** dengan
-  halaman. Cloudflare Tunnel tidak mengubah ini, tapi pastikan Anda tidak
-  mengakses via IP LAN dari browser — selalu lewat
-  `https://personal.fadjarrafi.my.id`.
+**Setelah reboot `pm2 status` kosong**
+`pm2 startup` belum dijalankan. Ulangi §8 langkah `pm2 startup` + `pm2 save`.
 
-**Log tidak muncul**:
-- PM2: `pm2 logs personal-dashboard --lines 200`. Log tersimpan di
-  `~/.pm2/logs/personal-dashboard-{out,error}.log`.
-- systemd: `sudo journalctl -u personal-dashboard.service -f --no-pager`.
+**Ganti versi Node bikin PM2 tidak mau start**
+Systemd unit PM2 menyimpan path Node lama. Regenerate:
 
-**Setelah reboot, `pm2 status` kosong / app tidak jalan**:
-- `pm2 startup` belum dijalankan. Ulangi:
-  ```bash
-  pm2 startup   # cetak baris `sudo env PATH=… pm2 startup systemd -u fadjar --hp /home/fadjar`
-  # jalankan baris tersebut, lalu:
-  pm2 save
-  ```
+```bash
+pm2 unstartup systemd
+pm2 startup   # jalankan baris sudo yang dicetak
+pm2 save
+```
 
-**Ganti versi Node (mis. dari 22 → 24) bikin PM2 tidak mau start**:
-- Systemd unit yang dibuat `pm2 startup` menyimpan path Node lama. Regenerate:
-  ```bash
-  pm2 unstartup systemd
-  pm2 startup   # jalankan baris sudo yang dicetak
-  pm2 save
-  ```
+**Log**
+`pm2 logs personal-dashboard --lines 200` — file mentah di
+`~/.pm2/logs/personal-dashboard-{out,error}.log`.
