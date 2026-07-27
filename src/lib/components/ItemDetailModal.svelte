@@ -39,8 +39,8 @@
 	} as const;
 </script>
 
-<dialog bind:this={dialog} class="modal" onclose={handleClose}>
-	<div class="modal-box max-w-3xl">
+<dialog bind:this={dialog} class="modal modal-bottom sm:modal-middle" onclose={handleClose}>
+	<div class="modal-box max-h-[92vh] w-full max-w-3xl safe-bottom">
 		{#if item}
 			<header class="mb-4 flex items-start justify-between gap-2">
 				<div class="min-w-0">
@@ -98,13 +98,13 @@
 				</div>
 			{/if}
 
-			<div class="mb-4 flex gap-6 text-xs opacity-60">
+			<div class="mb-4 flex flex-wrap gap-x-6 gap-y-1 text-xs opacity-60">
 				<span>Dibuat: {item.createdAt.slice(0, 16).replace('T', ' ')}</span>
 				<span>Diperbarui: {item.updatedAt.slice(0, 16).replace('T', ' ')}</span>
 			</div>
 
-			<div class="modal-action items-center justify-between">
-				<div class="flex gap-2">
+			<div class="modal-action flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+				<div class="flex flex-wrap gap-2">
 					{#if item.body}
 						<button type="button" class="btn btn-sm" onclick={copyBody}>
 							{copied ? '✓ Tersalin' : 'Copy isi'}
@@ -117,7 +117,7 @@
 					{/if}
 				</div>
 
-				<div class="flex gap-2">
+				<div class="flex flex-wrap gap-2">
 					<form method="post" action="/?/archive">
 						<input type="hidden" name="id" value={item.id} />
 						<button

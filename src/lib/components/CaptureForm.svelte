@@ -65,14 +65,15 @@
 		await update({ reset: true });
 		if (result.type === 'success') clearDraft();
 	}}
-	class="card bg-base-200 p-4"
+	class="card bg-base-200 p-3 sm:p-4"
 >
-	<div role="tablist" class="tabs tabs-boxed mb-3 w-fit">
+	<div role="tablist" aria-label="Jenis catatan" class="tabs tabs-boxed mb-3 w-full sm:w-fit">
 		{#each ['note', 'bookmark', 'snippet'] as t}
 			<button
 				type="button"
 				role="tab"
-				class="tab {type === t ? 'tab-active' : ''}"
+				aria-selected={type === t}
+				class="tab flex-1 sm:flex-none {type === t ? 'tab-active' : ''}"
 				onclick={() => (type = t as typeof type)}
 			>
 				{t}
@@ -128,14 +129,16 @@
 		></textarea>
 	{/if}
 
-	<div class="join w-full">
+	<div class="flex w-full flex-wrap gap-2 sm:flex-nowrap">
+		<label for="capture-tags" class="sr-only">Tag</label>
 		<input
-			class="input input-bordered join-item flex-1"
+			id="capture-tags"
+			class="input input-bordered w-full min-w-0 flex-1"
 			name="tags"
 			placeholder="tag1, tag2 (opsional)"
 			list="known-tags"
 		/>
-		<button class="btn btn-primary join-item" type="submit">Simpan</button>
+		<button class="btn btn-primary w-full sm:w-auto" type="submit">Simpan</button>
 	</div>
 
 	<datalist id="known-tags">

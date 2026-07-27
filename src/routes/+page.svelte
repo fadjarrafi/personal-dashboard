@@ -39,8 +39,8 @@
 	}
 </script>
 
-<div class="grid gap-6 lg:grid-cols-[380px_1fr]">
-	<aside class="space-y-3 lg:sticky lg:top-4 lg:self-start">
+<div class="grid gap-4 sm:gap-6 lg:grid-cols-[380px_1fr]">
+	<aside class="order-2 space-y-3 lg:order-1 lg:sticky lg:top-4 lg:self-start">
 		<div class="flex items-center justify-between px-1">
 			<h2 class="text-xs font-semibold uppercase tracking-wider opacity-60">Tambah baru</h2>
 		</div>
@@ -65,27 +65,31 @@
 		</div>
 	</aside>
 
-	<section class="min-w-0 space-y-6">
-		<form method="get" class="join w-full">
+	<section class="order-1 min-w-0 space-y-4 sm:space-y-6 lg:order-2">
+		<form method="get" role="search" class="flex w-full flex-wrap gap-2 sm:flex-nowrap">
 			{#if data.filters.type}<input type="hidden" name="type" value={data.filters.type} />{/if}
 			{#if data.filters.tag}<input type="hidden" name="tag" value={data.filters.tag} />{/if}
+			<label for="global-search" class="sr-only">Cari item</label>
 			<input
 				id="global-search"
-				class="input input-bordered join-item flex-1"
+				class="input input-bordered w-full min-w-0 flex-1"
 				name="q"
 				bind:value={q}
-				placeholder="Cari judul, isi, atau URL…  (tekan / untuk fokus)"
+				placeholder="Cari judul, isi, atau URL…"
 				autocomplete="off"
+				enterkeyhint="search"
 			/>
-			<button class="btn btn-primary join-item" type="submit">Cari</button>
-			{#if data.filters.q}
-				<a
-					class="btn btn-ghost join-item"
-					href="/?{data.filters.type ? `type=${data.filters.type}` : ''}"
-				>
-					Reset
-				</a>
-			{/if}
+			<div class="flex w-full gap-2 sm:w-auto">
+				<button class="btn btn-primary flex-1 sm:flex-none" type="submit">Cari</button>
+				{#if data.filters.q}
+					<a
+						class="btn btn-ghost flex-1 sm:flex-none"
+						href="/?{data.filters.type ? `type=${data.filters.type}` : ''}"
+					>
+						Reset
+					</a>
+				{/if}
+			</div>
 		</form>
 
 		{#if data.filters.tag}

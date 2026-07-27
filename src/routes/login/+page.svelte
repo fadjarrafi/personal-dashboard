@@ -4,7 +4,7 @@
 	let { form }: { form: ActionData } = $props();
 </script>
 
-<div class="mx-auto mt-16 w-full max-w-sm">
+<div class="mx-auto mt-8 w-full max-w-sm sm:mt-16">
 	<div class="card bg-base-200 shadow-xl">
 		<div class="card-body">
 			<h1 class="card-title mb-4">Masuk</h1>

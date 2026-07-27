@@ -6,9 +6,9 @@
 	const item = $derived(data.item);
 </script>
 
-<h1 class="mb-4 text-xl font-semibold">Edit {item.type}</h1>
+<h1 class="mb-4 text-lg font-semibold sm:text-xl">Edit {item.type}</h1>
 
-<form method="post" action="?/update" class="space-y-3">
+<form method="post" action="?/update" class="mx-auto max-w-2xl space-y-3">
 	<label class="form-control w-full">
 		<div class="label"><span class="label-text">Judul</span></div>
 		<input class="input input-bordered w-full" name="title" value={item.title ?? ''} />
@@ -61,8 +61,7 @@
 		<span class="label-text">Pin ke atas</span>
 	</label>
 
-	<div class="flex justify-between pt-2">
-		<button class="btn btn-primary" type="submit">Simpan</button>
+	<div class="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-between">
 		<button
 			formaction="?/archive"
 			formmethod="post"
@@ -73,5 +72,9 @@
 		>
 			Arsipkan
 		</button>
+		<div class="flex gap-2 sm:justify-end">
+			<a class="btn btn-ghost flex-1 sm:flex-none" href="/">Batal</a>
+			<button class="btn btn-primary flex-1 sm:flex-none" type="submit">Simpan</button>
+		</div>
 	</div>
 </form>
