@@ -70,20 +70,55 @@ sudo ufw reload
 Jangan buka `:5173` ke internet — trafik publik harus lewat Cloudflare saja.
 Kalau `HOST=127.0.0.1`, tidak perlu ubah firewall (port hanya bind loopback).
 
-## 4. Aktifkan systemd (sama seperti DEPLOY.md §6)
+## 4. Jalankan sebagai service (PM2)
 
-Unit systemd sekarang membaca **semua** env dari `.env` di atas — tidak perlu
-`systemctl edit`.
+Build produksi dulu, sekali:
 
 ```bash
-sudo cp /srv/personal-dashboard/current/deploy/systemd/personal-dashboard.service \
-        /etc/systemd/system/personal-dashboard.service
-sudo systemctl daemon-reload
-sudo systemctl enable --now personal-dashboard.service
-sudo systemctl status personal-dashboard.service --no-pager
+cd /var/www/html/personal-dashboard   # sesuaikan path
+npm run build
+```
 
-# Uji lokal (dari VPS, tanpa lewat Cloudflare)
+Install PM2 global dan pakai template ecosystem dari repo:
+
+```bash
+npm install -g pm2
+cp deploy/pm2/ecosystem.config.cjs .
+pm2 start ecosystem.config.cjs
+pm2 status
+pm2 logs personal-dashboard --lines 50
+```
+
+Aktifkan auto-start saat boot:
+
+```bash
+pm2 save
+pm2 startup
+# → cetak satu baris `sudo env PATH=... pm2 startup systemd -u <user> --hp /home/<user>`
+# jalankan persis baris tersebut. Ini mendaftarkan PM2 sebagai systemd unit,
+# jadi setelah reboot PM2 (dan app) hidup lagi otomatis.
+```
+
+Uji lokal, tanpa lewat Cloudflare:
+
+```bash
 curl -sSf -H 'Host: personal.fadjarrafi.my.id' http://127.0.0.1:5173/ | head -c 200
+```
+
+> Alternatif: **systemd** (tanpa PM2). Kalau lebih suka, pakai template unit
+> di [deploy/systemd/personal-dashboard.service](../deploy/systemd/personal-dashboard.service)
+> dan ikuti [DEPLOY.md §6](./DEPLOY.md#6-pasang-systemd-unit). Fungsional identik;
+> pilih salah satu, bukan keduanya.
+
+### Update setelah deploy berikutnya
+
+```bash
+cd /var/www/html/personal-dashboard
+git pull                # atau extract release baru
+npm ci --omit=dev
+npm run build
+npx tsx src/lib/server/db/migrate.ts   # idempotent, aman diulang
+pm2 restart personal-dashboard --update-env
 ```
 
 ## 5. Setelan Cloudflare (dashboard)
@@ -130,10 +165,11 @@ tetap di-cache browser via header `Cache-Control` bawaan SvelteKit.
 - Verifikasi rule Public Hostname target port = **5173** (bukan 3000).
 
 **Form login gagal / redirect loop, status 403 di POST**:
-- ORIGIN env di `.env` tidak match. Cek `journalctl -u personal-dashboard`
-  — SvelteKit akan mencetak `cross-site POST form submissions are forbidden`.
+- ORIGIN env di `.env` tidak match. Cek log:
+  `pm2 logs personal-dashboard` (PM2) atau `journalctl -u personal-dashboard`
+  (systemd) — SvelteKit akan mencetak `cross-site POST form submissions are forbidden`.
   Fix: `ORIGIN=https://personal.fadjarrafi.my.id` persis (tanpa trailing slash),
-  lalu `sudo systemctl restart personal-dashboard`.
+  lalu `pm2 restart personal-dashboard --update-env`.
 
 **Aset JS 404 atau MIME wrong**:
 - Rocket Loader / Auto Minify masih menyala. Matikan (§5).
@@ -148,7 +184,23 @@ tetap di-cache browser via header `Cache-Control` bawaan SvelteKit.
   mengakses via IP LAN dari browser — selalu lewat
   `https://personal.fadjarrafi.my.id`.
 
-**Log tidak muncul di `journalctl`**:
-- `sudo journalctl -u personal-dashboard.service -f --no-pager` — kalau kosong,
-  cek `systemctl status` untuk exit code. Umum: `EnvironmentFile` tidak
-  terbaca (permission 600 tapi bukan milik user `dashboard`).
+**Log tidak muncul**:
+- PM2: `pm2 logs personal-dashboard --lines 200`. Log tersimpan di
+  `~/.pm2/logs/personal-dashboard-{out,error}.log`.
+- systemd: `sudo journalctl -u personal-dashboard.service -f --no-pager`.
+
+**Setelah reboot, `pm2 status` kosong / app tidak jalan**:
+- `pm2 startup` belum dijalankan. Ulangi:
+  ```bash
+  pm2 startup   # cetak baris `sudo env PATH=… pm2 startup systemd -u fadjar --hp /home/fadjar`
+  # jalankan baris tersebut, lalu:
+  pm2 save
+  ```
+
+**Ganti versi Node (mis. dari 22 → 24) bikin PM2 tidak mau start**:
+- Systemd unit yang dibuat `pm2 startup` menyimpan path Node lama. Regenerate:
+  ```bash
+  pm2 unstartup systemd
+  pm2 startup   # jalankan baris sudo yang dicetak
+  pm2 save
+  ```
