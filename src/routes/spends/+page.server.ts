@@ -4,6 +4,7 @@ import { setFlash } from '$lib/server/flash';
 import {
 	createSpend,
 	currentMonthRange,
+	getDailyTotals,
 	getSummary,
 	listCategories,
 	listSpends,
@@ -40,11 +41,13 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		q
 	});
 	const summary = getSummary(user.id, period.from, period.to, period.prevFrom, period.prevTo);
+	const daily = getDailyTotals(user.id, period.from, period.to);
 	const categories = listCategories(user.id);
 
 	return {
 		spends,
 		summary,
+		daily,
 		categories,
 		today: todayLocalISO(),
 		filters: {

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { ActionData, PageData } from './$types';
 	import { formatRupiah } from '$lib/format';
+	import SpendChart from '$lib/components/SpendChart.svelte';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -195,6 +196,8 @@
 				</div>
 			{/if}
 		</header>
+
+		<SpendChart data={data.daily} today={data.today} />
 
 		<form method="get" role="search" class="flex w-full flex-wrap gap-2 sm:flex-nowrap">
 			<input type="hidden" name="month" value={data.filters.month} />

@@ -186,6 +186,39 @@ export function findSpendByRefId(userId: number, refId: string): SpendRow | null
 	return (row as SpendRow) ?? null;
 }
 
+/**
+ * Kembalikan total per hari dalam rentang [from, to). Setiap hari yang ada di
+ * rentang dipastikan hadir di hasil (nilai 0 kalau tidak ada transaksi) agar
+ * grafik tidak melompat-lompat.
+ */
+export function getDailyTotals(
+	userId: number,
+	from: string,
+	to: string
+): Array<{ date: string; total: number }> {
+	const rows = raw
+		.prepare(
+			`SELECT substr(occurred_at, 1, 10) AS date, SUM(amount) AS total
+			 FROM spends
+			 WHERE user_id = ? AND occurred_at >= ? AND occurred_at < ?
+			 GROUP BY substr(occurred_at, 1, 10)`
+		)
+		.all(userId, from, to) as Array<{ date: string; total: number }>;
+
+	const byDate = new Map(rows.map((r) => [r.date, r.total]));
+	const start = new Date(from);
+	const end = new Date(to);
+	const result: Array<{ date: string; total: number }> = [];
+	const cursor = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
+	const stop = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate()));
+	while (cursor < stop) {
+		const key = cursor.toISOString().slice(0, 10);
+		result.push({ date: key, total: byDate.get(key) ?? 0 });
+		cursor.setUTCDate(cursor.getUTCDate() + 1);
+	}
+	return result;
+}
+
 export function listCategories(userId: number): string[] {
 	const rows = db
 		.selectDistinct({ category: spends.category })
