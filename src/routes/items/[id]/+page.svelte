@@ -64,14 +64,14 @@
 	<div class="flex justify-between pt-2">
 		<button class="btn btn-primary" type="submit">Simpan</button>
 		<button
-			formaction="?/delete"
+			formaction="?/archive"
 			formmethod="post"
-			class="btn btn-ghost text-error"
+			class="btn btn-ghost"
 			onclick={(e) => {
-				if (!confirm('Hapus permanen?')) e.preventDefault();
+				if (!confirm('Arsipkan item ini?')) e.preventDefault();
 			}}
 		>
-			Hapus
+			Arsipkan
 		</button>
 	</div>
 </form>

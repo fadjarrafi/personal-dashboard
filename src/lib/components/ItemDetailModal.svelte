@@ -130,18 +130,6 @@
 							Arsipkan
 						</button>
 					</form>
-					<form method="post" action="/?/delete">
-						<input type="hidden" name="id" value={item.id} />
-						<button
-							class="btn btn-sm btn-error btn-outline"
-							type="submit"
-							onclick={(e) => {
-								if (!confirm('Hapus permanen?')) e.preventDefault();
-							}}
-						>
-							Hapus
-						</button>
-					</form>
 					<a class="btn btn-sm btn-primary" href="/items/{item.id}">Edit</a>
 				</div>
 			</div>

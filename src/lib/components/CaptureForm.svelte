@@ -4,8 +4,38 @@
 
 	let { tags = [] }: { tags?: string[] } = $props();
 
-	let type = $state<'note' | 'bookmark' | 'snippet'>('note');
+	type CaptureType = 'note' | 'bookmark' | 'snippet';
+	let type = $state<CaptureType>('note');
 	let form: HTMLFormElement | undefined;
+	let noteBody = $state('');
+	let draftRestored = $state(false);
+
+	const DRAFT_KEY = 'dashboard:draft:note';
+
+	$effect(() => {
+		if (typeof localStorage === 'undefined') return;
+		if (type !== 'note' || draftRestored) return;
+		const saved = localStorage.getItem(DRAFT_KEY) ?? '';
+		if (saved) noteBody = saved;
+		draftRestored = true;
+	});
+
+	let saveTimer: ReturnType<typeof setTimeout> | undefined;
+	$effect(() => {
+		if (typeof localStorage === 'undefined') return;
+		if (type !== 'note') return;
+		const current = noteBody;
+		if (saveTimer) clearTimeout(saveTimer);
+		saveTimer = setTimeout(() => {
+			if (current.trim().length === 0) localStorage.removeItem(DRAFT_KEY);
+			else localStorage.setItem(DRAFT_KEY, current);
+		}, 300);
+	});
+
+	function clearDraft() {
+		noteBody = '';
+		if (typeof localStorage !== 'undefined') localStorage.removeItem(DRAFT_KEY);
+	}
 
 	async function autofillTitle(input: HTMLInputElement) {
 		const url = input.value.trim();
@@ -30,8 +60,9 @@
 	bind:this={form}
 	method="post"
 	action="?/create"
-	use:enhance={() => async ({ update }) => {
+	use:enhance={() => async ({ update, result }) => {
 		await update({ reset: true });
+		if (result.type === 'success') clearDraft();
 	}}
 	class="card bg-base-200 p-4"
 >
@@ -89,9 +120,10 @@
 			class="textarea textarea-bordered mb-2 w-full"
 			name="body"
 			rows="3"
-			placeholder="Tulis fleeting note…"
+			placeholder="Tulis fleeting note… (draft tersimpan otomatis)"
 			required
 			autofocus
+			bind:value={noteBody}
 		></textarea>
 	{/if}
 

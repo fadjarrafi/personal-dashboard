@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, isNull } from 'drizzle-orm';
 import { db, raw } from './db';
 import { items, tags } from './db/schema';
 
@@ -10,6 +10,7 @@ export interface ListFilters {
 	tag?: string;
 	q?: string;
 	includeArchived?: boolean;
+	onlyArchived?: boolean;
 }
 
 export interface ItemRow {
@@ -47,7 +48,12 @@ function attachTags(rows: Array<Omit<ItemRow, 'tags'>>): ItemRow[] {
 }
 
 export function listItems(filters: ListFilters): ItemRow[] {
-	const { userId, type, tag, q, includeArchived = false } = filters;
+	const { userId, type, tag, q, includeArchived = false, onlyArchived = false } = filters;
+	const archiveClause = onlyArchived
+		? 'AND i.archived_at IS NOT NULL'
+		: includeArchived
+			? ''
+			: 'AND i.archived_at IS NULL';
 
 	if (q && q.trim().length > 0) {
 		const safeQ = q.trim().replace(/"/g, '""');
@@ -61,7 +67,7 @@ export function listItems(filters: ListFilters): ItemRow[] {
 				 WHERE i.user_id = ?
 				   AND f.items_fts MATCH ?
 				   ${type ? 'AND i.type = ?' : ''}
-				   ${includeArchived ? '' : 'AND i.archived_at IS NULL'}
+				   ${archiveClause}
 				 ORDER BY i.pinned DESC, bm25(items_fts) ASC
 				 LIMIT 200`
 			)
@@ -74,7 +80,8 @@ export function listItems(filters: ListFilters): ItemRow[] {
 
 	const where = [eq(items.userId, userId)];
 	if (type) where.push(eq(items.type, type));
-	if (!includeArchived) where.push(isNull(items.archivedAt));
+	if (onlyArchived) where.push(isNotNull(items.archivedAt));
+	else if (!includeArchived) where.push(isNull(items.archivedAt));
 
 	let base = db
 		.select({
@@ -132,6 +139,15 @@ export interface UpsertInput {
 	tags?: string[];
 }
 
+function deriveNoteTitle(title: string | null | undefined, body: string | null | undefined): string | null {
+	if (title && title.trim().length > 0) return title;
+	if (!body) return null;
+	const firstLine = body.split(/\r?\n/).find((l) => l.trim().length > 0);
+	if (!firstLine) return null;
+	const trimmed = firstLine.trim();
+	return trimmed.length > 80 ? trimmed.slice(0, 80) + '…' : trimmed;
+}
+
 function normalizeTags(input: string[] | undefined): string[] {
 	if (!input) return [];
 	return Array.from(
@@ -158,12 +174,14 @@ function syncTags(itemId: number, names: string[]) {
 
 export function createItem(userId: number, input: UpsertInput): number {
 	const now = new Date().toISOString();
+	const title =
+		input.type === 'note' ? deriveNoteTitle(input.title, input.body) : (input.title ?? null);
 	const result = db
 		.insert(items)
 		.values({
 			userId,
 			type: input.type,
-			title: input.title ?? null,
+			title,
 			body: input.body ?? null,
 			url: input.url ?? null,
 			language: input.language ?? null,
@@ -181,10 +199,15 @@ export function updateItem(userId: number, id: number, input: Partial<UpsertInpu
 	const existing = getItem(userId, id);
 	if (!existing) return false;
 
+	const nextBody = input.body ?? existing.body;
+	const rawTitle = input.title ?? existing.title;
+	const nextTitle =
+		existing.type === 'note' ? deriveNoteTitle(rawTitle, nextBody) : rawTitle;
+
 	db.update(items)
 		.set({
-			title: input.title ?? existing.title,
-			body: input.body ?? existing.body,
+			title: nextTitle,
+			body: nextBody,
 			url: input.url ?? existing.url,
 			language: input.language ?? existing.language,
 			pinned: input.pinned === undefined ? existing.pinned : input.pinned ? 1 : 0,

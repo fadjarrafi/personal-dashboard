@@ -1,7 +1,7 @@
 import { error, fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { setFlash } from '$lib/server/flash';
-import { deleteItem, getItem, listAllTags, updateItem } from '$lib/server/items';
+import { archiveItem, getItem, listAllTags, updateItem } from '$lib/server/items';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const id = Number(params.id);
@@ -31,10 +31,10 @@ export const actions: Actions = {
 		throw redirect(303, '/');
 	},
 
-	delete: async ({ params, locals, cookies }) => {
+	archive: async ({ params, locals, cookies }) => {
 		const id = Number(params.id);
-		deleteItem(locals.user!.id, id);
-		setFlash(cookies, 'success', 'Item dihapus.');
+		archiveItem(locals.user!.id, id);
+		setFlash(cookies, 'success', 'Item diarsipkan.');
 		throw redirect(303, '/');
 	}
 };

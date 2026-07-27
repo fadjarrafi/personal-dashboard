@@ -38,6 +38,13 @@
 						{item.label}
 					</a>
 				{/each}
+				<a
+					class="btn btn-sm {page.url.pathname === '/archive' ? 'btn-primary' : 'btn-ghost'}"
+					href="/archive"
+					title="Arsip"
+				>
+					🗄
+				</a>
 				<div class="divider divider-horizontal mx-1"></div>
 				<span class="hidden text-xs opacity-60 md:inline">{data.user.email}</span>
 				<form method="post" action="/logout">

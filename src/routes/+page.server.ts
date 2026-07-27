@@ -4,7 +4,6 @@ import { setFlash } from '$lib/server/flash';
 import {
 	archiveItem,
 	createItem,
-	deleteItem,
 	getItem,
 	listAllTags,
 	listItems,
@@ -73,17 +72,6 @@ export const actions: Actions = {
 		if (Number.isFinite(id)) {
 			archiveItem(user.id, id);
 			setFlash(cookies, 'success', 'Item diarsipkan.');
-		}
-		return { ok: true };
-	},
-
-	delete: async ({ request, locals, cookies }) => {
-		const user = locals.user!;
-		const data = await request.formData();
-		const id = Number(data.get('id'));
-		if (Number.isFinite(id)) {
-			deleteItem(user.id, id);
-			setFlash(cookies, 'success', 'Item dihapus.');
 		}
 		return { ok: true };
 	}
