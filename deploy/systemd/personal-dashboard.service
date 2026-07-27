@@ -1,0 +1,37 @@
+[Unit]
+Description=Personal Dashboard (SvelteKit + SQLite)
+After=network.target
+# Kalau butuh mount disk khusus untuk data/, uncomment:
+# After=network.target data.mount
+# Requires=data.mount
+
+[Service]
+Type=simple
+User=dashboard
+Group=dashboard
+WorkingDirectory=/srv/personal-dashboard/current
+EnvironmentFile=/srv/personal-dashboard/shared/.env
+# adapter-node membaca PORT dari env
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=HOST=127.0.0.1
+Environment=BODY_SIZE_LIMIT=524288
+Environment=ORIGIN=https://dashboard.example.com
+
+ExecStart=/usr/bin/node build
+
+Restart=on-failure
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+# Hardening — bebas dinaikkan tapi ini titik aman minimum
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+# folder yang harus tetap bisa ditulis (data DB + WAL)
+ReadWritePaths=/srv/personal-dashboard/shared/data
+
+[Install]
+WantedBy=multi-user.target
