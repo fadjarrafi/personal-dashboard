@@ -97,6 +97,11 @@ terpisah. Kalau perlu dukung browser yang menolak SVG, tambahkan raster
 Wajib `adapter-node` di VPS (Nginx reverse proxy → `node build`).
 **Jangan** pakai adapter serverless — SQLite butuh disk persisten & proses hidup terus (PRD §2.1).
 
-Panduan langkah-demi-langkah dengan systemd unit + Nginx config + certbot +
-cron backup ada di [docs/DEPLOY.md](./docs/DEPLOY.md). Template file siap-copy
-di [deploy/](./deploy).
+Dua panduan tersedia:
+
+- [docs/DEPLOY.md](./docs/DEPLOY.md) — Ubuntu VPS publik dengan Nginx + certbot.
+- [docs/DEPLOY-cloudflare-tunnel.md](./docs/DEPLOY-cloudflare-tunnel.md) —
+  VPS lokal (mis. di Proxmox) di belakang Cloudflare Tunnel; tanpa Nginx,
+  tanpa certbot, Cloudflare edge yang meng-terminate TLS.
+
+Template systemd + Nginx config siap-copy di [deploy/](./deploy).

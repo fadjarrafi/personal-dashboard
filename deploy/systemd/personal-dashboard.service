@@ -10,13 +10,9 @@ Type=simple
 User=dashboard
 Group=dashboard
 WorkingDirectory=/srv/personal-dashboard/current
+# Semua env (PORT, HOST, ORIGIN, PROTOCOL_HEADER, DATABASE_URL, SESSION_SECRET,
+# NODE_ENV, dst.) diambil dari .env — lihat docs/DEPLOY*.md untuk isinya.
 EnvironmentFile=/srv/personal-dashboard/shared/.env
-# adapter-node membaca PORT dari env
-Environment=NODE_ENV=production
-Environment=PORT=3000
-Environment=HOST=127.0.0.1
-Environment=BODY_SIZE_LIMIT=524288
-Environment=ORIGIN=https://dashboard.example.com
 
 ExecStart=/usr/bin/node build
 
