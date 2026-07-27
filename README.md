@@ -9,8 +9,9 @@ Lihat [docs/PRD.md](./docs/PRD.md) untuk detail keputusan produk & arsitektur.
 - **SQLite** via **better-sqlite3** (WAL mode) + **Drizzle ORM**
 - **FTS5** untuk pencarian full-text (SQL mentah)
 - **Session cookie** auth (argon2 via `@node-rs/argon2`)
-- **Tailwind CSS**
+- **Tailwind CSS** + **daisyUI** (tema `dashboard` gelap)
 - **PWA** via `@vite-pwa/sveltekit`
+- **Mobile-first & aksesibel** — hamburger drawer, view kartu di layar sempit, skip link, fokus-visible, target sentuh ≥44px
 
 ## Struktur direktori
 
@@ -19,7 +20,8 @@ src/
 ├─ app.html · app.css · app.d.ts
 ├─ hooks.server.ts              # auth gate global
 ├─ lib/
-│  ├─ components/               # ItemCard, CaptureForm
+│  ├─ components/               # CaptureForm, ItemTable, ItemCard,
+│  │                            #   ItemDetailModal, CodeBlock, Toast, Shortcuts
 │  └─ server/
 │     ├─ auth.ts                # session cookie + argon2
 │     ├─ items.ts               # repository items (list/create/update/…)
@@ -91,6 +93,25 @@ Sudah ter-include sebagai SVG `sizes: "any"` di `static/icons/` (`icon.svg` +
 terpisah. Kalau perlu dukung browser yang menolak SVG, tambahkan raster
 `icons/icon-192.png` & `icons/icon-512.png` dan daftarkan di
 `static/manifest.webmanifest` + `vite.config.ts`.
+
+## UI: responsif & aksesibel
+
+Semua layar dirancang mobile-first dan sudah dikonfirmasi lewat `svelte-check`:
+
+- **Layout** — di `<lg` navbar berubah jadi tombol hamburger yang membuka **drawer geser dari kiri** (overlay klik-untuk-tutup, `Esc` untuk tutup, auto-close saat pindah route). Berisi filter jenis, Arsip, Export JSON, dan Keluar. Di `≥lg` nav inline seperti biasa.
+- **Dashboard** — di mobile, daftar item tampil lebih dulu; form *Tambah baru* pindah ke bawah (masih bisa dijangkau via FAB `+`). Search bar tidak lagi memakai `join` yang overflow.
+- **ItemTable & Arsip** — tabel disembunyikan di `<md` dan diganti list kartu yang tap-friendly (keyboard: Enter/Space untuk buka detail).
+- **ItemDetailModal** — jadi *bottom sheet* di HP (`modal-bottom sm:modal-middle`), `max-h: 92vh`, tombol aksi stacking, padding bawah tetap ada + safe-area untuk device dengan home indicator.
+- **Form login & edit** — tombol full-width dan stacking di mobile; margin atas login dikurangi.
+
+**Aksesibilitas** yang dijamin global lewat [`src/app.css`](./src/app.css):
+
+- Input, `<select>`, `<textarea>` dipaksa ≥16px di `<640px` (cegah zoom otomatis iOS Safari).
+- `:focus-visible` konsisten (outline primary 2px, offset 2px) untuk semua elemen interaktif.
+- Hormati `prefers-reduced-motion` — animasi & transisi dinonaktifkan.
+- Utility `.tap-target` = 44×44 (WCAG 2.5.5), `.safe-top`/`.safe-bottom` untuk area aman iOS.
+- **Skip link** "Lompat ke konten" di setiap halaman menuju `<main id="main">`.
+- Semua tombol ikon punya `aria-label`; nav aktif ditandai `aria-current="page"`; drawer punya `role="dialog"` + `aria-modal`.
 
 ## Deploy
 
