@@ -19,7 +19,8 @@
 	"dependencies": {
 		"@node-rs/argon2": "^2.0.2",
 		"better-sqlite3": "^11.7.0",
-		"drizzle-orm": "^0.45.2"
+		"drizzle-orm": "^0.45.2",
+		"highlight.js": "^11.11.1"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-node": "^5.2.12",

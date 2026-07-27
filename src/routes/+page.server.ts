@@ -1,9 +1,11 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { setFlash } from '$lib/server/flash';
 import {
 	archiveItem,
 	createItem,
 	deleteItem,
+	getItem,
 	listAllTags,
 	listItems,
 	togglePin,
@@ -31,7 +33,7 @@ function parseTags(raw: string | null): string[] {
 }
 
 export const actions: Actions = {
-	create: async ({ request, locals }) => {
+	create: async ({ request, locals, cookies }) => {
 		const user = locals.user!;
 		const data = await request.formData();
 		const typeRaw = String(data.get('type') ?? '');
@@ -49,30 +51,40 @@ export const actions: Actions = {
 			return fail(400, { error: 'Isi tidak boleh kosong.' });
 
 		createItem(user.id, { type, title, body, url, language, tags });
+		setFlash(cookies, 'success', `${type} disimpan.`);
 		return { ok: true };
 	},
 
-	togglePin: async ({ request, locals }) => {
+	togglePin: async ({ request, locals, cookies }) => {
 		const user = locals.user!;
 		const data = await request.formData();
 		const id = Number(data.get('id'));
-		if (Number.isFinite(id)) togglePin(user.id, id);
+		if (!Number.isFinite(id)) return { ok: false };
+		const before = getItem(user.id, id);
+		togglePin(user.id, id);
+		setFlash(cookies, 'success', before?.pinned ? 'Pin dilepas.' : 'Di-pin ke atas.');
 		return { ok: true };
 	},
 
-	archive: async ({ request, locals }) => {
+	archive: async ({ request, locals, cookies }) => {
 		const user = locals.user!;
 		const data = await request.formData();
 		const id = Number(data.get('id'));
-		if (Number.isFinite(id)) archiveItem(user.id, id);
+		if (Number.isFinite(id)) {
+			archiveItem(user.id, id);
+			setFlash(cookies, 'success', 'Item diarsipkan.');
+		}
 		return { ok: true };
 	},
 
-	delete: async ({ request, locals }) => {
+	delete: async ({ request, locals, cookies }) => {
 		const user = locals.user!;
 		const data = await request.formData();
 		const id = Number(data.get('id'));
-		if (Number.isFinite(id)) deleteItem(user.id, id);
+		if (Number.isFinite(id)) {
+			deleteItem(user.id, id);
+			setFlash(cookies, 'success', 'Item dihapus.');
+		}
 		return { ok: true };
 	}
 };

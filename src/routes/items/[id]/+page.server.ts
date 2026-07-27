@@ -1,5 +1,6 @@
 import { error, fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { setFlash } from '$lib/server/flash';
 import { deleteItem, getItem, listAllTags, updateItem } from '$lib/server/items';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
@@ -11,7 +12,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 };
 
 export const actions: Actions = {
-	update: async ({ request, params, locals }) => {
+	update: async ({ request, params, locals, cookies }) => {
 		const id = Number(params.id);
 		const data = await request.formData();
 		const title = String(data.get('title') ?? '').trim() || null;
@@ -26,12 +27,14 @@ export const actions: Actions = {
 
 		const ok = updateItem(locals.user!.id, id, { title, body, url, language, pinned, tags });
 		if (!ok) return fail(404, { error: 'Tidak ditemukan' });
+		setFlash(cookies, 'success', 'Perubahan disimpan.');
 		throw redirect(303, '/');
 	},
 
-	delete: async ({ params, locals }) => {
+	delete: async ({ params, locals, cookies }) => {
 		const id = Number(params.id);
 		deleteItem(locals.user!.id, id);
+		setFlash(cookies, 'success', 'Item dihapus.');
 		throw redirect(303, '/');
 	}
 };

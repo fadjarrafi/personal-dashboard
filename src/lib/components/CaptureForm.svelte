@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { LANGUAGES } from '$lib/languages';
 
 	let { tags = [] }: { tags?: string[] } = $props();
 
@@ -65,14 +66,17 @@
 			placeholder="Catatan opsional"
 		></textarea>
 	{:else if type === 'snippet'}
-		<div class="mb-2 flex gap-2">
-			<input class="input input-bordered flex-1" name="title" placeholder="Judul snippet" />
-			<input
-				class="input input-bordered max-w-[10rem]"
-				name="language"
-				placeholder="bahasa (mis. bash)"
-			/>
-		</div>
+		<input
+			class="input input-bordered mb-2 w-full"
+			name="title"
+			placeholder="Judul snippet"
+		/>
+		<select class="select select-bordered mb-2 w-full" name="language">
+			<option value="">— pilih bahasa (opsional) —</option>
+			{#each LANGUAGES as lang}
+				<option value={lang}>{lang}</option>
+			{/each}
+		</select>
 		<textarea
 			class="textarea textarea-bordered mb-2 w-full font-mono"
 			name="body"

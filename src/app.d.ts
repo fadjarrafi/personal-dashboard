@@ -1,3 +1,5 @@
+import type { Flash } from '$lib/server/flash';
+
 declare global {
 	namespace App {
 		interface Locals {
@@ -6,6 +8,7 @@ declare global {
 		}
 		interface PageData {
 			user: { id: number; email: string } | null;
+			flash?: Flash | null;
 		}
 	}
 }

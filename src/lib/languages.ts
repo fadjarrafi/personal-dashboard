@@ -1,0 +1,87 @@
+export const LANGUAGES = [
+	'bash',
+	'c',
+	'c++',
+	'c#',
+	'clojure',
+	'coffeescript',
+	'css',
+	'dart',
+	'diff',
+	'dockerfile',
+	'elixir',
+	'elm',
+	'erlang',
+	'f#',
+	'go',
+	'graphql',
+	'groovy',
+	'haskell',
+	'html',
+	'ini',
+	'java',
+	'javascript',
+	'json',
+	'jsx',
+	'julia',
+	'kotlin',
+	'latex',
+	'less',
+	'lisp',
+	'lua',
+	'makefile',
+	'markdown',
+	'matlab',
+	'nginx',
+	'nix',
+	'objective-c',
+	'ocaml',
+	'perl',
+	'php',
+	'plaintext',
+	'powershell',
+	'protobuf',
+	'python',
+	'r',
+	'ruby',
+	'rust',
+	'sass',
+	'scala',
+	'scss',
+	'shell',
+	'solidity',
+	'sql',
+	'svelte',
+	'swift',
+	'terraform',
+	'toml',
+	'typescript',
+	'tsx',
+	'vim',
+	'vue',
+	'xml',
+	'yaml',
+	'zig'
+] as const;
+
+export type Language = (typeof LANGUAGES)[number];
+
+// PRD label → highlight.js language id
+const HLJS_ALIAS: Record<string, string> = {
+	'c#': 'csharp',
+	'c++': 'cpp',
+	'f#': 'fsharp',
+	'objective-c': 'objectivec',
+	shell: 'bash',
+	dockerfile: 'dockerfile',
+	svelte: 'xml',
+	vue: 'xml',
+	tsx: 'typescript',
+	jsx: 'javascript'
+};
+
+export function toHljsLang(lang: string | null | undefined): string {
+	if (!lang) return 'plaintext';
+	const key = lang.toLowerCase();
+	return HLJS_ALIAS[key] ?? key;
+}

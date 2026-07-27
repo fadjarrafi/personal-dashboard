@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { LANGUAGES } from '$lib/languages';
 
 	let { data }: { data: PageData } = $props();
 	const item = $derived(data.item);
@@ -23,7 +24,12 @@
 	{#if item.type === 'snippet'}
 		<label class="form-control w-full">
 			<div class="label"><span class="label-text">Bahasa</span></div>
-			<input class="input input-bordered w-full" name="language" value={item.language ?? ''} />
+			<select class="select select-bordered w-full" name="language" value={item.language ?? ''}>
+				<option value="">— pilih bahasa (opsional) —</option>
+				{#each LANGUAGES as lang}
+					<option value={lang}>{lang}</option>
+				{/each}
+			</select>
 		</label>
 	{/if}
 
