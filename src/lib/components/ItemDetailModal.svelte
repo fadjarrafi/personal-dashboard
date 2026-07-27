@@ -40,7 +40,10 @@
 </script>
 
 <dialog bind:this={dialog} class="modal modal-bottom sm:modal-middle" onclose={handleClose}>
-	<div class="modal-box max-h-[92vh] w-full max-w-3xl safe-bottom">
+	<div
+		class="modal-box max-h-[92vh] w-full max-w-3xl"
+		style="padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));"
+	>
 		{#if item}
 			<header class="mb-4 flex items-start justify-between gap-2">
 				<div class="min-w-0">
