@@ -56,22 +56,41 @@ Buka http://localhost:5173 dan login.
 
 ## Backup
 
-Sesuai PRD §5 — jangan andalkan scheduler dalam-app. Gunakan cron OS:
+Sesuai PRD §5 — scheduler bukan bawaan SvelteKit, jadi jadwalkan lewat cron OS.
+
+### Skrip backup (aman untuk WAL)
 
 ```bash
-0 3 * * * cp -a /path/data/app.db* /path/backup/$(date +\%F)/
+npm run db:backup
 ```
 
-Atau unduh dump JSON dari `/export`.
+Skrip ini pakai `sqlite3_backup` (via `better-sqlite3`) sehingga aman meski
+proses aplikasi sedang menulis. Hasil di `data/backups/app-YYYY-MM-DDTHH-MM-SS.db`,
+dan otomatis merotasi — mempertahankan 14 file terbaru.
+
+Ubah lewat env: `BACKUP_DIR=/mnt/backups BACKUP_KEEP=30 npm run db:backup`.
+
+> ⚠️ **Jangan** pakai `cp app.db*` untuk backup — WAL bisa membuat salinannya
+> inkonsisten. Selalu lewat skrip di atas atau `sqlite3 .backup`.
+
+### Cron VPS (Ubuntu)
+
+```cron
+0 3 * * * cd /srv/personal-dashboard && /usr/bin/npm run db:backup >> /var/log/dashboard-backup.log 2>&1
+```
+
+### Export manual dari UI
+
+Buka `/export` — mengunduh dump JSON semua item + tag milik user yang login.
+Berguna untuk migrasi data atau audit, tidak menggantikan backup file `.db`.
 
 ## Icon PWA
 
-Sebelum deploy, taruh di `static/`:
-
-- `favicon.png`
-- `icons/icon-192.png`
-- `icons/icon-512.png`
-- `icons/icon-512-maskable.png`
+Sudah ter-include sebagai SVG `sizes: "any"` di `static/icons/` (`icon.svg` +
+`maskable.svg`) — Chrome modern & Android mendukung ini tanpa perlu PNG
+terpisah. Kalau perlu dukung browser yang menolak SVG, tambahkan raster
+`icons/icon-192.png` & `icons/icon-512.png` dan daftarkan di
+`static/manifest.webmanifest` + `vite.config.ts`.
 
 ## Deploy
 
