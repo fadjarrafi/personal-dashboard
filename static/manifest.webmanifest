@@ -16,5 +16,21 @@
 			"type": "image/svg+xml",
 			"purpose": "maskable"
 		}
-	]
+	],
+	"share_target": {
+		"action": "/spends/share",
+		"method": "POST",
+		"enctype": "multipart/form-data",
+		"params": {
+			"title": "title",
+			"text": "text",
+			"url": "url",
+			"files": [
+				{
+					"name": "receipt",
+					"accept": ["image/*"]
+				}
+			]
+		}
+	}
 }

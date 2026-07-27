@@ -24,11 +24,28 @@ export default defineConfig({
 						type: 'image/svg+xml',
 						purpose: 'maskable'
 					}
-				]
+				],
+				share_target: {
+					action: '/spends/share',
+					method: 'POST',
+					enctype: 'multipart/form-data',
+					params: {
+						title: 'title',
+						text: 'text',
+						url: 'url',
+						files: [{ name: 'receipt', accept: ['image/*'] }]
+					}
+				}
 			},
 			workbox: {
 				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
-				navigateFallbackDenylist: [/^\/api/, /^\/auth/, /^\/export/]
+				navigateFallbackDenylist: [
+					/^\/api/,
+					/^\/auth/,
+					/^\/export/,
+					/^\/spends\/share/,
+					/^\/receipts\//
+				]
 			},
 			devOptions: {
 				enabled: false
@@ -39,6 +56,10 @@ export default defineConfig({
 		port: 5173
 	},
 	optimizeDeps: {
-		exclude: ['better-sqlite3']
+		exclude: ['better-sqlite3', 'tesseract.js']
+	},
+	ssr: {
+		// Biarkan tesseract.js di-import via dynamic import runtime, jangan pre-bundle.
+		external: ['tesseract.js']
 	}
 });

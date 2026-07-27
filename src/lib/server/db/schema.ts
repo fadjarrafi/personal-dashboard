@@ -58,7 +58,45 @@ export const itemTags = sqliteTable(
 	})
 );
 
+export const spends = sqliteTable('spends', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	userId: integer('user_id')
+		.notNull()
+		.references(() => users.id),
+	amount: integer('amount').notNull(),
+	currency: text('currency').notNull().default('IDR'),
+	category: text('category'),
+	merchant: text('merchant'),
+	note: text('note'),
+	method: text('method'),
+	refId: text('ref_id'),
+	occurredAt: text('occurred_at').notNull(),
+	createdAt: text('created_at')
+		.notNull()
+		.default(sql`(datetime('now'))`),
+	updatedAt: text('updated_at')
+		.notNull()
+		.default(sql`(datetime('now'))`)
+});
+
+export const receipts = sqliteTable('receipts', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	spendId: integer('spend_id').references(() => spends.id, { onDelete: 'set null' }),
+	userId: integer('user_id')
+		.notNull()
+		.references(() => users.id),
+	imagePath: text('image_path'),
+	mime: text('mime'),
+	ocrText: text('ocr_text'),
+	extractedJson: text('extracted_json'),
+	createdAt: text('created_at')
+		.notNull()
+		.default(sql`(datetime('now'))`)
+});
+
 export type Item = typeof items.$inferSelect;
 export type NewItem = typeof items.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
+export type Spend = typeof spends.$inferSelect;
+export type NewSpend = typeof spends.$inferInsert;

@@ -17,6 +17,8 @@
 
 	const activeType = $derived(page.url.searchParams.get('type'));
 	const isArchive = $derived(page.url.pathname === '/archive');
+	const isSpends = $derived(page.url.pathname.startsWith('/spends'));
+	const isCatalog = $derived(!isArchive && !isSpends);
 
 	let drawerOpen = $state(false);
 
@@ -84,11 +86,11 @@
 
 				<!-- Nav inline: hanya di desktop -->
 				<nav
-					aria-label="Filter jenis"
+					aria-label="Navigasi utama"
 					class="hidden flex-wrap items-center gap-1 text-sm lg:flex"
 				>
 					{#each navItems as item}
-						{@const active = !isArchive && item.match(activeType)}
+						{@const active = isCatalog && item.match(activeType)}
 						<a
 							class="btn btn-sm {active ? 'btn-primary' : 'btn-ghost'}"
 							href={item.href}
@@ -97,6 +99,14 @@
 							{item.label}
 						</a>
 					{/each}
+					<span class="mx-1 h-6 w-px bg-base-300" aria-hidden="true"></span>
+					<a
+						class="btn btn-sm {isSpends ? 'btn-primary' : 'btn-ghost'}"
+						href="/spends"
+						aria-current={isSpends ? 'page' : undefined}
+					>
+						💸 Pengeluaran
+					</a>
 					<a
 						class="btn btn-sm {isArchive ? 'btn-primary' : 'btn-ghost'}"
 						href="/archive"
@@ -177,11 +187,11 @@
 
 			<nav class="flex-1 overflow-y-auto p-3" aria-label="Menu utama">
 				<div class="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider opacity-50">
-					Filter jenis
+					Katalog
 				</div>
 				<ul class="menu menu-lg w-full rounded-box p-0">
 					{#each navItems as item}
-						{@const active = !isArchive && item.match(activeType)}
+						{@const active = isCatalog && item.match(activeType)}
 						<li>
 							<a
 								href={item.href}
@@ -198,6 +208,28 @@
 
 				<div class="my-3 border-t border-base-300"></div>
 
+				<div class="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider opacity-50">
+					Keuangan
+				</div>
+				<ul class="menu menu-lg w-full rounded-box p-0">
+					<li>
+						<a
+							href="/spends"
+							class={isSpends ? 'active' : ''}
+							aria-current={isSpends ? 'page' : undefined}
+							onclick={closeDrawer}
+						>
+							<span aria-hidden="true" class="w-5 text-center">💸</span>
+							<span>Pengeluaran</span>
+						</a>
+					</li>
+				</ul>
+
+				<div class="my-3 border-t border-base-300"></div>
+
+				<div class="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider opacity-50">
+					Lainnya
+				</div>
 				<ul class="menu menu-lg w-full rounded-box p-0">
 					<li>
 						<a

@@ -113,6 +113,78 @@ Semua layar dirancang mobile-first dan sudah dikonfirmasi lewat `svelte-check`:
 - **Skip link** "Lompat ke konten" di setiap halaman menuju `<main id="main">`.
 - Semua tombol ikon punya `aria-label`; nav aktif ditandai `aria-current="page"`; drawer punya `role="dialog"` + `aria-modal`.
 
+## Spend tracker (v0.2)
+
+Rute `/spends` — ringkasan bulan berjalan (total, tren vs bulan lalu, breakdown
+per kategori), quick-add, list transaksi. Rute `/spends/[id]` untuk edit/hapus.
+Amount disimpan **integer rupiah bulat** (kunci PRD §11.2 — hindari float).
+
+### Share receipt dari HP (Android)
+
+Setelah PWA di-*install* di Android (Chrome → "Install app"), Dashboard akan
+muncul di share sheet Android. Alur:
+
+1. Selesaikan transaksi di GoPay / blu / Jago / Livin' / e-wallet lain.
+2. Di halaman receipt, tekan tombol **Bagikan** → pilih **Personal Dashboard**.
+3. Kalau belum login, browser akan minta login lebih dulu (file share akan
+   hilang saat redirect login — buka app dan login manual satu kali sebelum
+   sharing pertama).
+4. Setelah upload berhasil, halaman preview `/spends/share/[receiptId]` tampil
+   dengan gambar receipt di kiri dan form pengeluaran di kanan. Isi jumlah +
+   tanggal + kategori, tekan Simpan.
+
+Konfigurasi share_target ada di `static/manifest.webmanifest` + `vite.config.ts`.
+File gambar disimpan di `data/receipts/` (bisa di-override via env `RECEIPT_DIR`),
+maksimum 8 MB per file, hanya menerima `image/jpeg|png|webp|heic|heif`.
+
+### OCR otomatis (Fase 3)
+
+Setelah gambar disimpan, endpoint share menjalankan **Tesseract.js** (bahasa
+`ind`, WASM — tidak butuh install binary) → parser regex generik di
+[`src/lib/server/receiptExtract.ts`](./src/lib/server/receiptExtract.ts)
+mengekstrak:
+
+- **Jumlah** — cari `Rp X.XXX(,YY)?`, prioritaskan yang di dekat kata
+  "Total"/"Jumlah"/"Nominal"/"Tagihan"; fallback: nilai terbesar.
+- **Tanggal** — pola `DD Mmm YYYY` (Jan–Des, singkat/panjang), opsional `HH:MM:SS`.
+- **Merchant** — label `Merchant Name`/`Penerima`/`To`/`KE`; fallback: baris
+  tepat sebelum marker lokasi (BANTUL/SLEMAN/KOTA…); fallback terakhir: baris
+  uppercase-heavy.
+- **Metode** — deteksi keyword logo: gopay, blu, jago, livin, dana, ovo,
+  shopeepay, mandiri, bri, bni, qris.
+- **Ref ID** — `ID transaksi` / `No. Ref` / `QRIS RRN` / `Nomor Referensi`.
+
+Hasil ekstraksi disimpan sebagai JSON di `receipts.extracted_json` dan otomatis
+mengisi form preview `/spends/share/[id]`. User selalu bisa mengoreksi sebelum
+Simpan. Kalau salah satu field gagal → dibiarkan kosong, tidak error.
+
+**Cegah dupe:** kalau `refId` cocok dengan spend yang sudah ada, endpoint
+langsung mengarahkan ke spend tersebut (index unique `(user_id, ref_id)`).
+
+**Cold start:** panggilan OCR pertama per proses ~5–10 detik (download
+`ind.traineddata` ~10 MB, cached di memori). Panggilan berikutnya ~1–3 detik
+per gambar screenshot.
+
+### Uji parser receipt
+
+Dua skrip di `scripts/`:
+
+```bash
+# 1) Cepat — cek regex terhadap transkripsi manual 4 receipt (tanpa OCR).
+npm run test:extract:text
+
+# 2) End-to-end — jalankan OCR + regex pada gambar asli.
+#    Simpan gambar di scripts/fixtures/receipts/ dengan nama:
+#      gopay.png · blu.png · jago.png · livin.png
+#    File yang tidak ada dilewati.
+npm run test:extract:image
+```
+
+Fixture dan expected values ada di [`scripts/fixtures/receipts.ts`](./scripts/fixtures/receipts.ts).
+Kalau `text` semua lulus tapi `image` gagal, artinya OCR-nya yang meleset
+(kualitas teks mentah) — bukan regex. Kalau `text` gagal, regex-nya yang perlu
+di-tweak di [`src/lib/server/receiptExtract.ts`](./src/lib/server/receiptExtract.ts).
+
 ## Deploy
 
 Wajib `adapter-node` — SQLite butuh disk persisten & proses hidup terus.
