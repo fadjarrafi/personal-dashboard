@@ -81,7 +81,10 @@ ORIGIN=https://personal.fadjarrafi.my.id
 PROTOCOL_HEADER=x-forwarded-proto
 HOST_HEADER=x-forwarded-host
 
-BODY_SIZE_LIMIT=524288
+# 10 MB — di atas batas 8 MB untuk foto receipt (lihat MAX_SIZE di
+# src/lib/server/receipts.ts). Kalau ini kekecilan, upload foto receipt
+# dari HP akan gagal 413 sebelum sempat kena validasi ukuran aplikasi.
+BODY_SIZE_LIMIT=10485760
 EOF
 chmod 600 .env
 ```
@@ -223,6 +226,11 @@ Cek tunnel `HEALTHY` di Cloudflare Zero Trust dashboard dan target port = 5173.
 `ORIGIN` di `.env` tidak match. Fix: `ORIGIN=https://personal.fadjarrafi.my.id`
 persis tanpa trailing slash, lalu `pm2 restart personal-dashboard --update-env`.
 Log akan tercetak: *cross-site POST form submissions are forbidden*.
+
+**413 Payload Too Large saat scan/share receipt**
+`BODY_SIZE_LIMIT` di `.env` lebih kecil dari ukuran foto (default
+adapter-node 512 KB). Set ke `10485760` (10 MB, sudah di atas batas 8 MB
+aplikasi di `receipts.ts`), lalu `pm2 restart personal-dashboard --update-env`.
 
 **Aset JS 404 / MIME salah**
 Rocket Loader atau Auto Minify masih menyala di Cloudflare (§2).
