@@ -2,6 +2,7 @@
 	import type { ActionData, PageData } from './$types';
 	import { formatRupiah } from '$lib/format';
 	import SpendChart from '$lib/components/SpendChart.svelte';
+	import MonthlySpendChart from '$lib/components/MonthlySpendChart.svelte';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -197,7 +198,10 @@
 			{/if}
 		</header>
 
-		<SpendChart data={data.daily} today={data.today} />
+		<div class="grid gap-3 sm:grid-cols-2">
+			<SpendChart data={data.daily} today={data.today} />
+			<MonthlySpendChart data={data.monthly} currentMonth={data.filters.month} />
+		</div>
 
 		<form method="get" role="search" class="flex w-full flex-wrap gap-2 sm:flex-nowrap">
 			<input type="hidden" name="month" value={data.filters.month} />

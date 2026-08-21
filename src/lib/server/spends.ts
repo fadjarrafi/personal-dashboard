@@ -219,6 +219,39 @@ export function getDailyTotals(
 	return result;
 }
 
+/**
+ * Kembalikan total per bulan untuk `monthsBack` bulan terakhir (termasuk bulan
+ * yang mengandung `anchor`), diurutkan dari paling lama ke paling baru. Bulan
+ * tanpa transaksi tetap muncul dengan total 0 agar grafik tidak melompat.
+ */
+export function getMonthlyTotals(
+	userId: number,
+	monthsBack: number = 6,
+	anchor: Date = new Date()
+): Array<{ month: string; total: number }> {
+	const startAnchor = new Date(anchor.getFullYear(), anchor.getMonth() - (monthsBack - 1), 1);
+	const from = startAnchor.toISOString();
+	const to = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 1).toISOString();
+
+	const rows = raw
+		.prepare(
+			`SELECT substr(occurred_at, 1, 7) AS month, SUM(amount) AS total
+			 FROM spends
+			 WHERE user_id = ? AND occurred_at >= ? AND occurred_at < ?
+			 GROUP BY substr(occurred_at, 1, 7)`
+		)
+		.all(userId, from, to) as Array<{ month: string; total: number }>;
+
+	const byMonth = new Map(rows.map((r) => [r.month, r.total]));
+	const result: Array<{ month: string; total: number }> = [];
+	for (let i = 0; i < monthsBack; i++) {
+		const d = new Date(startAnchor.getFullYear(), startAnchor.getMonth() + i, 1);
+		const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+		result.push({ month: key, total: byMonth.get(key) ?? 0 });
+	}
+	return result;
+}
+
 export function listCategories(userId: number): string[] {
 	const rows = db
 		.selectDistinct({ category: spends.category })
