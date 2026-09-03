@@ -15,7 +15,7 @@ const config = {
 			// header dari share intent tidak selalu match app origin.
 			// Perlindungan CSRF diterapkan ulang secara manual di hooks.server.ts
 			// untuk semua POST/PUT/PATCH/DELETE kecuali endpoint share_target.
-			checkOrigin: false
+			trustedOrigins: ['*']
 		}
 	}
 };
