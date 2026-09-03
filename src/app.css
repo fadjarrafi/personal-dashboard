@@ -1,3 +1,5 @@
+@import './lib/tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,6 +8,20 @@
 	html,
 	body {
 		height: 100%;
+	}
+
+	body {
+		font-family: var(--font-body);
+		font-feature-settings: 'tnum' 1;
+	}
+
+	h1,
+	h2,
+	h3,
+	h4,
+	.font-display {
+		font-family: var(--font-display);
+		letter-spacing: -0.01em;
 	}
 
 	/* Cegah iOS Safari zoom saat fokus ke input (harus >= 16px). */
@@ -17,11 +33,12 @@
 		}
 	}
 
-	/* Fokus-visible yang konsisten untuk semua elemen interaktif. */
+	/* Fokus-visible yang konsisten untuk semua elemen interaktif — muncul instan, tidak dianimasikan. */
 	:where(a, button, [role='button'], input, select, textarea, summary):focus-visible {
-		outline: 2px solid hsl(var(--p));
+		outline: 2px solid var(--color-focus);
 		outline-offset: 2px;
 		border-radius: 0.375rem;
+		transition: none;
 	}
 
 	/* Hormati preferensi reduce-motion. */
@@ -54,6 +71,15 @@
 	.tap-target {
 		min-height: 44px;
 		min-width: 44px;
+	}
+
+	/* Penanda kategori kecil — pengganti emoji dekoratif di chrome (nav, eyebrow). */
+	.cat-dot {
+		display: inline-block;
+		width: 0.4rem;
+		height: 0.4rem;
+		border-radius: 999px;
+		background: currentColor;
 	}
 }
 

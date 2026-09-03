@@ -67,7 +67,7 @@
 					</a>
 				</div>
 			</div>
-			<div class="mt-2 text-3xl font-semibold tabular-nums">
+			<div class="mt-2 font-display text-3xl font-semibold tabular-nums">
 				{formatRupiah(data.summary.total)}
 			</div>
 			<div class="mt-1 flex flex-wrap gap-x-3 text-xs opacity-70">
