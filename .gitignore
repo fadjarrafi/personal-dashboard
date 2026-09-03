@@ -31,3 +31,7 @@ pnpm-debug.log*
 
 # Misc
 *.tsbuildinfo
+
+# Claude Code local agent/skill state
+/.agents
+/.claude
