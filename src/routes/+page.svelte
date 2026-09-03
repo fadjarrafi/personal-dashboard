@@ -7,6 +7,10 @@
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
+	// Batas kartu per section di tampilan "Semua" — cegah satu tipe yang besar
+	// (mis. Bookmark) mengubur section lain di bawahnya.
+	const SECTION_CAP = 6;
+
 	// svelte-ignore state_referenced_locally
 	let q = $state(data.filters.q ?? '');
 	let selected = $state<ItemRow | null>(null);
@@ -113,14 +117,18 @@
 						<span>{section.label}</span>
 						<span class="badge {section.badge} badge-sm">{section.rows.length}</span>
 					</h3>
-					<a class="link link-hover text-xs opacity-60" href="/?type={section.key}">
-						Filter →
-					</a>
+					{#if !data.filters.type}
+						<a class="link link-hover text-xs opacity-60" href="/?type={section.key}">
+							Filter →
+						</a>
+					{/if}
 				</header>
 				<ItemTable
 					items={section.rows}
 					onRowClick={selectItem}
 					emptyText="Belum ada {section.label.toLowerCase()}."
+					limit={data.filters.type ? undefined : SECTION_CAP}
+					moreHref="/?type={section.key}"
 				/>
 			</div>
 		{/each}
