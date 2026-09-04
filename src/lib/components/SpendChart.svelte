@@ -91,7 +91,6 @@
 			{@const w = Math.max(0.3, barW - barGap)}
 			{@const h = d.total === 0 ? 0.4 : (d.total / max) * chartH}
 			{@const y = H - PAD_BOTTOM - h}
-			{@const isToday = d.date === today}
 			{@const isEmpty = d.total === 0}
 			{@const isActive = hoverIdx === i}
 			<rect
@@ -101,13 +100,7 @@
 				height={h}
 				rx="0.3"
 				fill="currentColor"
-				class={isActive
-					? 'text-primary'
-					: isToday
-						? 'text-primary'
-						: isEmpty
-							? 'text-base-content/20'
-							: 'text-primary/60'}
+				class={isActive ? 'text-primary' : isEmpty ? 'text-base-content/20' : 'text-primary/60'}
 			/>
 			<!-- Tap-friendly hitbox penuh tinggi -->
 			<rect
@@ -124,6 +117,15 @@
 			</rect>
 		{/each}
 
+		<!-- Penanda hari ini: independen dari warna hover, supaya tidak ambigu saat
+		     bar lain sedang di-hover (keduanya jadi full accent bersamaan). -->
+		{#each data as d, i (d.date + '-today')}
+			{#if d.date === today}
+				{@const x = PAD_X + i * barW + barW / 2}
+				<circle cx={x} cy={H - PAD_BOTTOM + 0.9} r="0.55" fill="currentColor" class="text-primary" />
+			{/if}
+		{/each}
+
 		<!-- Label X (hari) -->
 		{#each data as d, i (d.date + '-tick')}
 			{#if isTick(d.date, i, data.length)}
@@ -135,7 +137,7 @@
 					fill="currentColor"
 					opacity="0.5"
 					font-size="2.4"
-					font-family="ui-monospace, monospace"
+					class="font-mono"
 				>
 					{shortDay(d.date)}
 				</text>

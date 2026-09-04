@@ -85,7 +85,6 @@
 			{@const w = Math.max(0.3, barW - barGap)}
 			{@const h = d.total === 0 ? 0.4 : (d.total / max) * chartH}
 			{@const y = H - PAD_BOTTOM - h}
-			{@const isCurrent = d.month === currentMonth}
 			{@const isEmpty = d.total === 0}
 			{@const isActive = hoverIdx === i}
 			<rect
@@ -95,13 +94,7 @@
 				height={h}
 				rx="0.4"
 				fill="currentColor"
-				class={isActive
-					? 'text-primary'
-					: isCurrent
-						? 'text-primary'
-						: isEmpty
-							? 'text-base-content/20'
-							: 'text-primary/60'}
+				class={isActive ? 'text-primary' : isEmpty ? 'text-base-content/20' : 'text-primary/60'}
 			/>
 			<!-- Tap-friendly hitbox penuh tinggi -->
 			<rect
@@ -118,6 +111,15 @@
 			</rect>
 		{/each}
 
+		<!-- Penanda bulan berjalan: independen dari warna hover, supaya tidak ambigu saat
+		     bar lain sedang di-hover (keduanya jadi full accent bersamaan). -->
+		{#each data as d, i (d.month + '-current')}
+			{#if d.month === currentMonth}
+				{@const x = PAD_X + i * barW + barW / 2}
+				<circle cx={x} cy={H - PAD_BOTTOM + 0.9} r="0.55" fill="currentColor" class="text-primary" />
+			{/if}
+		{/each}
+
 		<!-- Label X (bulan) -->
 		{#each data as d, i (d.month + '-tick')}
 			{@const x = PAD_X + i * barW + barW / 2}
@@ -128,7 +130,7 @@
 				fill="currentColor"
 				opacity={d.month === currentMonth ? '0.9' : '0.5'}
 				font-size="2.4"
-				font-family="ui-monospace, monospace"
+				class="font-mono"
 			>
 				{shortMonth(d.month)}
 			</text>

@@ -31,10 +31,25 @@
 	}
 
 	const trend = $derived(diffPercent(data.summary.total, data.summary.previousTotal));
+	const currentMonth = $derived(data.today.slice(0, 7));
 
 	function shortDate(iso: string): string {
 		const d = new Date(iso);
 		return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+	}
+
+	// Merge sebuah override ke atas filter yang sedang aktif, supaya navigasi
+	// bulan/kategori tidak menghapus pencarian yang sedang berjalan (dan
+	// sebaliknya). Kunci yang di-set ke undefined berarti "hapus filter itu".
+	function buildQuery(overrides: { month?: string; category?: string; q?: string } = {}): string {
+		const month = 'month' in overrides ? overrides.month : data.filters.month;
+		const category = 'category' in overrides ? overrides.category : data.filters.category;
+		const q = 'q' in overrides ? overrides.q : data.filters.q;
+		const params = new URLSearchParams();
+		if (month) params.set('month', month);
+		if (category) params.set('category', category);
+		if (q) params.set('q', q);
+		return params.toString();
 	}
 </script>
 
@@ -46,27 +61,8 @@
 			class="rounded-box border border-base-300 bg-base-200/60 p-4"
 			aria-label="Ringkasan bulan berjalan"
 		>
-			<div class="flex items-center justify-between">
-				<h2 class="text-xs font-semibold uppercase tracking-wider opacity-60">
-					{monthLabel}
-				</h2>
-				<div class="flex gap-1">
-					<a
-						class="btn btn-ghost btn-xs tap-target"
-						href="/spends?month={prevMonthLabel(data.filters.month)}"
-						aria-label="Bulan sebelumnya"
-					>
-						←
-					</a>
-					<a
-						class="btn btn-ghost btn-xs tap-target"
-						href="/spends?month={nextMonthLabel(data.filters.month)}"
-						aria-label="Bulan berikutnya"
-					>
-						→
-					</a>
-				</div>
-			</div>
+			<h2 class="text-[10px] font-semibold uppercase tracking-wider opacity-50">Ringkasan</h2>
+			<div class="mt-0.5 text-sm font-medium opacity-80">{monthLabel}</div>
 			<div class="mt-2 font-display text-3xl font-semibold tabular-nums">
 				{formatRupiah(data.summary.total)}
 			</div>
@@ -93,7 +89,7 @@
 							: 0}
 						<li>
 							<a
-								href="/spends?month={data.filters.month}&category={encodeURIComponent(row.category)}"
+								href="/spends?{buildQuery({ category: row.category })}"
 								class="flex items-center justify-between gap-2 rounded px-1 py-0.5 hover:bg-base-300"
 							>
 								<span class="min-w-0 truncate">{row.category}</span>
@@ -120,7 +116,7 @@
 				id="spend-form"
 				method="post"
 				action="?/create"
-				class="card space-y-2 bg-base-200 p-3 sm:p-4"
+				class="card space-y-2 border-l-2 border-l-[--color-accent] bg-base-200 p-3 sm:p-4"
 			>
 				<label class="form-control w-full">
 					<div class="label py-1"><span class="label-text text-xs">Jumlah (Rp)</span></div>
@@ -188,50 +184,89 @@
 
 	<!-- Main: daftar -->
 	<section class="order-1 min-w-0 space-y-4 lg:order-2">
-		<header class="flex flex-wrap items-center justify-between gap-2 px-1">
+		<header class="px-1">
 			<h1 class="text-lg font-semibold sm:text-xl">Pengeluaran</h1>
-			{#if data.filters.category}
-				<div class="text-sm opacity-70">
-					Filter: <span class="badge badge-neutral">{data.filters.category}</span>
-					<a class="link ml-2" href="/spends?month={data.filters.month}">bersihkan</a>
-				</div>
-			{/if}
 		</header>
 
-		<div class="grid gap-3 sm:grid-cols-2">
-			<SpendChart data={data.daily} today={data.today} />
-			<MonthlySpendChart data={data.monthly} currentMonth={data.filters.month} />
-		</div>
+		<!-- Tren -->
+		<section aria-labelledby="spend-trend-heading">
+			<h2
+				id="spend-trend-heading"
+				class="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wider opacity-50"
+			>
+				Tren
+			</h2>
+			<div class="grid gap-3 sm:grid-cols-2">
+				<SpendChart data={data.daily} today={data.today} />
+				<MonthlySpendChart data={data.monthly} currentMonth={data.filters.month} />
+			</div>
+		</section>
 
-		<form method="get" role="search" class="flex w-full flex-wrap gap-2 sm:flex-nowrap">
-			<input type="hidden" name="month" value={data.filters.month} />
-			{#if data.filters.category}
-				<input type="hidden" name="category" value={data.filters.category} />
-			{/if}
-			<label for="spend-search" class="sr-only">Cari pengeluaran</label>
-			<input
-				id="spend-search"
-				class="input input-bordered w-full min-w-0 flex-1"
-				name="q"
-				value={data.filters.q ?? ''}
-				placeholder="Cari merchant, catatan, kategori…"
-				autocomplete="off"
-				enterkeyhint="search"
-			/>
-			<div class="flex w-full gap-2 sm:w-auto">
-				<button class="btn btn-primary flex-1 sm:flex-none" type="submit">Cari</button>
-				{#if data.filters.q}
-					<a
-						class="btn btn-ghost flex-1 sm:flex-none"
-						href="/spends?month={data.filters.month}{data.filters.category
-							? `&category=${encodeURIComponent(data.filters.category)}`
-							: ''}"
-					>
-						Reset
+		<!-- Toolbar: navigasi bulan + pencarian jadi satu tempat, tepat di atas
+		     daftar — supaya menjangkau pengeluaran bulan lalu tidak perlu
+		     bolak-balik ke sidebar. -->
+		<form
+			method="get"
+			role="search"
+			class="flex flex-col gap-2 rounded-box border border-base-300 bg-base-200/40 p-2 sm:flex-row sm:flex-wrap sm:items-center"
+		>
+			{#if data.filters.category}<input type="hidden" name="category" value={data.filters.category} />{/if}
+
+			<div class="flex items-center gap-1">
+				<a
+					class="btn btn-ghost btn-sm tap-target"
+					href="/spends?{buildQuery({ month: prevMonthLabel(data.filters.month) })}"
+					aria-label="Bulan sebelumnya"
+				>
+					←
+				</a>
+				<label for="spend-month" class="sr-only">Pilih bulan</label>
+				<input
+					id="spend-month"
+					class="input input-bordered input-sm w-[9.5rem]"
+					type="month"
+					name="month"
+					value={data.filters.month}
+					onchange={(e) => e.currentTarget.form?.requestSubmit()}
+				/>
+				<a
+					class="btn btn-ghost btn-sm tap-target"
+					href="/spends?{buildQuery({ month: nextMonthLabel(data.filters.month) })}"
+					aria-label="Bulan berikutnya"
+				>
+					→
+				</a>
+				{#if data.filters.month !== currentMonth}
+					<a class="btn btn-ghost btn-sm" href="/spends?{buildQuery({ month: currentMonth })}">
+						Hari ini
 					</a>
 				{/if}
 			</div>
+
+			<div class="flex w-full min-w-0 flex-1 gap-2">
+				<label for="spend-search" class="sr-only">Cari pengeluaran</label>
+				<input
+					id="spend-search"
+					class="input input-bordered w-full min-w-0 flex-1"
+					name="q"
+					value={data.filters.q ?? ''}
+					placeholder="Cari merchant, catatan, kategori…"
+					autocomplete="off"
+					enterkeyhint="search"
+				/>
+				<button class="btn btn-primary" type="submit">Cari</button>
+				{#if data.filters.q}
+					<a class="btn btn-ghost" href="/spends?{buildQuery({ q: undefined })}"> Reset </a>
+				{/if}
+			</div>
 		</form>
+
+		{#if data.filters.category}
+			<div class="-mt-2 px-1 text-sm opacity-70">
+				Filter kategori: <span class="badge badge-neutral">{data.filters.category}</span>
+				<a class="link ml-2" href="/spends?{buildQuery({ category: undefined })}">bersihkan</a>
+			</div>
+		{/if}
 
 		{#if data.spends.length === 0}
 			<p
