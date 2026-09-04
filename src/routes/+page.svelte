@@ -135,7 +135,7 @@
 	</section>
 </div>
 
-<ItemDetailModal item={selected} onClose={closeModal} />
+<ItemDetailModal item={selected} tags={data.tags} onClose={closeModal} />
 
 <a
 	href="#capture-form"

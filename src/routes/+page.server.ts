@@ -8,6 +8,7 @@ import {
 	listAllTags,
 	listItems,
 	togglePin,
+	updateItem,
 	type ItemType
 } from '$lib/server/items';
 
@@ -28,7 +29,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 function parseTags(raw: string | null): string[] {
 	if (!raw) return [];
-	return raw.split(',').map((t) => t.trim()).filter(Boolean);
+	return raw
+		.split(',')
+		.map((t) => t.trim())
+		.filter(Boolean);
 }
 
 export const actions: Actions = {
@@ -51,6 +55,25 @@ export const actions: Actions = {
 
 		createItem(user.id, { type, title, body, url, language, tags });
 		setFlash(cookies, 'success', `${type} disimpan.`);
+		return { ok: true };
+	},
+
+	update: async ({ request, locals, cookies }) => {
+		const user = locals.user!;
+		const data = await request.formData();
+		const id = Number(data.get('id'));
+		if (!Number.isFinite(id)) return fail(400, { error: 'ID tidak valid.' });
+
+		const title = String(data.get('title') ?? '').trim() || null;
+		const body = String(data.get('body') ?? '').trim() || null;
+		const url = String(data.get('url') ?? '').trim() || null;
+		const language = String(data.get('language') ?? '').trim() || null;
+		const pinned = data.get('pinned') === 'on';
+		const tags = parseTags(String(data.get('tags') ?? ''));
+
+		const ok = updateItem(user.id, id, { title, body, url, language, pinned, tags });
+		if (!ok) return fail(404, { error: 'Tidak ditemukan' });
+		setFlash(cookies, 'success', 'Perubahan disimpan.');
 		return { ok: true };
 	},
 
