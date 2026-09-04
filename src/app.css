@@ -8,6 +8,10 @@
 	html,
 	body {
 		height: 100%;
+		/* Jaring pengaman horizontal-scroll. Pakai `clip`, BUKAN `hidden`:
+		   `hidden` membuat scroll container baru dan mematikan `position: sticky`
+		   (dipakai sidebar /spends & /bills), sedangkan `clip` tidak. */
+		overflow-x: clip;
 	}
 
 	body {

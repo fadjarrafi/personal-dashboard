@@ -94,9 +94,57 @@ export const receipts = sqliteTable('receipts', {
 		.default(sql`(datetime('now'))`)
 });
 
+export const bills = sqliteTable('bills', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	userId: integer('user_id')
+		.notNull()
+		.references(() => users.id),
+	title: text('title').notNull(),
+	amount: integer('amount').notNull(),
+	category: text('category', {
+		enum: ['listrik', 'internet', 'cicilan', 'langganan', 'kartu_kredit', 'lainnya']
+	})
+		.notNull()
+		.default('lainnya'),
+	recurrence: text('recurrence', { enum: ['none', 'monthly', 'weekly', 'custom_days'] })
+		.notNull()
+		.default('monthly'),
+	intervalDays: integer('interval_days'),
+	nextDueAt: text('next_due_at').notNull(),
+	windowNotifiedAt: text('window_notified_at'),
+	dueDayNotifiedAt: text('due_day_notified_at'),
+	snoozedUntil: text('snoozed_until'),
+	paidAt: text('paid_at'),
+	archivedAt: text('archived_at'),
+	createdAt: text('created_at')
+		.notNull()
+		.default(sql`(datetime('now'))`),
+	updatedAt: text('updated_at')
+		.notNull()
+		.default(sql`(datetime('now'))`)
+});
+
+export const pushSubscriptions = sqliteTable('push_subscriptions', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	userId: integer('user_id')
+		.notNull()
+		.references(() => users.id),
+	endpoint: text('endpoint').notNull().unique(),
+	p256dh: text('p256dh').notNull(),
+	auth: text('auth').notNull(),
+	deviceLabel: text('device_label'),
+	createdAt: text('created_at')
+		.notNull()
+		.default(sql`(datetime('now'))`)
+});
+
 export type Item = typeof items.$inferSelect;
 export type NewItem = typeof items.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type Spend = typeof spends.$inferSelect;
 export type NewSpend = typeof spends.$inferInsert;
+export type Bill = typeof bills.$inferSelect;
+export type NewBill = typeof bills.$inferInsert;
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type NewPushSubscription = typeof pushSubscriptions.$inferInsert;

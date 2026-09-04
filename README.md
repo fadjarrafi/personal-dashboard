@@ -10,7 +10,8 @@ Lihat [docs/PRD.md](./docs/PRD.md) untuk detail keputusan produk & arsitektur.
 - **FTS5** untuk pencarian full-text (SQL mentah)
 - **Session cookie** auth (argon2 via `@node-rs/argon2`)
 - **Tailwind CSS** + **daisyUI** (tema `dashboard` gelap)
-- **PWA** via `@vite-pwa/sveltekit`
+- **PWA** via `@vite-pwa/sveltekit` (strategi `injectManifest` + custom `src/service-worker.ts` untuk Web Push)
+- **Bill reminder** via Web Push (`web-push`, VAPID) — lihat [docs/PRD-bill-reminder.md](./docs/PRD-bill-reminder.md)
 - **Mobile-first & aksesibel** — hamburger drawer, view kartu di layar sempit, skip link, fokus-visible, target sentuh ≥44px
 
 ## Struktur direktori
@@ -208,6 +209,52 @@ Fixture dan expected values ada di [`scripts/fixtures/receipts.ts`](./scripts/fi
 Kalau `text` semua lulus tapi `image` gagal, artinya OCR-nya yang meleset
 (kualitas teks mentah) — bukan regex. Kalau `text` gagal, regex-nya yang perlu
 di-tweak di [`src/lib/server/receiptExtract.ts`](./src/lib/server/receiptExtract.ts).
+
+## Bill reminder
+
+Rute `/bills` — tagihan berulang (listrik, internet, cicilan, dsb.) dengan
+reminder lewat **Web Push** asli, jadi tetap muncul walau app/tab tertutup.
+Detail keputusan arsitektur ada di [`docs/PRD-bill-reminder.md`](./docs/PRD-bill-reminder.md).
+Tidak ada email/SMS — push PWA saja, keputusan tetap, bukan batasan sementara.
+
+### Setup VAPID (sekali saja)
+
+```bash
+npx web-push generate-vapid-keys
+```
+
+Salin `Public Key`/`Private Key` ke `.env` (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`,
+`VAPID_SUBJECT=mailto:...`). **Jangan** generate ulang setelah user mengaktifkan
+notifikasi — mengganti keypair meng-invalidate semua subscription yang sudah ada
+di tiap device.
+
+### Uji push secara lokal
+
+Service worker custom (`src/service-worker.ts`, strategi `injectManifest`)
+tidak aktif di `vite dev` (`devOptions.enabled: false` — sama seperti sebelumnya).
+Untuk uji end-to-end harus lewat build produksi:
+
+```bash
+npm run build && npm run preview
+```
+
+Buka di Chrome, login, buka `/bills`, tekan **Aktifkan notifikasi tagihan**,
+lalu jalankan skrip reminder secara manual untuk memicu notifikasi nyata:
+
+```bash
+npm run bills:remind
+```
+
+### Cron reminder harian
+
+```cron
+0 8 * * * cd /srv/personal-dashboard && /usr/bin/npm run bills:remind >> /var/log/dashboard-bills.log 2>&1
+```
+
+Maksimal 2 notifikasi per siklus tagihan (awal jendela reminder + hari-H) —
+lihat `REMINDER_DAYS_BEFORE` di [`src/lib/server/bills.ts`](./src/lib/server/bills.ts).
+Menandai lunas **tidak pernah** membuat baris `spends` otomatis — itu tetap
+alur manual terpisah.
 
 ## Keamanan: CSRF
 

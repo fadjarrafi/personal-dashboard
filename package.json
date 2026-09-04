@@ -16,6 +16,7 @@
 		"db:migrate": "tsx src/lib/server/db/migrate.ts",
 		"db:seed": "tsx scripts/seed.ts",
 		"db:backup": "tsx scripts/backup.ts",
+		"bills:remind": "tsx scripts/send-bill-reminders.ts",
 		"test:extract:text": "tsx scripts/test-extract-text.ts",
 		"test:extract:image": "tsx scripts/test-extract-image.ts"
 	},
@@ -24,7 +25,8 @@
 		"better-sqlite3": "^13.0.3",
 		"drizzle-orm": "^0.45.2",
 		"highlight.js": "^11.11.1",
-		"tesseract.js": "^7.0.0"
+		"tesseract.js": "^7.0.0",
+		"web-push": "^3.6.7"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-node": "^5.2.12",
@@ -32,6 +34,7 @@
 		"@sveltejs/vite-plugin-svelte": "^5.0.3",
 		"@types/better-sqlite3": "^7.6.12",
 		"@types/node": "^22.10.5",
+		"@types/web-push": "^3.6.4",
 		"@vite-pwa/sveltekit": "^1.1.0",
 		"autoprefixer": "^10.4.20",
 		"daisyui": "^4.12.24",
@@ -47,7 +50,9 @@
 		"tsx": "^4.19.2",
 		"typescript": "^5.7.3",
 		"vite": "^6.0.7",
-		"vite-plugin-pwa": "^0.21.1"
+		"vite-plugin-pwa": "^0.21.1",
+		"workbox-core": "^7.4.1",
+		"workbox-precaching": "^7.4.1"
 	},
 	"overrides": {
 		"cookie": "^0.7.0",

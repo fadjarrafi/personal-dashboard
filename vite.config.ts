@@ -7,6 +7,9 @@ export default defineConfig({
 		sveltekit(),
 		SvelteKitPWA({
 			registerType: 'autoUpdate',
+			strategies: 'injectManifest',
+			srcDir: 'src',
+			filename: 'service-worker.ts',
 			manifest: {
 				name: 'Personal Dashboard',
 				short_name: 'Dashboard',
@@ -37,15 +40,8 @@ export default defineConfig({
 					}
 				}
 			},
-			workbox: {
-				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
-				navigateFallbackDenylist: [
-					/^\/api/,
-					/^\/auth/,
-					/^\/export/,
-					/^\/spends\/share/,
-					/^\/receipts\//
-				]
+			injectManifest: {
+				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}']
 			},
 			devOptions: {
 				enabled: false

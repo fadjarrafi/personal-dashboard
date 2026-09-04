@@ -33,7 +33,8 @@
 	const activeType = $derived(page.url.searchParams.get('type'));
 	const isArchive = $derived(page.url.pathname === '/archive');
 	const isSpends = $derived(page.url.pathname.startsWith('/spends'));
-	const isCatalog = $derived(!isArchive && !isSpends);
+	const isBills = $derived(page.url.pathname.startsWith('/bills'));
+	const isCatalog = $derived(!isArchive && !isSpends && !isBills);
 
 	let drawerOpen = $state(false);
 
@@ -120,6 +121,13 @@
 						aria-current={isSpends ? 'page' : undefined}
 					>
 						Pengeluaran
+					</a>
+					<a
+						class="btn btn-sm {isBills ? 'btn-primary' : 'btn-ghost'}"
+						href="/bills"
+						aria-current={isBills ? 'page' : undefined}
+					>
+						Tagihan
 					</a>
 					<a
 						class="btn btn-sm {isArchive ? 'btn-primary' : 'btn-ghost'}"
@@ -241,6 +249,17 @@
 						>
 							<span class="cat-dot text-primary" aria-hidden="true"></span>
 							<span>Pengeluaran</span>
+						</a>
+					</li>
+					<li>
+						<a
+							href="/bills"
+							class={isBills ? 'active' : ''}
+							aria-current={isBills ? 'page' : undefined}
+							onclick={closeDrawer}
+						>
+							<span class="cat-dot text-primary" aria-hidden="true"></span>
+							<span>Tagihan</span>
 						</a>
 					</li>
 				</ul>

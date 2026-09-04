@@ -298,10 +298,15 @@ GET    /spends/summary?period=       → total per kategori & per periode
 - Perlu income/pemasukan juga, atau murni pengeluaran?
 - Kategori: enum tetap, teks bebas, atau tabel sendiri?
 
-### 11.3 Urutan Rilis yang Disarankan
+### 11.3 Bill Reminder (Notifikasi PWA) — `Planned / Next Update`
+
+Detail lengkap (skema, keputusan Web Push/VAPID, migrasi service worker) ada di dokumen terpisah: **`docs/PRD-bill-reminder.md`**. Ringkas: tabel `bills` + `push_subscriptions` baru, notifikasi lewat Web Push API (butuh migrasi strategi service worker dari `generateSW` ke `injectManifest`), pengiriman reminder lewat skrip cron harian — pola yang sama seperti `db:backup`, bukan scheduler dalam-app.
+
+### 11.4 Urutan Rilis yang Disarankan
 1. **v0.1 (MVP):** bookmark, note, snippet — §4.
 2. **v0.2:** Spend tracker (lebih sederhana, requirement lebih jelas).
 3. **v0.3:** Job tracker (tunggu kejelasan apakah job ↔ spend perlu terhubung, agar tak refactor relasi).
+4. **v0.4:** Bill reminder (§11.3) — bergantung pada `spends` (v0.2) sudah ada; independen dari job tracker.
 
 Alasan spend sebelum job: spend punya bentuk yang lebih stabil & mandiri, sedangkan job berpotensi butuh relasi ke spend — mendahulukan spend menghindari perubahan skema job dua kali.
 
