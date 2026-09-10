@@ -124,6 +124,19 @@ export const bills = sqliteTable('bills', {
 		.default(sql`(datetime('now'))`)
 });
 
+export const vaultTasks = sqliteTable('vault_tasks', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	text: text('text').notNull().unique(),
+	done: integer('done').notNull().default(0),
+	position: integer('position').notNull().default(0),
+	createdAt: text('created_at')
+		.notNull()
+		.default(sql`(datetime('now'))`),
+	updatedAt: text('updated_at')
+		.notNull()
+		.default(sql`(datetime('now'))`)
+});
+
 export const pushSubscriptions = sqliteTable('push_subscriptions', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	userId: integer('user_id')
@@ -148,3 +161,5 @@ export type Bill = typeof bills.$inferSelect;
 export type NewBill = typeof bills.$inferInsert;
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
 export type NewPushSubscription = typeof pushSubscriptions.$inferInsert;
+export type VaultTask = typeof vaultTasks.$inferSelect;
+export type NewVaultTask = typeof vaultTasks.$inferInsert;

@@ -34,7 +34,8 @@
 	const isArchive = $derived(page.url.pathname === '/archive');
 	const isSpends = $derived(page.url.pathname.startsWith('/spends'));
 	const isBills = $derived(page.url.pathname.startsWith('/bills'));
-	const isCatalog = $derived(!isArchive && !isSpends && !isBills);
+	const isVault = $derived(page.url.pathname.startsWith('/vault'));
+	const isCatalog = $derived(!isArchive && !isSpends && !isBills && !isVault);
 
 	let drawerOpen = $state(false);
 
@@ -128,6 +129,13 @@
 						aria-current={isBills ? 'page' : undefined}
 					>
 						Tagihan
+					</a>
+					<a
+						class="btn btn-sm {isVault ? 'btn-primary' : 'btn-ghost'}"
+						href="/vault"
+						aria-current={isVault ? 'page' : undefined}
+					>
+						Vault
 					</a>
 					<a
 						class="btn btn-sm {isArchive ? 'btn-primary' : 'btn-ghost'}"
@@ -270,6 +278,17 @@
 					Lainnya
 				</div>
 				<ul class="menu menu-lg w-full rounded-box p-0">
+					<li>
+						<a
+							href="/vault"
+							class={isVault ? 'active' : ''}
+							aria-current={isVault ? 'page' : undefined}
+							onclick={closeDrawer}
+						>
+							<span class="w-5 text-center opacity-60" aria-hidden="true">◈</span>
+							<span>Vault</span>
+						</a>
+					</li>
 					<li>
 						<a
 							href="/archive"
