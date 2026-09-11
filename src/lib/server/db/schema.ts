@@ -159,6 +159,22 @@ export const taskTags = sqliteTable(
 	})
 );
 
+export const boards = sqliteTable('boards', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	userId: integer('user_id')
+		.notNull()
+		.references(() => users.id),
+	title: text('title').notNull().default('Untitled board'),
+	scenePath: text('scene_path').notNull(),
+	archivedAt: text('archived_at'),
+	createdAt: text('created_at')
+		.notNull()
+		.default(sql`(datetime('now'))`),
+	updatedAt: text('updated_at')
+		.notNull()
+		.default(sql`(datetime('now'))`)
+});
+
 export const vaultTasks = sqliteTable('vault_tasks', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	text: text('text').notNull().unique(),
@@ -200,3 +216,5 @@ export type VaultTask = typeof vaultTasks.$inferSelect;
 export type NewVaultTask = typeof vaultTasks.$inferInsert;
 export type Task = typeof tasks.$inferSelect;
 export type NewTask = typeof tasks.$inferInsert;
+export type Board = typeof boards.$inferSelect;
+export type NewBoard = typeof boards.$inferInsert;

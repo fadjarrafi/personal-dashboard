@@ -36,7 +36,10 @@
 	const isBills = $derived(page.url.pathname.startsWith('/bills'));
 	const isVault = $derived(page.url.pathname.startsWith('/vault'));
 	const isTasks = $derived(page.url.pathname.startsWith('/tasks'));
-	const isCatalog = $derived(!isArchive && !isSpends && !isBills && !isVault && !isTasks);
+	const isBoards = $derived(page.url.pathname.startsWith('/boards'));
+	const isCatalog = $derived(
+		!isArchive && !isSpends && !isBills && !isVault && !isTasks && !isBoards
+	);
 
 	let drawerOpen = $state(false);
 
@@ -137,6 +140,13 @@
 						aria-current={isTasks ? 'page' : undefined}
 					>
 						Tugas
+					</a>
+					<a
+						class="btn btn-sm {isBoards ? 'btn-primary' : 'btn-ghost'}"
+						href="/boards"
+						aria-current={isBoards ? 'page' : undefined}
+					>
+						Board
 					</a>
 					<a
 						class="btn btn-sm {isVault ? 'btn-primary' : 'btn-ghost'}"
@@ -295,6 +305,17 @@
 						>
 							<span class="w-5 text-center opacity-60" aria-hidden="true">◈</span>
 							<span>Tugas</span>
+						</a>
+					</li>
+					<li>
+						<a
+							href="/boards"
+							class={isBoards ? 'active' : ''}
+							aria-current={isBoards ? 'page' : undefined}
+							onclick={closeDrawer}
+						>
+							<span class="w-5 text-center opacity-60" aria-hidden="true">◈</span>
+							<span>Board</span>
 						</a>
 					</li>
 					<li>
