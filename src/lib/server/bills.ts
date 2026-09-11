@@ -1,6 +1,7 @@
 import { and, asc, eq, isNull } from 'drizzle-orm';
 import { db } from './db';
 import { bills } from './db/schema';
+import { todayLocalISODate, diffInDays } from './date';
 
 export const BILL_CATEGORIES = [
 	'listrik',
@@ -40,19 +41,6 @@ export interface BillRow {
 export interface BillWithStatus extends BillRow {
 	status: BillStatus;
 	daysUntilDue: number;
-}
-
-function todayLocalISODate(now: Date = new Date()): string {
-	const y = now.getFullYear();
-	const m = String(now.getMonth() + 1).padStart(2, '0');
-	const d = String(now.getDate()).padStart(2, '0');
-	return `${y}-${m}-${d}`;
-}
-
-function diffInDays(dateIso: string, today: string): number {
-	const a = new Date(`${dateIso.slice(0, 10)}T00:00:00`);
-	const b = new Date(`${today}T00:00:00`);
-	return Math.round((a.getTime() - b.getTime()) / 86_400_000);
 }
 
 export function deriveStatus(

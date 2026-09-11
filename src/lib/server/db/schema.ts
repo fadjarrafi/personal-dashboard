@@ -124,6 +124,41 @@ export const bills = sqliteTable('bills', {
 		.default(sql`(datetime('now'))`)
 });
 
+export const tasks = sqliteTable('tasks', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	userId: integer('user_id')
+		.notNull()
+		.references(() => users.id),
+	title: text('title').notNull(),
+	notes: text('notes'),
+	dueAt: text('due_at'),
+	priority: text('priority', { enum: ['low', 'normal', 'high'] }).notNull().default('normal'),
+	pinned: integer('pinned').notNull().default(0),
+	doneAt: text('done_at'),
+	archivedAt: text('archived_at'),
+	createdAt: text('created_at')
+		.notNull()
+		.default(sql`(datetime('now'))`),
+	updatedAt: text('updated_at')
+		.notNull()
+		.default(sql`(datetime('now'))`)
+});
+
+export const taskTags = sqliteTable(
+	'task_tags',
+	{
+		taskId: integer('task_id')
+			.notNull()
+			.references(() => tasks.id, { onDelete: 'cascade' }),
+		tagId: integer('tag_id')
+			.notNull()
+			.references(() => tags.id, { onDelete: 'cascade' })
+	},
+	(t) => ({
+		pk: primaryKey({ columns: [t.taskId, t.tagId] })
+	})
+);
+
 export const vaultTasks = sqliteTable('vault_tasks', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	text: text('text').notNull().unique(),
@@ -163,3 +198,5 @@ export type PushSubscription = typeof pushSubscriptions.$inferSelect;
 export type NewPushSubscription = typeof pushSubscriptions.$inferInsert;
 export type VaultTask = typeof vaultTasks.$inferSelect;
 export type NewVaultTask = typeof vaultTasks.$inferInsert;
+export type Task = typeof tasks.$inferSelect;
+export type NewTask = typeof tasks.$inferInsert;
