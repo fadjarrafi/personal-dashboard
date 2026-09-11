@@ -21,7 +21,10 @@
 		<div class="card-body p-3">
 			<div class="flex items-center justify-between">
 				<h2 class="font-display text-sm font-semibold uppercase tracking-wide opacity-70">Tugas</h2>
-				<a class="btn btn-ghost btn-xs" href="/vault/new">+ Note baru</a>
+				<div class="flex gap-1">
+					<a class="btn btn-ghost btn-xs" href="/vault/browse">Jelajahi vault</a>
+					<a class="btn btn-ghost btn-xs" href="/vault/new">+ Note baru</a>
+				</div>
 			</div>
 
 			<ul class="mt-2 space-y-1">

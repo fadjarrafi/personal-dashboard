@@ -78,6 +78,68 @@ export function listFolder(folderRelPath: string, limit = 50): VaultNoteSummary[
 	return summaries.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, limit);
 }
 
+export interface VaultDirEntry {
+	name: string;
+	path: string;
+}
+
+/** Folder/file bawaan Obsidian & git yang tidak perlu ditampilkan di browser. */
+function isIgnoredEntry(name: string): boolean {
+	return name.startsWith('.');
+}
+
+/**
+ * Isi satu folder (subfolder + note langsung di dalamnya, bukan rekursif) -
+ * dipakai halaman /vault/browse untuk menjelajah seluruh vault, bukan cuma
+ * folder yang di-hardcode di dashboard utama.
+ */
+export function listDir(
+	folderRelPath: string
+): { folders: VaultDirEntry[]; notes: VaultNoteSummary[] } | null {
+	const abs = safeResolve(folderRelPath);
+	if (!existsSync(abs) || !statSync(abs).isDirectory()) return null;
+	const entries = readdirSync(abs, { withFileTypes: true }).filter((e) => !isIgnoredEntry(e.name));
+
+	const folders = entries
+		.filter((e) => e.isDirectory())
+		.map((e) => ({
+			name: e.name,
+			path: folderRelPath ? `${folderRelPath}/${e.name}` : e.name
+		}))
+		.sort((a, b) => a.name.localeCompare(b.name));
+
+	const notes = entries
+		.filter((e) => e.isFile() && e.name.toLowerCase().endsWith('.md'))
+		.map((e) =>
+			readNoteSummary(join(abs, e.name), folderRelPath ? `${folderRelPath}/${e.name}` : e.name)
+		)
+		.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+
+	return { folders, notes };
+}
+
+/** Cari note lewat judul/nama file di seluruh vault, rekursif. */
+export function searchNotes(query: string, limit = 100): VaultNoteSummary[] {
+	const q = query.toLowerCase();
+	const results: VaultNoteSummary[] = [];
+
+	function walk(relPath: string): void {
+		const abs = safeResolve(relPath);
+		const entries = readdirSync(abs, { withFileTypes: true }).filter((e) => !isIgnoredEntry(e.name));
+		for (const e of entries) {
+			const childRel = relPath ? `${relPath}/${e.name}` : e.name;
+			if (e.isDirectory()) {
+				walk(childRel);
+			} else if (e.isFile() && e.name.toLowerCase().endsWith('.md') && childRel.toLowerCase().includes(q)) {
+				results.push(readNoteSummary(join(abs, e.name), childRel));
+			}
+		}
+	}
+
+	walk('');
+	return results.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, limit);
+}
+
 /** Baca satu note (read-only) dengan body dirender ke HTML. */
 export function readNote(relPath: string): VaultNote | null {
 	const abs = safeResolve(relPath);
