@@ -36,10 +36,11 @@ rclone config
 # lalu buka link yang dicetak di browser manapun dan tempel kode verifikasi)
 ```
 
-Verifikasi bisa melihat vault:
+Verifikasi bisa melihat vault (folder ada satu level di bawah root Drive, di
+dalam folder `rclone/`):
 
 ```bash
-rclone lsf "gdrive-vault:Fadjar's Article Sync GDrive" | head
+rclone lsf "gdrive-vault:rclone/Fadjar's Article Sync GDrive" | head
 ```
 
 ## 3. Mirror lokal + folder milik dashboard
@@ -49,7 +50,7 @@ sudo mkdir -p /srv/vault-mirror
 sudo chown $USER:$USER /srv/vault-mirror
 
 # Pull awal (bisa beberapa menit untuk ~568 note)
-rclone copy "gdrive-vault:Fadjar's Article Sync GDrive" /srv/vault-mirror --fast-list
+rclone copy "gdrive-vault:rclone/Fadjar's Article Sync GDrive" /srv/vault-mirror --fast-list
 
 mkdir -p "/srv/vault-mirror/Dashboard Sync"
 ```
@@ -111,7 +112,7 @@ crontab -e
 ```
 
 ```cron
-*/5 * * * * cd /var/www/html/personal-dashboard && /usr/bin/rclone copy "gdrive-vault:Fadjar's Article Sync GDrive" /srv/vault-mirror --fast-list && /home/$USER/.nvm/versions/node/v22/bin/npm run vault:resync >> /var/log/vault-sync.log 2>&1
+*/5 * * * * cd /var/www/html/personal-dashboard && /usr/bin/rclone copy "gdrive-vault:rclone/Fadjar's Article Sync GDrive" /srv/vault-mirror --fast-list && /home/$USER/.nvm/versions/node/v22/bin/npm run vault:resync >> /var/log/vault-sync.log 2>&1
 ```
 
 ## 8. Verifikasi end-to-end

@@ -12,7 +12,7 @@
 set -euo pipefail
 
 RCLONE_REMOTE="gdrive-vault"                          # nama remote di `rclone config`
-DRIVE_VAULT_PATH="Fadjar's Article Sync GDrive"        # path folder vault di Drive
+DRIVE_VAULT_PATH="rclone/Fadjar's Article Sync GDrive" # path folder vault di Drive
 MIRROR_PATH="/srv/vault-mirror"                        # harus sama dengan VAULT_MIRROR_PATH
 DASHBOARD_FOLDER="Dashboard Sync"                      # harus sama dengan VAULT_DASHBOARD_FOLDER
 

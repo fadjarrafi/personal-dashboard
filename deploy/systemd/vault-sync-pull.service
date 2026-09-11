@@ -7,7 +7,11 @@ Wants=network-online.target
 Type=oneshot
 User=<user>
 WorkingDirectory=/var/www/html/personal-dashboard
+# npm (lewat nvm) butuh `node` di PATH - systemd tidak load shell profile,
+# jadi tambahkan direktori bin nvm-nya di sini juga (bukan cuma di ExecStartPost).
+# Ganti <node-bin-dir> dengan hasil `dirname "$(which node)"`.
+Environment="PATH=<node-bin-dir>:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 # Ganti "gdrive-vault" & path Drive kalau beda dari deploy/vault-sync-push.sh.
-ExecStart=/usr/bin/rclone copy "gdrive-vault:Fadjar's Article Sync GDrive" /srv/vault-mirror --fast-list
+ExecStart=/usr/bin/rclone copy "gdrive-vault:rclone/Fadjar's Article Sync GDrive" /srv/vault-mirror --fast-list
 # Sesuaikan path npm dengan output `which npm` di VPS (biasanya lewat nvm).
 ExecStartPost=/home/<user>/.nvm/versions/node/v22/bin/npm run vault:resync
