@@ -7,6 +7,8 @@
 	type CaptureType = 'note' | 'bookmark' | 'snippet';
 	let type = $state<CaptureType>('note');
 	let form: HTMLFormElement | undefined;
+	let faviconInput: HTMLInputElement | undefined = $state();
+	let previewImageInput: HTMLInputElement | undefined = $state();
 	let noteBody = $state('');
 	let draftRestored = $state(false);
 
@@ -37,19 +39,24 @@
 		if (typeof localStorage !== 'undefined') localStorage.removeItem(DRAFT_KEY);
 	}
 
-	async function autofillTitle(input: HTMLInputElement) {
+	async function autofillMeta(input: HTMLInputElement) {
 		const url = input.value.trim();
 		if (!url || !/^https?:\/\//i.test(url)) return;
 		try {
-			const res = await fetch('/api/bookmarks/fetch-title', {
+			const res = await fetch('/api/bookmarks/fetch-meta', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ url })
 			});
 			if (!res.ok) return;
-			const { title } = await res.json();
+			const { title, faviconUrl, previewImageUrl } = await res.json();
 			const titleInput = form?.querySelector<HTMLInputElement>('input[name="title"]');
 			if (titleInput && !titleInput.value && title) titleInput.value = title;
+			// faviconUrl/previewImageUrl tak punya UI sendiri (selalu auto) - timpa
+			// tanpa syarat, termasuk mengosongkan, supaya ganti URL tak menyisakan
+			// gambar dari URL sebelumnya.
+			if (faviconInput) faviconInput.value = faviconUrl ?? '';
+			if (previewImageInput) previewImageInput.value = previewImageUrl ?? '';
 		} catch {
 			// best-effort; abaikan
 		}
@@ -89,9 +96,11 @@
 			type="url"
 			placeholder="https://…"
 			required
-			onblur={(e) => autofillTitle(e.currentTarget)}
+			onblur={(e) => autofillMeta(e.currentTarget)}
 		/>
 		<input class="input input-bordered mb-2 w-full" name="title" placeholder="Judul (auto bila kosong)" />
+		<input type="hidden" name="faviconUrl" bind:this={faviconInput} />
+		<input type="hidden" name="previewImageUrl" bind:this={previewImageInput} />
 		<textarea
 			class="textarea textarea-bordered mb-2 w-full"
 			name="body"

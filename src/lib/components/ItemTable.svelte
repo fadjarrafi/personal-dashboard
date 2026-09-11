@@ -66,8 +66,27 @@
 				onkeydown={(e) => onCardKeydown(e, item)}
 				aria-label={item.title ?? item.url ?? 'Item'}
 			>
+				{#if item.type === 'bookmark' && item.previewImageUrl}
+					<img
+						src={item.previewImageUrl}
+						alt=""
+						loading="lazy"
+						class="mb-2 h-28 w-full rounded-box object-cover"
+						onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
+					/>
+				{/if}
+
 				<div class="mb-1 flex items-start justify-between gap-2">
-					<div class="min-w-0 flex-1">
+					<div class="flex min-w-0 flex-1 items-center gap-1.5">
+						{#if item.type === 'bookmark' && item.faviconUrl}
+							<img
+								src={item.faviconUrl}
+								alt=""
+								loading="lazy"
+								class="h-4 w-4 shrink-0 rounded-sm"
+								onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
+							/>
+						{/if}
 						{#if item.title}
 							<div class="truncate text-sm font-medium">{item.title}</div>
 						{:else if item.url}

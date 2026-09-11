@@ -28,6 +28,8 @@ export const items = sqliteTable('items', {
 	body: text('body'),
 	url: text('url'),
 	language: text('language'),
+	faviconUrl: text('favicon_url'),
+	previewImageUrl: text('preview_image_url'),
 	pinned: integer('pinned').notNull().default(0),
 	createdAt: text('created_at')
 		.notNull()

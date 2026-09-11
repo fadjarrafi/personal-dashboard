@@ -76,6 +76,14 @@
 							rel="noopener noreferrer"
 							class="link link-primary break-all text-sm"
 						>
+							{#if item.type === 'bookmark' && item.faviconUrl}
+								<img
+									src={item.faviconUrl}
+									alt=""
+									class="inline-block h-4 w-4 rounded-sm align-text-bottom"
+									onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
+								/>
+							{/if}
 							{item.url}
 						</a>
 					{/if}
@@ -86,6 +94,15 @@
 			</header>
 
 			{#if !editing}
+				{#if item.type === 'bookmark' && item.previewImageUrl}
+					<img
+						src={item.previewImageUrl}
+						alt=""
+						class="mb-4 max-h-56 w-full rounded-box object-cover"
+						onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
+					/>
+				{/if}
+
 				{#if item.body}
 					<div class="mb-4">
 						{#if item.type === 'snippet'}

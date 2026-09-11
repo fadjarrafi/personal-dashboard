@@ -14,6 +14,33 @@
 	// svelte-ignore state_referenced_locally
 	let q = $state(data.filters.q ?? '');
 	let selected = $state<ItemRow | null>(null);
+	let groupByTag = $state(false);
+
+	interface TagBucket {
+		key: string;
+		label: string;
+		rows: ItemRow[];
+	}
+
+	function bucketByTag(rows: ItemRow[]): TagBucket[] {
+		const byTag = new Map<string, ItemRow[]>();
+		const untagged: ItemRow[] = [];
+		for (const row of rows) {
+			if (row.tags.length === 0) {
+				untagged.push(row);
+				continue;
+			}
+			for (const tag of row.tags) {
+				if (!byTag.has(tag)) byTag.set(tag, []);
+				byTag.get(tag)!.push(row);
+			}
+		}
+		const buckets = Array.from(byTag.entries())
+			.sort(([a], [b]) => a.localeCompare(b))
+			.map(([tag, tagRows]) => ({ key: tag, label: `#${tag}`, rows: tagRows }));
+		if (untagged.length > 0) buckets.push({ key: '__untagged__', label: 'Tanpa tag', rows: untagged });
+		return buckets;
+	}
 
 	const bookmarks = $derived(data.items.filter((i) => i.type === 'bookmark'));
 	const notes = $derived(data.items.filter((i) => i.type === 'note'));
@@ -121,15 +148,32 @@
 						<a class="link link-hover text-xs opacity-60" href="/?type={section.key}">
 							Filter →
 						</a>
+					{:else}
+						<label class="flex cursor-pointer items-center gap-2 text-xs opacity-70">
+							<span>Kelompokkan per tag</span>
+							<input type="checkbox" class="toggle toggle-xs" bind:checked={groupByTag} />
+						</label>
 					{/if}
 				</header>
-				<ItemTable
-					items={section.rows}
-					onRowClick={selectItem}
-					emptyText="Belum ada {section.label.toLowerCase()}."
-					limit={data.filters.type ? undefined : SECTION_CAP}
-					moreHref="/?type={section.key}"
-				/>
+
+				{#if data.filters.type && groupByTag}
+					{#each bucketByTag(section.rows) as bucket (bucket.key)}
+						<div class="mb-3">
+							<h4 class="mb-1.5 px-1 text-xs font-semibold opacity-70">
+								{bucket.label} <span class="opacity-50">({bucket.rows.length})</span>
+							</h4>
+							<ItemTable items={bucket.rows} onRowClick={selectItem} />
+						</div>
+					{/each}
+				{:else}
+					<ItemTable
+						items={section.rows}
+						onRowClick={selectItem}
+						emptyText="Belum ada {section.label.toLowerCase()}."
+						limit={data.filters.type ? undefined : SECTION_CAP}
+						moreHref="/?type={section.key}"
+					/>
+				{/if}
 			</div>
 		{/each}
 	</section>

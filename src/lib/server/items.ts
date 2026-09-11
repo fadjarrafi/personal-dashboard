@@ -20,6 +20,8 @@ export interface ItemRow {
 	body: string | null;
 	url: string | null;
 	language: string | null;
+	faviconUrl: string | null;
+	previewImageUrl: string | null;
 	pinned: number;
 	createdAt: string;
 	updatedAt: string;
@@ -60,7 +62,8 @@ export function listItems(filters: ListFilters): ItemRow[] {
 		const ftsQuery = `"${safeQ}"*`;
 		const rows = raw
 			.prepare(
-				`SELECT i.id, i.type, i.title, i.body, i.url, i.language, i.pinned,
+				`SELECT i.id, i.type, i.title, i.body, i.url, i.language,
+				        i.favicon_url AS faviconUrl, i.preview_image_url AS previewImageUrl, i.pinned,
 				        i.created_at AS createdAt, i.updated_at AS updatedAt, i.archived_at AS archivedAt
 				 FROM items_fts f
 				 JOIN items i ON i.id = f.rowid
@@ -91,6 +94,8 @@ export function listItems(filters: ListFilters): ItemRow[] {
 			body: items.body,
 			url: items.url,
 			language: items.language,
+			faviconUrl: items.faviconUrl,
+			previewImageUrl: items.previewImageUrl,
 			pinned: items.pinned,
 			createdAt: items.createdAt,
 			updatedAt: items.updatedAt,
@@ -121,6 +126,8 @@ export function getItem(userId: number, id: number): ItemRow | null {
 			body: row.body,
 			url: row.url,
 			language: row.language,
+			faviconUrl: row.faviconUrl,
+			previewImageUrl: row.previewImageUrl,
 			pinned: row.pinned,
 			createdAt: row.createdAt,
 			updatedAt: row.updatedAt,
@@ -135,6 +142,8 @@ export interface UpsertInput {
 	body?: string | null;
 	url?: string | null;
 	language?: string | null;
+	faviconUrl?: string | null;
+	previewImageUrl?: string | null;
 	pinned?: boolean;
 	tags?: string[];
 }
@@ -185,6 +194,8 @@ export function createItem(userId: number, input: UpsertInput): number {
 			body: input.body ?? null,
 			url: input.url ?? null,
 			language: input.language ?? null,
+			faviconUrl: input.faviconUrl ?? null,
+			previewImageUrl: input.previewImageUrl ?? null,
 			pinned: input.pinned ? 1 : 0,
 			createdAt: now,
 			updatedAt: now
@@ -204,12 +215,19 @@ export function updateItem(userId: number, id: number, input: Partial<UpsertInpu
 	const nextTitle =
 		existing.type === 'note' ? deriveNoteTitle(rawTitle, nextBody) : rawTitle;
 
+	// Bila URL bookmark berubah, favicon/preview lama sudah tak relevan (masih
+	// menunjuk situs sebelumnya) - kosongkan daripada dibiarkan salah, karena
+	// v1 ini tak melakukan re-fetch otomatis saat edit manual.
+	const urlChanged = input.url !== undefined && input.url !== existing.url;
+
 	db.update(items)
 		.set({
 			title: nextTitle,
 			body: nextBody,
 			url: input.url ?? existing.url,
 			language: input.language ?? existing.language,
+			faviconUrl: urlChanged ? null : (input.faviconUrl ?? existing.faviconUrl),
+			previewImageUrl: urlChanged ? null : (input.previewImageUrl ?? existing.previewImageUrl),
 			pinned: input.pinned === undefined ? existing.pinned : input.pinned ? 1 : 0,
 			updatedAt: new Date().toISOString()
 		})

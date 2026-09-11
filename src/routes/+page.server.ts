@@ -47,13 +47,15 @@ export const actions: Actions = {
 		const body = String(data.get('body') ?? '').trim() || null;
 		const url = String(data.get('url') ?? '').trim() || null;
 		const language = String(data.get('language') ?? '').trim() || null;
+		const faviconUrl = String(data.get('faviconUrl') ?? '').trim() || null;
+		const previewImageUrl = String(data.get('previewImageUrl') ?? '').trim() || null;
 		const tags = parseTags(String(data.get('tags') ?? ''));
 
 		if (type === 'bookmark' && !url) return fail(400, { error: 'Bookmark membutuhkan URL.' });
 		if (type !== 'bookmark' && !body && !title)
 			return fail(400, { error: 'Isi tidak boleh kosong.' });
 
-		createItem(user.id, { type, title, body, url, language, tags });
+		createItem(user.id, { type, title, body, url, language, faviconUrl, previewImageUrl, tags });
 		setFlash(cookies, 'success', `${type} disimpan.`);
 		return { ok: true };
 	},
@@ -68,10 +70,21 @@ export const actions: Actions = {
 		const body = String(data.get('body') ?? '').trim() || null;
 		const url = String(data.get('url') ?? '').trim() || null;
 		const language = String(data.get('language') ?? '').trim() || null;
+		const faviconUrl = String(data.get('faviconUrl') ?? '').trim() || null;
+		const previewImageUrl = String(data.get('previewImageUrl') ?? '').trim() || null;
 		const pinned = data.get('pinned') === 'on';
 		const tags = parseTags(String(data.get('tags') ?? ''));
 
-		const ok = updateItem(user.id, id, { title, body, url, language, pinned, tags });
+		const ok = updateItem(user.id, id, {
+			title,
+			body,
+			url,
+			language,
+			faviconUrl,
+			previewImageUrl,
+			pinned,
+			tags
+		});
 		if (!ok) return fail(404, { error: 'Tidak ditemukan' });
 		setFlash(cookies, 'success', 'Perubahan disimpan.');
 		return { ok: true };
