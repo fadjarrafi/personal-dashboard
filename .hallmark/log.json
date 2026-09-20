@@ -1,0 +1,12 @@
+[
+	{
+		"date": "2026-09-03",
+		"scope": "app",
+		"macrostructure": "Workbench-adapted",
+		"theme": "custom",
+		"theme_axes": "dark / geometric-sans / cool",
+		"vibe": "quiet instrument panel, dense, no-nonsense",
+		"enrichment": "none",
+		"brief": "Personal Dashboard — whole-app redesign (bookmark/note/snippet catalog + spend tracker)"
+	}
+]

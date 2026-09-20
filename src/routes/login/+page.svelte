@@ -5,9 +5,9 @@
 </script>
 
 <div class="mx-auto mt-8 w-full max-w-sm sm:mt-16">
-	<div class="card bg-base-200 shadow-xl">
+	<div class="card border border-base-300 bg-base-200">
 		<div class="card-body">
-			<h1 class="card-title mb-4">Masuk</h1>
+			<h1 class="card-title mb-4 font-display">Masuk</h1>
 			<form method="post" class="space-y-3">
 				<label class="form-control w-full">
 					<div class="label"><span class="label-text">Email</span></div>

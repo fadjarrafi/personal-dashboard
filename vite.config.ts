@@ -7,12 +7,15 @@ export default defineConfig({
 		sveltekit(),
 		SvelteKitPWA({
 			registerType: 'autoUpdate',
+			strategies: 'injectManifest',
+			srcDir: 'src',
+			filename: 'service-worker.ts',
 			manifest: {
 				name: 'Personal Dashboard',
 				short_name: 'Dashboard',
 				description: 'Bookmarks, notes, and snippets — capture fast, find fast.',
-				theme_color: '#0f172a',
-				background_color: '#0f172a',
+				theme_color: '#0f171c',
+				background_color: '#0f171c',
 				display: 'standalone',
 				start_url: '/',
 				scope: '/',
@@ -37,15 +40,8 @@ export default defineConfig({
 					}
 				}
 			},
-			workbox: {
-				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
-				navigateFallbackDenylist: [
-					/^\/api/,
-					/^\/auth/,
-					/^\/export/,
-					/^\/spends\/share/,
-					/^\/receipts\//
-				]
+			injectManifest: {
+				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}']
 			},
 			devOptions: {
 				enabled: false
@@ -61,5 +57,16 @@ export default defineConfig({
 	ssr: {
 		// Biarkan tesseract.js di-import via dynamic import runtime, jangan pre-bundle.
 		external: ['tesseract.js']
+	},
+	build: {
+		rollupOptions: {
+			// tesseract.js dipanggil lewat `await import('tesseract.js')` di
+			// src/lib/server/receiptExtract.ts. Rollup tetap mencoba men-resolve
+			// dynamic import ini saat build (walaupun `ssr.external` diset), lalu
+			// gagal karena tesseract.js membawa worker + wasm yang tidak bisa
+			// di-bundle. Externalize eksplisit -> output pakai require()/dynamic
+			// import runtime yang di-resolve oleh Node dari node_modules.
+			external: ['tesseract.js']
+		}
 	}
 });

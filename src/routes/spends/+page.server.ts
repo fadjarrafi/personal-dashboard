@@ -5,6 +5,7 @@ import {
 	createSpend,
 	currentMonthRange,
 	getDailyTotals,
+	getMonthlyTotals,
 	getSummary,
 	listCategories,
 	listSpends,
@@ -42,12 +43,15 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	});
 	const summary = getSummary(user.id, period.from, period.to, period.prevFrom, period.prevTo);
 	const daily = getDailyTotals(user.id, period.from, period.to);
+	const [anchorYear, anchorMonth] = period.label.split('-').map(Number);
+	const monthly = getMonthlyTotals(user.id, 6, new Date(anchorYear, anchorMonth - 1, 1));
 	const categories = listCategories(user.id);
 
 	return {
 		spends,
 		summary,
 		daily,
+		monthly,
 		categories,
 		today: todayLocalISO(),
 		filters: {

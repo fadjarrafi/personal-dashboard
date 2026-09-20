@@ -16,27 +16,39 @@
 		"db:migrate": "tsx src/lib/server/db/migrate.ts",
 		"db:seed": "tsx scripts/seed.ts",
 		"db:backup": "tsx scripts/backup.ts",
+		"bills:remind": "tsx scripts/send-bill-reminders.ts",
+		"vault:resync": "tsx scripts/vault-tasks-resync.ts",
 		"test:extract:text": "tsx scripts/test-extract-text.ts",
 		"test:extract:image": "tsx scripts/test-extract-image.ts"
 	},
 	"dependencies": {
+		"@excalidraw/excalidraw": "^0.18.1",
 		"@node-rs/argon2": "^2.0.2",
-		"better-sqlite3": "^11.7.0",
+		"better-sqlite3": "^13.0.3",
 		"drizzle-orm": "^0.45.2",
+		"gray-matter": "^4.0.3",
 		"highlight.js": "^11.11.1",
+		"marked": "^18.0.12",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
 		"svelte-dnd-action": "^0.9.79",
-		"tesseract.js": "^7.0.0"
+		"tesseract.js": "^7.0.0",
+		"web-push": "^3.6.7"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-node": "^5.2.12",
-		"@sveltejs/kit": "^2.70.1",
+		"@sveltejs/kit": "^2.70.3",
 		"@sveltejs/vite-plugin-svelte": "^5.0.3",
 		"@types/better-sqlite3": "^7.6.12",
 		"@types/node": "^22.10.5",
+		"@types/react": "^19.0.0",
+		"@types/react-dom": "^19.0.0",
+		"@types/web-push": "^3.6.4",
 		"@vite-pwa/sveltekit": "^1.1.0",
 		"autoprefixer": "^10.4.20",
 		"daisyui": "^4.12.24",
 		"drizzle-kit": "^0.31.10",
+		"geist": "^1.7.2",
 		"postcss": "^8.5.1",
 		"prettier": "^3.4.2",
 		"prettier-plugin-svelte": "^3.3.3",
@@ -47,13 +59,19 @@
 		"tsx": "^4.19.2",
 		"typescript": "^5.7.3",
 		"vite": "^6.0.7",
-		"vite-plugin-pwa": "^0.21.1"
+		"vite-plugin-pwa": "^0.21.1",
+		"workbox-core": "^7.4.1",
+		"workbox-precaching": "^7.4.1"
 	},
-	"allowScripts": {
-		"better-sqlite3@11.10.0": true,
-		"esbuild@0.18.20": true,
-		"esbuild@0.25.12": true,
-		"esbuild@0.28.1": true,
-		"tesseract.js@7.0.0": true
+	"overrides": {
+		"cookie": "^0.7.0",
+		"esbuild": "^0.25.0",
+		"lodash-es": "^4.18.1",
+		"@excalidraw/excalidraw": {
+			"nanoid": "^3.3.19"
+		},
+		"@excalidraw/mermaid-to-excalidraw": {
+			"nanoid": "^5.1.16"
+		}
 	}
 }

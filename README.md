@@ -10,7 +10,8 @@ Lihat [docs/PRD.md](./docs/PRD.md) untuk detail keputusan produk & arsitektur.
 - **FTS5** untuk pencarian full-text (SQL mentah)
 - **Session cookie** auth (argon2 via `@node-rs/argon2`)
 - **Tailwind CSS** + **daisyUI** (tema `dashboard` gelap)
-- **PWA** via `@vite-pwa/sveltekit`
+- **PWA** via `@vite-pwa/sveltekit` (strategi `injectManifest` + custom `src/service-worker.ts` untuk Web Push)
+- **Bill reminder** via Web Push (`web-push`, VAPID) — lihat [docs/PRD-bill-reminder.md](./docs/PRD-bill-reminder.md)
 - **Mobile-first & aksesibel** — hamburger drawer, view kartu di layar sempit, skip link, fokus-visible, target sentuh ≥44px
 
 ## Struktur direktori
@@ -18,30 +19,46 @@ Lihat [docs/PRD.md](./docs/PRD.md) untuk detail keputusan produk & arsitektur.
 ```
 src/
 ├─ app.html · app.css · app.d.ts
-├─ hooks.server.ts              # auth gate global
+├─ hooks.server.ts              # auth gate global + CSRF manual per-path
 ├─ lib/
+│  ├─ format.ts                 # helper client-safe (formatRupiah, parseRupiah)
 │  ├─ components/               # CaptureForm, ItemTable, ItemCard,
-│  │                            #   ItemDetailModal, CodeBlock, Toast, Shortcuts
+│  │                            #   ItemDetailModal, CodeBlock, Toast, Shortcuts,
+│  │                            #   SpendChart
 │  └─ server/
 │     ├─ auth.ts                # session cookie + argon2
 │     ├─ items.ts               # repository items (list/create/update/…)
+│     ├─ spends.ts              # repository pengeluaran + summary + daily totals
+│     ├─ receipts.ts            # simpan gambar receipt + baca ulang
+│     ├─ receiptExtract.ts      # Tesseract.js OCR + parser regex
 │     └─ db/
 │        ├─ index.ts            # koneksi better-sqlite3 + drizzle
-│        ├─ schema.ts           # drizzle schema
+│        ├─ schema.ts           # drizzle schema (items, spends, receipts, …)
 │        ├─ migrate.ts          # runner migrasi SQL
-│        └─ migrations/         # *.sql (termasuk FTS5 + triggers)
+│        └─ migrations/         # 0000_init.sql, 0001_spends.sql, …
 └─ routes/
    ├─ +layout.{svelte,server.ts}
    ├─ +page.{svelte,server.ts}  # list + capture + search
    ├─ login/                    # form action login
    ├─ logout/                   # POST → hapus sesi
    ├─ items/[id]/               # edit / hapus item
+   ├─ archive/                  # daftar arsip + hard delete
    ├─ export/                   # dump JSON (backup manual)
+   ├─ spends/                   # list + summary + grafik
+   │  ├─ [id]/                  # edit / hapus pengeluaran
+   │  └─ share/                 # PWA share_target → OCR → preview form
+   │     └─ [id]/               # preview + konfirmasi simpan
+   ├─ receipts/[id]/            # serve gambar receipt (auth-gated)
    └─ api/
       ├─ bookmarks/fetch-title/ # best-effort auto-title
       └─ tags/                  # autocomplete tag
-scripts/seed.ts                 # buat user pertama
-static/                         # manifest.webmanifest, icons/
+scripts/
+├─ seed.ts                      # buat user pertama
+├─ backup.ts                    # backup DB aman untuk WAL
+├─ test-extract-text.ts         # uji regex parser (transkripsi manual)
+├─ test-extract-image.ts        # uji end-to-end OCR + parser
+└─ fixtures/receipts.ts         # data uji: 4 receipt (gopay/blu/jago/livin)
+static/                         # manifest.webmanifest (dengan share_target), icons/
 ```
 
 ## Setup lokal
@@ -98,7 +115,7 @@ terpisah. Kalau perlu dukung browser yang menolak SVG, tambahkan raster
 
 Semua layar dirancang mobile-first dan sudah dikonfirmasi lewat `svelte-check`:
 
-- **Layout** — di `<lg` navbar berubah jadi tombol hamburger yang membuka **drawer geser dari kiri** (overlay klik-untuk-tutup, `Esc` untuk tutup, auto-close saat pindah route). Berisi filter jenis, Arsip, Export JSON, dan Keluar. Di `≥lg` nav inline seperti biasa.
+- **Layout** — di `<lg` navbar berubah jadi tombol hamburger yang membuka **drawer geser dari kiri** (overlay klik-untuk-tutup, `Esc` untuk tutup, auto-close saat pindah route). Berisi bagian Katalog (Semua/Bookmark/Note/Snippet) · Keuangan (Pengeluaran) · Lainnya (Arsip, Export JSON) + Keluar di footer. Di `≥lg` nav inline lengkap dengan separator.
 - **Dashboard** — di mobile, daftar item tampil lebih dulu; form *Tambah baru* pindah ke bawah (masih bisa dijangkau via FAB `+`). Search bar tidak lagi memakai `join` yang overflow.
 - **ItemTable & Arsip** — tabel disembunyikan di `<md` dan diganti list kartu yang tap-friendly (keyboard: Enter/Space untuk buka detail).
 - **ItemDetailModal** — jadi *bottom sheet* di HP (`modal-bottom sm:modal-middle`), `max-h: 92vh`, tombol aksi stacking, padding bawah tetap ada + safe-area untuk device dengan home indicator.
@@ -116,8 +133,15 @@ Semua layar dirancang mobile-first dan sudah dikonfirmasi lewat `svelte-check`:
 ## Spend tracker (v0.2)
 
 Rute `/spends` — ringkasan bulan berjalan (total, tren vs bulan lalu, breakdown
-per kategori), quick-add, list transaksi. Rute `/spends/[id]` untuk edit/hapus.
-Amount disimpan **integer rupiah bulat** (kunci PRD §11.2 — hindari float).
+per kategori), **grafik batang harian** (SVG inline, tanpa dependency), quick-add,
+dan list transaksi. Rute `/spends/[id]` untuk edit/hapus. Amount disimpan
+**integer rupiah bulat** (kunci PRD §11.2 — hindari float). Navigasi bulan
+lewat tombol ← → memperbarui semua panel sekaligus.
+
+Grafik ([`SpendChart.svelte`](./src/lib/components/SpendChart.svelte)) meng-render
+1 bar per hari, tinggi proporsional ke max harian bulan itu; hari ini dihighlight;
+hover (desktop) atau tap (mobile) menampilkan tanggal + jumlah. Empty state
+otomatis kalau belum ada transaksi.
 
 ### Share receipt dari HP (Android)
 
@@ -148,8 +172,9 @@ mengekstrak:
   "Total"/"Jumlah"/"Nominal"/"Tagihan"; fallback: nilai terbesar.
 - **Tanggal** — pola `DD Mmm YYYY` (Jan–Des, singkat/panjang), opsional `HH:MM:SS`.
 - **Merchant** — label `Merchant Name`/`Penerima`/`To`/`KE`; fallback: baris
-  tepat sebelum marker lokasi (BANTUL/SLEMAN/KOTA…); fallback terakhir: baris
-  uppercase-heavy.
+  tepat sebelum marker lokasi (BANTUL/SLEMAN/KOTA…). Untuk receipt transfer
+  (mengandung `Account Source` tanpa `Penerima`/`Merchant`) sengaja
+  dikembalikan `null` agar tidak salah tebak nama pengirim jadi merchant.
 - **Metode** — deteksi keyword logo: gopay, blu, jago, livin, dana, ovo,
   shopeepay, mandiri, bri, bni, qris.
 - **Ref ID** — `ID transaksi` / `No. Ref` / `QRIS RRN` / `Nomor Referensi`.
@@ -185,6 +210,75 @@ Kalau `text` semua lulus tapi `image` gagal, artinya OCR-nya yang meleset
 (kualitas teks mentah) — bukan regex. Kalau `text` gagal, regex-nya yang perlu
 di-tweak di [`src/lib/server/receiptExtract.ts`](./src/lib/server/receiptExtract.ts).
 
+## Bill reminder
+
+Rute `/bills` — tagihan berulang (listrik, internet, cicilan, dsb.) dengan
+reminder lewat **Web Push** asli, jadi tetap muncul walau app/tab tertutup.
+Detail keputusan arsitektur ada di [`docs/PRD-bill-reminder.md`](./docs/PRD-bill-reminder.md).
+Tidak ada email/SMS — push PWA saja, keputusan tetap, bukan batasan sementara.
+
+### Setup VAPID (sekali saja)
+
+```bash
+npx web-push generate-vapid-keys
+```
+
+Salin `Public Key`/`Private Key` ke `.env` (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`,
+`VAPID_SUBJECT=mailto:...`). **Jangan** generate ulang setelah user mengaktifkan
+notifikasi — mengganti keypair meng-invalidate semua subscription yang sudah ada
+di tiap device.
+
+### Uji push secara lokal
+
+Service worker custom (`src/service-worker.ts`, strategi `injectManifest`)
+tidak aktif di `vite dev` (`devOptions.enabled: false` — sama seperti sebelumnya).
+Untuk uji end-to-end harus lewat build produksi:
+
+```bash
+npm run build && npm run preview
+```
+
+Buka di Chrome, login, buka `/bills`, tekan **Aktifkan notifikasi tagihan**,
+lalu jalankan skrip reminder secara manual untuk memicu notifikasi nyata:
+
+```bash
+npm run bills:remind
+```
+
+### Cron reminder harian
+
+```cron
+0 8 * * * cd /srv/personal-dashboard && /usr/bin/npm run bills:remind >> /var/log/dashboard-bills.log 2>&1
+```
+
+Maksimal 2 notifikasi per siklus tagihan (awal jendela reminder + hari-H) —
+lihat `REMINDER_DAYS_BEFORE` di [`src/lib/server/bills.ts`](./src/lib/server/bills.ts).
+Menandai lunas **tidak pernah** membuat baris `spends` otomatis — itu tetap
+alur manual terpisah.
+
+## Keamanan: CSRF
+
+SvelteKit menerapkan cek CSRF bawaan yang menolak semua POST/PUT/PATCH/DELETE
+tanpa `Origin` header yang cocok. Ini bertabrakan dengan Android Web Share
+Target — POST multipart dari system share sheet sering datang tanpa Origin.
+
+Konfigurasi di repo ini:
+
+- [`svelte.config.js`](./svelte.config.js) — `csrf.checkOrigin: false` matikan
+  cek bawaan (SvelteKit hanya bisa on/off global, tidak per-path).
+- [`src/hooks.server.ts`](./src/hooks.server.ts) — implementasi cek CSRF manual
+  yang berjalan untuk **semua** POST/PUT/PATCH/DELETE **kecuali** path di
+  `CSRF_EXEMPT` (saat ini hanya `/spends/share`). Cek ini memverifikasi
+  `Origin` header cocok dengan `event.url.origin`; kalau tidak, lempar 403.
+
+Semua rute mutating lain (login, create/update/archive items, create/update/
+delete spends, dsb.) tetap terlindungi. Rute `/spends/share` yang di-exempt
+tetap butuh sesi login valid + membatasi input ke image whitelist (jpeg/png/
+webp/heic/heif, ≤8 MB) sehingga permukaan seranganya sempit.
+
+Menambah endpoint publik-share baru? Tambahkan path-nya ke `CSRF_EXEMPT`
+di `hooks.server.ts` — jangan matikan cek manualnya.
+
 ## Deploy
 
 Wajib `adapter-node` — SQLite butuh disk persisten & proses hidup terus.
@@ -195,3 +289,25 @@ Panduan lengkap: [docs/DEPLOY-cloudflare-tunnel.md](./docs/DEPLOY-cloudflare-tun
 Termasuk alur update dari GitHub dan rollback.
 
 Template PM2 ecosystem siap-copy di [deploy/pm2/](./deploy/pm2).
+
+### Catatan build: dependency native/berat
+
+- **`tesseract.js`** — tidak bisa di-bundle Rollup karena membawa worker + WASM.
+  Sudah dikonfigurasi sebagai `external` di [`vite.config.ts`](./vite.config.ts)
+  (`build.rollupOptions.external` + `ssr.external`). Konsekuensi: `tesseract.js`
+  wajib ada di `node_modules` runtime — pastikan `npm ci` di server tidak
+  memakai `--omit=optional` yang bisa memangkas sub-dep, dan **bukan** di
+  `devDependencies`.
+- **`better-sqlite3`** — native module, di-external via `optimizeDeps.exclude`.
+  Butuh `build-essential` + `python3` saat `npm ci` di server VPS baru.
+
+Setelah pull update, alur biasa di server:
+
+```bash
+cd /var/www/html/personal-dashboard
+git pull
+npm ci
+npm run db:migrate   # kalau ada migrasi baru
+npm run build
+pm2 restart personal-dashboard
+```

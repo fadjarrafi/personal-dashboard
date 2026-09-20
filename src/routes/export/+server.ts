@@ -6,7 +6,8 @@ export const GET: RequestHandler = async ({ locals }) => {
 
 	const items = raw
 		.prepare(
-			`SELECT id, type, title, body, url, language, pinned,
+			`SELECT id, type, title, body, url, language,
+			        favicon_url AS faviconUrl, preview_image_url AS previewImageUrl, pinned,
 			        created_at AS createdAt, updated_at AS updatedAt, archived_at AS archivedAt
 			 FROM items WHERE user_id = ? ORDER BY id`
 		)

@@ -7,9 +7,40 @@
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
+	// Batas kartu per section di tampilan "Semua" — cegah satu tipe yang besar
+	// (mis. Bookmark) mengubur section lain di bawahnya.
+	const SECTION_CAP = 6;
+
 	// svelte-ignore state_referenced_locally
 	let q = $state(data.filters.q ?? '');
 	let selected = $state<ItemRow | null>(null);
+	let groupByTag = $state(false);
+
+	interface TagBucket {
+		key: string;
+		label: string;
+		rows: ItemRow[];
+	}
+
+	function bucketByTag(rows: ItemRow[]): TagBucket[] {
+		const byTag = new Map<string, ItemRow[]>();
+		const untagged: ItemRow[] = [];
+		for (const row of rows) {
+			if (row.tags.length === 0) {
+				untagged.push(row);
+				continue;
+			}
+			for (const tag of row.tags) {
+				if (!byTag.has(tag)) byTag.set(tag, []);
+				byTag.get(tag)!.push(row);
+			}
+		}
+		const buckets = Array.from(byTag.entries())
+			.sort(([a], [b]) => a.localeCompare(b))
+			.map(([tag, tagRows]) => ({ key: tag, label: `#${tag}`, rows: tagRows }));
+		if (untagged.length > 0) buckets.push({ key: '__untagged__', label: 'Tanpa tag', rows: untagged });
+		return buckets;
+	}
 
 	const bookmarks = $derived(data.items.filter((i) => i.type === 'bookmark'));
 	const notes = $derived(data.items.filter((i) => i.type === 'note'));
@@ -18,13 +49,13 @@
 	const sections: Array<{
 		key: ItemType;
 		label: string;
-		icon: string;
+		dot: string;
 		badge: string;
 		rows: ItemRow[];
 	}> = $derived([
-		{ key: 'bookmark', label: 'Bookmark', icon: '🔖', badge: 'badge-success', rows: bookmarks },
-		{ key: 'note', label: 'Note', icon: '📝', badge: 'badge-warning', rows: notes },
-		{ key: 'snippet', label: 'Snippet', icon: '⌨', badge: 'badge-info', rows: snippets }
+		{ key: 'bookmark', label: 'Bookmark', dot: 'text-[--color-cat-bookmark]', badge: 'badge-success', rows: bookmarks },
+		{ key: 'note', label: 'Note', dot: 'text-[--color-cat-note]', badge: 'badge-warning', rows: notes },
+		{ key: 'snippet', label: 'Snippet', dot: 'text-[--color-cat-snippet]', badge: 'badge-info', rows: snippets }
 	]);
 
 	const shownSections = $derived(
@@ -52,13 +83,19 @@
 		<div class="rounded-box border border-base-300 bg-base-200/40 p-3 text-xs opacity-70">
 			<div class="mb-1 font-semibold opacity-80">Total item</div>
 			<div class="flex justify-between gap-2">
-				<span>🔖 Bookmark</span><span class="font-mono">{bookmarks.length}</span>
+				<span class="flex items-center gap-1.5"
+					><span class="cat-dot text-[--color-cat-bookmark]" aria-hidden="true"></span>Bookmark</span
+				><span class="font-mono tabular-nums">{bookmarks.length}</span>
 			</div>
 			<div class="flex justify-between gap-2">
-				<span>📝 Note</span><span class="font-mono">{notes.length}</span>
+				<span class="flex items-center gap-1.5"
+					><span class="cat-dot text-[--color-cat-note]" aria-hidden="true"></span>Note</span
+				><span class="font-mono tabular-nums">{notes.length}</span>
 			</div>
 			<div class="flex justify-between gap-2">
-				<span>⌨ Snippet</span><span class="font-mono">{snippets.length}</span>
+				<span class="flex items-center gap-1.5"
+					><span class="cat-dot text-[--color-cat-snippet]" aria-hidden="true"></span>Snippet</span
+				><span class="font-mono tabular-nums">{snippets.length}</span>
 			</div>
 			<div class="divider my-1"></div>
 			<a class="link link-hover" href="/export">Export JSON →</a>
@@ -103,25 +140,46 @@
 			<div>
 				<header class="mb-2 flex items-center justify-between px-1">
 					<h3 class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider">
-						<span>{section.icon}</span>
+						<span class="cat-dot {section.dot}" aria-hidden="true"></span>
 						<span>{section.label}</span>
 						<span class="badge {section.badge} badge-sm">{section.rows.length}</span>
 					</h3>
-					<a class="link link-hover text-xs opacity-60" href="/?type={section.key}">
-						Filter →
-					</a>
+					{#if !data.filters.type}
+						<a class="link link-hover text-xs opacity-60" href="/?type={section.key}">
+							Filter →
+						</a>
+					{:else}
+						<label class="flex cursor-pointer items-center gap-2 text-xs opacity-70">
+							<span>Kelompokkan per tag</span>
+							<input type="checkbox" class="toggle toggle-xs" bind:checked={groupByTag} />
+						</label>
+					{/if}
 				</header>
-				<ItemTable
-					items={section.rows}
-					onRowClick={selectItem}
-					emptyText="Belum ada {section.label.toLowerCase()}."
-				/>
+
+				{#if data.filters.type && groupByTag}
+					{#each bucketByTag(section.rows) as bucket (bucket.key)}
+						<div class="mb-3">
+							<h4 class="mb-1.5 px-1 text-xs font-semibold opacity-70">
+								{bucket.label} <span class="opacity-50">({bucket.rows.length})</span>
+							</h4>
+							<ItemTable items={bucket.rows} onRowClick={selectItem} />
+						</div>
+					{/each}
+				{:else}
+					<ItemTable
+						items={section.rows}
+						onRowClick={selectItem}
+						emptyText="Belum ada {section.label.toLowerCase()}."
+						limit={data.filters.type ? undefined : SECTION_CAP}
+						moreHref="/?type={section.key}"
+					/>
+				{/if}
 			</div>
 		{/each}
 	</section>
 </div>
 
-<ItemDetailModal item={selected} onClose={closeModal} />
+<ItemDetailModal item={selected} tags={data.tags} onClose={closeModal} />
 
 <a
 	href="#capture-form"

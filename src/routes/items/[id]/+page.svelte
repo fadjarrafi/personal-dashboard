@@ -19,6 +19,27 @@
 			<div class="label"><span class="label-text">URL</span></div>
 			<input class="input input-bordered w-full" type="url" name="url" value={item.url ?? ''} />
 		</label>
+
+		{#if item.faviconUrl || item.previewImageUrl}
+			<div class="flex items-center gap-2">
+				{#if item.faviconUrl}
+					<img
+						src={item.faviconUrl}
+						alt=""
+						class="h-5 w-5 rounded-sm"
+						onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
+					/>
+				{/if}
+				{#if item.previewImageUrl}
+					<img
+						src={item.previewImageUrl}
+						alt=""
+						class="h-16 rounded-box object-cover"
+						onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
+					/>
+				{/if}
+			</div>
+		{/if}
 	{/if}
 
 	{#if item.type === 'snippet'}

@@ -298,7 +298,11 @@ GET    /spends/summary?period=       → total per kategori & per periode
 - Perlu income/pemasukan juga, atau murni pengeluaran?
 - Kategori: enum tetap, teks bebas, atau tabel sendiri?
 
-### 11.3 Kanban Board — `Planned / Next Update`
+### 11.3 Bill Reminder (Notifikasi PWA) — `Planned / Next Update`
+
+Detail lengkap (skema, keputusan Web Push/VAPID, migrasi service worker) ada di dokumen terpisah: **`docs/PRD-bill-reminder.md`**. Ringkas: tabel `bills` + `push_subscriptions` baru, notifikasi lewat Web Push API (butuh migrasi strategi service worker dari `generateSW` ke `injectManifest`), pengiriman reminder lewat skrip cron harian — pola yang sama seperti `db:backup`, bukan scheduler dalam-app.
+
+### 11.4 Kanban Board — `Planned / Next Update`
 
 **Tujuan (asumsi):** board visual untuk mengelola task personal generik (bukan pekerjaan klien/freelance — itu domain job tracker di §11.1), dengan kolom tetap merepresentasikan status pengerjaan. Fitur ini **sengaja dibuat terpisah dari job tracker**, bukan menggantikannya: job tracker (bila dibangun) punya semantik pekerjaan/klien, sedangkan kanban board di sini murni task list personal (mis. checklist harian, task rumah tangga, todo proyek pribadi non-klien).
 
@@ -311,9 +315,9 @@ GET    /spends/summary?period=       → total per kategori & per periode
 - **Tags:** reuse tabel `tags` yang sudah ada (pola sama seperti `item_tags`), bukan bikin sistem tag baru.
 - **Keterkaitan opsional ke spend:** task boleh menaut ke satu record `spends` (mis. "beli materialnya sudah dicatat di pengeluaran ini") via `spend_id` nullable. Ini **hanya referensi (FK)** — nilai uang tetap tunggal sumber di tabel `spends`, tidak diduplikasi ke `tasks`.
 
-**Skema usulan:**
+**Skema (sudah dibangun — nama tabel diberi prefix `kanban_` karena `tasks`/`task_tags` sudah dipakai fitur `/tasks`, todo list flat yang terpisah dari board ini):**
 ```sql
-CREATE TABLE tasks (
+CREATE TABLE kanban_tasks (
   id          INTEGER PRIMARY KEY,
   user_id     INTEGER NOT NULL REFERENCES users(id),
   title       TEXT NOT NULL,
@@ -321,41 +325,41 @@ CREATE TABLE tasks (
   status      TEXT NOT NULL DEFAULT 'todo'
               CHECK (status IN ('todo','in_progress','done')),
   priority    TEXT NOT NULL DEFAULT 'medium'
-              CHECK (priority IN ('low','medium','high')),        -- ⚠️ label visual saja, atau pengaruhi urutan default?
+              CHECK (priority IN ('low','medium','high')),
   due_date    TEXT,
   position    INTEGER NOT NULL DEFAULT 0,   -- urutan dalam kolom, di-reindex saat drag-drop
-  spend_id    INTEGER REFERENCES spends(id),  -- opsional, hanya jika §11.2 sudah dibangun
+  spend_id    INTEGER REFERENCES spends(id) ON DELETE SET NULL,
   created_at  TEXT NOT NULL,
   updated_at  TEXT NOT NULL,
   archived_at TEXT
 );
 
-CREATE TABLE task_checklist_items (
+CREATE TABLE kanban_checklist_items (
   id         INTEGER PRIMARY KEY,
-  task_id    INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  task_id    INTEGER NOT NULL REFERENCES kanban_tasks(id) ON DELETE CASCADE,
   content    TEXT NOT NULL,
   done       INTEGER NOT NULL DEFAULT 0,   -- 0/1
   position   INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL
 );
 
-CREATE TABLE task_tags (
-  task_id INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+CREATE TABLE kanban_task_tags (
+  task_id INTEGER NOT NULL REFERENCES kanban_tasks(id) ON DELETE CASCADE,
   tag_id  INTEGER NOT NULL REFERENCES tags(id)  ON DELETE CASCADE,
   PRIMARY KEY (task_id, tag_id)
 );
 ```
 
-**API/route usulan** (mengikuti pola SvelteKit existing — form actions untuk operasi biasa, `+server.ts` untuk yang butuh respons cepat tanpa reload halaman seperti drag-drop):
+**Route (sudah dibangun):**
 ```
 src/routes/kanban/+page.svelte + +page.server.ts
   → load: task terkelompok per status untuk render 3 kolom
-  → actions: create, update field dasar, archive (form actions biasa)
+  → actions: create (quick-add per kolom)
 
-PATCH  /kanban/tasks/:id/move        → { status, position }  (dipanggil client saat drag-drop selesai)
-POST   /kanban/tasks/:id/checklist   → tambah item checklist
-PATCH  /kanban/tasks/:id/checklist/:itemId  → toggle done / reorder
-DELETE /kanban/tasks/:id/checklist/:itemId
+src/routes/kanban/[id]/+page.svelte + +page.server.ts
+  → load + actions: update, archive, delete, addChecklistItem, toggleChecklistItem, deleteChecklistItem
+
+PATCH /kanban/reorder  → { status, orderedIds }  (dipanggil client saat drag-drop selesai per kolom)
 ```
 
 **Catatan non-fungsional:**
@@ -370,11 +374,12 @@ DELETE /kanban/tasks/:id/checklist/:itemId
 - Batas jumlah checklist item per task — dibiarkan bebas, atau ada limit wajar?
 - Library drag-and-drop: konfirmasi `svelte-dnd-action`, atau ada preferensi lain?
 
-### 11.4 Urutan Rilis yang Disarankan
+### 11.5 Urutan Rilis yang Disarankan
 1. **v0.1 (MVP):** bookmark, note, snippet — §4.
 2. **v0.2:** Spend tracker (lebih sederhana, requirement lebih jelas).
 3. **v0.3:** Job tracker (tunggu kejelasan apakah job ↔ spend perlu terhubung, agar tak refactor relasi).
-4. **Kanban board (§11.3):** independen dari job tracker — bisa dibangun kapan saja setelah v0.2, tidak wajib menunggu job tracker selesai. Satu-satunya dependency lunak: bila dibangun sebelum §11.2 selesai, kolom `spend_id` di skema `tasks` cukup ditunda (nullable, tambahkan via migration kecil belakangan) tanpa mengubah tabel lain.
+4. **v0.4:** Bill reminder (§11.3) — bergantung pada `spends` (v0.2) sudah ada; independen dari job tracker.
+5. **Kanban board (§11.4):** independen dari job tracker dan bill reminder — bisa dibangun kapan saja setelah v0.2, tidak wajib menunggu fitur lain selesai. Satu-satunya dependency lunak: bila dibangun sebelum §11.2 selesai, kolom `spend_id` di skema `kanban_tasks` cukup ditunda (nullable, tambahkan via migration kecil belakangan) tanpa mengubah tabel lain.
 
 Alasan spend sebelum job: spend punya bentuk yang lebih stabil & mandiri, sedangkan job berpotensi butuh relasi ke spend — mendahulukan spend menghindari perubahan skema job dua kali.
 
@@ -503,6 +508,6 @@ Pilihan sadar: **pertahankan daisyUI**, tapi ganti tema — bukan cabut daisyUI.
 - Perlukah **share target Android** di MVP, atau ditunda? (menambah kompleksitas manifest + handler)
 - Syntax highlighting snippet: MVP atau nanti? (menambah dependency frontend)
 - Backup: cukup file `.db` via cron, atau juga export JSON manual dari UI?
-- Kanban board (§11.3): library drag-and-drop mana yang dipakai (`svelte-dnd-action` diusulkan) — ini dependency baru pertama untuk interaksi drag-drop di proyek, perlu dikonfirmasi sebelum implementasi dimulai.
+- Kanban board (§11.4): sudah dibangun dengan `svelte-dnd-action` untuk drag-and-drop. Keputusan masih terbuka: auto-arsip task `done` setelah N hari, apakah `priority` memengaruhi urutan default, dan indikator overdue untuk `due_date` — lihat daftar lengkap di §11.4.
 - Redesign UI (§12): dikerjakan **sebelum** kanban (agar kanban langsung lahir dengan gaya baru) atau **sesudah**? Rekomendasi: sebelum — redesign menyentuh semua komponen, lebih murah dilakukan saat komponen masih sedikit.
 - Redesign UI (§12): pasangan font & nasib light mode — lihat §12.8.

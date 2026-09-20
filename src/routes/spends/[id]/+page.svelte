@@ -17,7 +17,7 @@
 
 	<div class="mb-4 rounded-box border border-base-300 bg-base-200/40 p-3 text-sm">
 		<div class="text-xs opacity-60">Jumlah saat ini</div>
-		<div class="text-2xl font-semibold tabular-nums">{formatRupiah(spend.amount)}</div>
+		<div class="font-display text-2xl font-semibold tabular-nums">{formatRupiah(spend.amount)}</div>
 		<div class="mt-1 text-xs opacity-50">Dibuat: {createdLabel}</div>
 	</div>
 

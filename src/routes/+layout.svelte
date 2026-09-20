@@ -9,17 +9,38 @@
 	let { data, children }: { data: LayoutData; children: any } = $props();
 
 	const navItems = [
-		{ href: '/', label: 'Semua', icon: '◈', match: (t: string | null) => t === null },
-		{ href: '/?type=bookmark', label: 'Bookmark', icon: '🔖', match: (t: string | null) => t === 'bookmark' },
-		{ href: '/?type=note', label: 'Note', icon: '📝', match: (t: string | null) => t === 'note' },
-		{ href: '/?type=snippet', label: 'Snippet', icon: '⌨', match: (t: string | null) => t === 'snippet' }
+		{ href: '/', label: 'Semua', dot: null, match: (t: string | null) => t === null },
+		{
+			href: '/?type=bookmark',
+			label: 'Bookmark',
+			dot: 'text-[--color-cat-bookmark]',
+			match: (t: string | null) => t === 'bookmark'
+		},
+		{
+			href: '/?type=note',
+			label: 'Note',
+			dot: 'text-[--color-cat-note]',
+			match: (t: string | null) => t === 'note'
+		},
+		{
+			href: '/?type=snippet',
+			label: 'Snippet',
+			dot: 'text-[--color-cat-snippet]',
+			match: (t: string | null) => t === 'snippet'
+		}
 	];
 
 	const activeType = $derived(page.url.searchParams.get('type'));
 	const isArchive = $derived(page.url.pathname === '/archive');
 	const isSpends = $derived(page.url.pathname.startsWith('/spends'));
+	const isBills = $derived(page.url.pathname.startsWith('/bills'));
+	const isVault = $derived(page.url.pathname.startsWith('/vault'));
+	const isTasks = $derived(page.url.pathname.startsWith('/tasks'));
+	const isBoards = $derived(page.url.pathname.startsWith('/boards'));
 	const isKanban = $derived(page.url.pathname.startsWith('/kanban'));
-	const isCatalog = $derived(!isArchive && !isSpends && !isKanban);
+	const isCatalog = $derived(
+		!isArchive && !isSpends && !isBills && !isVault && !isTasks && !isBoards && !isKanban
+	);
 
 	let drawerOpen = $state(false);
 
@@ -47,9 +68,7 @@
 
 <div class="mx-auto flex min-h-screen max-w-7xl flex-col px-3 py-3 sm:px-4 sm:py-4">
 	{#if data.user}
-		<header
-			class="mb-4 rounded-box border border-base-300 bg-base-200/60 p-2 backdrop-blur sm:mb-6 sm:p-3"
-		>
+		<header class="mb-4 border-b border-base-300 pb-2 sm:mb-6 sm:pb-3">
 			<div class="flex items-center justify-between gap-2">
 				<div class="flex min-w-0 items-center gap-1">
 					<button
@@ -78,7 +97,7 @@
 					</button>
 					<a
 						href="/"
-						class="btn btn-ghost btn-sm gap-1 text-base font-semibold normal-case sm:text-lg"
+						class="btn btn-ghost btn-sm gap-1.5 font-display text-base font-semibold normal-case sm:text-lg"
 					>
 						<span class="text-primary">◆</span>
 						<span>Dashboard</span>
@@ -97,6 +116,7 @@
 							href={item.href}
 							aria-current={active ? 'page' : undefined}
 						>
+							{#if item.dot}<span class="cat-dot {item.dot}" aria-hidden="true"></span>{/if}
 							{item.label}
 						</a>
 					{/each}
@@ -106,21 +126,49 @@
 						href="/spends"
 						aria-current={isSpends ? 'page' : undefined}
 					>
-						💸 Pengeluaran
+						Pengeluaran
+					</a>
+					<a
+						class="btn btn-sm {isBills ? 'btn-primary' : 'btn-ghost'}"
+						href="/bills"
+						aria-current={isBills ? 'page' : undefined}
+					>
+						Tagihan
+					</a>
+					<a
+						class="btn btn-sm {isTasks ? 'btn-primary' : 'btn-ghost'}"
+						href="/tasks"
+						aria-current={isTasks ? 'page' : undefined}
+					>
+						Tugas
 					</a>
 					<a
 						class="btn btn-sm {isKanban ? 'btn-primary' : 'btn-ghost'}"
 						href="/kanban"
 						aria-current={isKanban ? 'page' : undefined}
 					>
-						🗂 Kanban
+						Kanban
+					</a>
+					<a
+						class="btn btn-sm {isBoards ? 'btn-primary' : 'btn-ghost'}"
+						href="/boards"
+						aria-current={isBoards ? 'page' : undefined}
+					>
+						Board
+					</a>
+					<a
+						class="btn btn-sm {isVault ? 'btn-primary' : 'btn-ghost'}"
+						href="/vault"
+						aria-current={isVault ? 'page' : undefined}
+					>
+						Vault
 					</a>
 					<a
 						class="btn btn-sm {isArchive ? 'btn-primary' : 'btn-ghost'}"
 						href="/archive"
 						aria-current={isArchive ? 'page' : undefined}
 					>
-						🗄 Arsip
+						Arsip
 					</a>
 				</nav>
 
@@ -147,7 +195,9 @@
 		{@render children()}
 	</main>
 
-	<footer class="mt-8 pt-4 text-center text-xs opacity-50 safe-bottom">
+	<footer
+		class="mt-8 border-t border-base-300 pt-3 text-center font-mono text-xs opacity-50 safe-bottom"
+	>
 		Personal Dashboard · v0.1
 	</footer>
 </div>
@@ -180,7 +230,7 @@
 			aria-label="Menu navigasi"
 		>
 			<div class="flex items-center justify-between border-b border-base-300 px-4 py-3">
-				<span class="text-base font-semibold">
+				<span class="font-display text-base font-semibold">
 					<span class="text-primary">◆</span> Dashboard
 				</span>
 				<button
@@ -207,7 +257,11 @@
 								aria-current={active ? 'page' : undefined}
 								onclick={closeDrawer}
 							>
-								<span aria-hidden="true" class="w-5 text-center">{item.icon}</span>
+								{#if item.dot}
+									<span class="cat-dot {item.dot}" aria-hidden="true"></span>
+								{:else}
+									<span class="w-5 text-center opacity-60" aria-hidden="true">◈</span>
+								{/if}
 								<span>{item.label}</span>
 							</a>
 						</li>
@@ -227,8 +281,19 @@
 							aria-current={isSpends ? 'page' : undefined}
 							onclick={closeDrawer}
 						>
-							<span aria-hidden="true" class="w-5 text-center">💸</span>
+							<span class="cat-dot text-primary" aria-hidden="true"></span>
 							<span>Pengeluaran</span>
+						</a>
+					</li>
+					<li>
+						<a
+							href="/bills"
+							class={isBills ? 'active' : ''}
+							aria-current={isBills ? 'page' : undefined}
+							onclick={closeDrawer}
+						>
+							<span class="cat-dot text-primary" aria-hidden="true"></span>
+							<span>Tagihan</span>
 						</a>
 					</li>
 				</ul>
@@ -241,13 +306,35 @@
 				<ul class="menu menu-lg w-full rounded-box p-0">
 					<li>
 						<a
+							href="/tasks"
+							class={isTasks ? 'active' : ''}
+							aria-current={isTasks ? 'page' : undefined}
+							onclick={closeDrawer}
+						>
+							<span class="w-5 text-center opacity-60" aria-hidden="true">◈</span>
+							<span>Tugas</span>
+						</a>
+					</li>
+					<li>
+						<a
 							href="/kanban"
 							class={isKanban ? 'active' : ''}
 							aria-current={isKanban ? 'page' : undefined}
 							onclick={closeDrawer}
 						>
-							<span aria-hidden="true" class="w-5 text-center">🗂</span>
+							<span class="w-5 text-center opacity-60" aria-hidden="true">◈</span>
 							<span>Kanban</span>
+						</a>
+					</li>
+					<li>
+						<a
+							href="/boards"
+							class={isBoards ? 'active' : ''}
+							aria-current={isBoards ? 'page' : undefined}
+							onclick={closeDrawer}
+						>
+							<span class="w-5 text-center opacity-60" aria-hidden="true">◈</span>
+							<span>Board</span>
 						</a>
 					</li>
 				</ul>
@@ -260,18 +347,29 @@
 				<ul class="menu menu-lg w-full rounded-box p-0">
 					<li>
 						<a
+							href="/vault"
+							class={isVault ? 'active' : ''}
+							aria-current={isVault ? 'page' : undefined}
+							onclick={closeDrawer}
+						>
+							<span class="w-5 text-center opacity-60" aria-hidden="true">◈</span>
+							<span>Vault</span>
+						</a>
+					</li>
+					<li>
+						<a
 							href="/archive"
 							class={isArchive ? 'active' : ''}
 							aria-current={isArchive ? 'page' : undefined}
 							onclick={closeDrawer}
 						>
-							<span aria-hidden="true" class="w-5 text-center">🗄</span>
+							<span class="w-5 text-center opacity-60" aria-hidden="true">◈</span>
 							<span>Arsip</span>
 						</a>
 					</li>
 					<li>
 						<a href="/export" onclick={closeDrawer}>
-							<span aria-hidden="true" class="w-5 text-center">⬇</span>
+							<span class="w-5 text-center opacity-60" aria-hidden="true">↓</span>
 							<span>Export JSON</span>
 						</a>
 					</li>

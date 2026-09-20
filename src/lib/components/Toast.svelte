@@ -30,10 +30,16 @@
 </script>
 
 {#if visible && current}
-	<div class="toast toast-top toast-end z-50">
-		<div role="alert" class="alert {alertClass[current.kind]} shadow-lg">
+	<div class="toast toast-top toast-end z-50 max-w-full">
+		<!-- daisyUI `.toast` memaksa `white-space: nowrap` + `min-width: fit-content`
+		     dan menempel ke tepi kanan. Tanpa batas lebar + izin wrap, pesan yang
+		     agak panjang melebar keluar viewport di layar 320-375px. -->
+		<div
+			role="alert"
+			class="alert {alertClass[current.kind]} max-w-[calc(100vw-2rem)] whitespace-normal shadow-lg"
+		>
 			<span class="text-lg font-bold">{icon[current.kind]}</span>
-			<span>{current.msg}</span>
+			<span class="min-w-0 break-words">{current.msg}</span>
 			<button
 				type="button"
 				class="btn btn-ghost btn-xs"

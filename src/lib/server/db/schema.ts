@@ -28,6 +28,8 @@ export const items = sqliteTable('items', {
 	body: text('body'),
 	url: text('url'),
 	language: text('language'),
+	faviconUrl: text('favicon_url'),
+	previewImageUrl: text('preview_image_url'),
 	pinned: integer('pinned').notNull().default(0),
 	createdAt: text('created_at')
 		.notNull()
@@ -94,6 +96,39 @@ export const receipts = sqliteTable('receipts', {
 		.default(sql`(datetime('now'))`)
 });
 
+export const bills = sqliteTable('bills', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	userId: integer('user_id')
+		.notNull()
+		.references(() => users.id),
+	title: text('title').notNull(),
+	amount: integer('amount').notNull(),
+	category: text('category', {
+		enum: ['listrik', 'internet', 'cicilan', 'langganan', 'kartu_kredit', 'lainnya']
+	})
+		.notNull()
+		.default('lainnya'),
+	recurrence: text('recurrence', { enum: ['none', 'monthly', 'weekly', 'custom_days'] })
+		.notNull()
+		.default('monthly'),
+	intervalDays: integer('interval_days'),
+	nextDueAt: text('next_due_at').notNull(),
+	windowNotifiedAt: text('window_notified_at'),
+	dueDayNotifiedAt: text('due_day_notified_at'),
+	snoozedUntil: text('snoozed_until'),
+	paidAt: text('paid_at'),
+	archivedAt: text('archived_at'),
+	createdAt: text('created_at')
+		.notNull()
+		.default(sql`(datetime('now'))`),
+	updatedAt: text('updated_at')
+		.notNull()
+		.default(sql`(datetime('now'))`)
+});
+
+// Kanban board (PRD §11.3) — board task generik terpisah dari /tasks (todo
+// list flat di bawah). Nama tabel diberi prefix kanban_ untuk menghindari
+// bentrok dengan tasks/task_tags milik fitur /tasks.
 export const kanbanTasks = sqliteTable('kanban_tasks', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	userId: integer('user_id')
@@ -143,12 +178,100 @@ export const kanbanTaskTags = sqliteTable(
 	})
 );
 
+export const tasks = sqliteTable('tasks', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	userId: integer('user_id')
+		.notNull()
+		.references(() => users.id),
+	title: text('title').notNull(),
+	notes: text('notes'),
+	dueAt: text('due_at'),
+	priority: text('priority', { enum: ['low', 'normal', 'high'] }).notNull().default('normal'),
+	pinned: integer('pinned').notNull().default(0),
+	doneAt: text('done_at'),
+	archivedAt: text('archived_at'),
+	createdAt: text('created_at')
+		.notNull()
+		.default(sql`(datetime('now'))`),
+	updatedAt: text('updated_at')
+		.notNull()
+		.default(sql`(datetime('now'))`)
+});
+
+export const taskTags = sqliteTable(
+	'task_tags',
+	{
+		taskId: integer('task_id')
+			.notNull()
+			.references(() => tasks.id, { onDelete: 'cascade' }),
+		tagId: integer('tag_id')
+			.notNull()
+			.references(() => tags.id, { onDelete: 'cascade' })
+	},
+	(t) => ({
+		pk: primaryKey({ columns: [t.taskId, t.tagId] })
+	})
+);
+
+export const boards = sqliteTable('boards', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	userId: integer('user_id')
+		.notNull()
+		.references(() => users.id),
+	title: text('title').notNull().default('Untitled board'),
+	scenePath: text('scene_path').notNull(),
+	archivedAt: text('archived_at'),
+	createdAt: text('created_at')
+		.notNull()
+		.default(sql`(datetime('now'))`),
+	updatedAt: text('updated_at')
+		.notNull()
+		.default(sql`(datetime('now'))`)
+});
+
+export const vaultTasks = sqliteTable('vault_tasks', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	text: text('text').notNull().unique(),
+	done: integer('done').notNull().default(0),
+	position: integer('position').notNull().default(0),
+	createdAt: text('created_at')
+		.notNull()
+		.default(sql`(datetime('now'))`),
+	updatedAt: text('updated_at')
+		.notNull()
+		.default(sql`(datetime('now'))`)
+});
+
+export const pushSubscriptions = sqliteTable('push_subscriptions', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	userId: integer('user_id')
+		.notNull()
+		.references(() => users.id),
+	endpoint: text('endpoint').notNull().unique(),
+	p256dh: text('p256dh').notNull(),
+	auth: text('auth').notNull(),
+	deviceLabel: text('device_label'),
+	createdAt: text('created_at')
+		.notNull()
+		.default(sql`(datetime('now'))`)
+});
+
 export type Item = typeof items.$inferSelect;
 export type NewItem = typeof items.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type Spend = typeof spends.$inferSelect;
 export type NewSpend = typeof spends.$inferInsert;
+export type Bill = typeof bills.$inferSelect;
+export type NewBill = typeof bills.$inferInsert;
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type NewPushSubscription = typeof pushSubscriptions.$inferInsert;
+export type VaultTask = typeof vaultTasks.$inferSelect;
+export type NewVaultTask = typeof vaultTasks.$inferInsert;
+export type Task = typeof tasks.$inferSelect;
+export type NewTask = typeof tasks.$inferInsert;
+export type Board = typeof boards.$inferSelect;
+export type NewBoard = typeof boards.$inferInsert;
 export type KanbanTask = typeof kanbanTasks.$inferSelect;
 export type NewKanbanTask = typeof kanbanTasks.$inferInsert;
 export type KanbanChecklistItem = typeof kanbanChecklistItems.$inferSelect;
