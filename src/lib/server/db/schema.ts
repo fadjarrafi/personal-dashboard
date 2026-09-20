@@ -94,9 +94,61 @@ export const receipts = sqliteTable('receipts', {
 		.default(sql`(datetime('now'))`)
 });
 
+export const kanbanTasks = sqliteTable('kanban_tasks', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	userId: integer('user_id')
+		.notNull()
+		.references(() => users.id),
+	title: text('title').notNull(),
+	description: text('description'),
+	status: text('status', { enum: ['todo', 'in_progress', 'done'] }).notNull().default('todo'),
+	priority: text('priority', { enum: ['low', 'medium', 'high'] }).notNull().default('medium'),
+	dueDate: text('due_date'),
+	position: integer('position').notNull().default(0),
+	spendId: integer('spend_id').references(() => spends.id, { onDelete: 'set null' }),
+	createdAt: text('created_at')
+		.notNull()
+		.default(sql`(datetime('now'))`),
+	updatedAt: text('updated_at')
+		.notNull()
+		.default(sql`(datetime('now'))`),
+	archivedAt: text('archived_at')
+});
+
+export const kanbanChecklistItems = sqliteTable('kanban_checklist_items', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	taskId: integer('task_id')
+		.notNull()
+		.references(() => kanbanTasks.id, { onDelete: 'cascade' }),
+	content: text('content').notNull(),
+	done: integer('done').notNull().default(0),
+	position: integer('position').notNull().default(0),
+	createdAt: text('created_at')
+		.notNull()
+		.default(sql`(datetime('now'))`)
+});
+
+export const kanbanTaskTags = sqliteTable(
+	'kanban_task_tags',
+	{
+		taskId: integer('task_id')
+			.notNull()
+			.references(() => kanbanTasks.id, { onDelete: 'cascade' }),
+		tagId: integer('tag_id')
+			.notNull()
+			.references(() => tags.id, { onDelete: 'cascade' })
+	},
+	(t) => ({
+		pk: primaryKey({ columns: [t.taskId, t.tagId] })
+	})
+);
+
 export type Item = typeof items.$inferSelect;
 export type NewItem = typeof items.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type Spend = typeof spends.$inferSelect;
 export type NewSpend = typeof spends.$inferInsert;
+export type KanbanTask = typeof kanbanTasks.$inferSelect;
+export type NewKanbanTask = typeof kanbanTasks.$inferInsert;
+export type KanbanChecklistItem = typeof kanbanChecklistItems.$inferSelect;

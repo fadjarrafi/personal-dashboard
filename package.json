@@ -24,6 +24,7 @@
 		"better-sqlite3": "^11.7.0",
 		"drizzle-orm": "^0.45.2",
 		"highlight.js": "^11.11.1",
+		"svelte-dnd-action": "^0.9.79",
 		"tesseract.js": "^7.0.0"
 	},
 	"devDependencies": {
@@ -47,5 +48,12 @@
 		"typescript": "^5.7.3",
 		"vite": "^6.0.7",
 		"vite-plugin-pwa": "^0.21.1"
+	},
+	"allowScripts": {
+		"better-sqlite3@11.10.0": true,
+		"esbuild@0.18.20": true,
+		"esbuild@0.25.12": true,
+		"esbuild@0.28.1": true,
+		"tesseract.js@7.0.0": true
 	}
 }

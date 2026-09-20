@@ -18,7 +18,8 @@
 	const activeType = $derived(page.url.searchParams.get('type'));
 	const isArchive = $derived(page.url.pathname === '/archive');
 	const isSpends = $derived(page.url.pathname.startsWith('/spends'));
-	const isCatalog = $derived(!isArchive && !isSpends);
+	const isKanban = $derived(page.url.pathname.startsWith('/kanban'));
+	const isCatalog = $derived(!isArchive && !isSpends && !isKanban);
 
 	let drawerOpen = $state(false);
 
@@ -106,6 +107,13 @@
 						aria-current={isSpends ? 'page' : undefined}
 					>
 						💸 Pengeluaran
+					</a>
+					<a
+						class="btn btn-sm {isKanban ? 'btn-primary' : 'btn-ghost'}"
+						href="/kanban"
+						aria-current={isKanban ? 'page' : undefined}
+					>
+						🗂 Kanban
 					</a>
 					<a
 						class="btn btn-sm {isArchive ? 'btn-primary' : 'btn-ghost'}"
@@ -221,6 +229,25 @@
 						>
 							<span aria-hidden="true" class="w-5 text-center">💸</span>
 							<span>Pengeluaran</span>
+						</a>
+					</li>
+				</ul>
+
+				<div class="my-3 border-t border-base-300"></div>
+
+				<div class="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider opacity-50">
+					Produktivitas
+				</div>
+				<ul class="menu menu-lg w-full rounded-box p-0">
+					<li>
+						<a
+							href="/kanban"
+							class={isKanban ? 'active' : ''}
+							aria-current={isKanban ? 'page' : undefined}
+							onclick={closeDrawer}
+						>
+							<span aria-hidden="true" class="w-5 text-center">🗂</span>
+							<span>Kanban</span>
 						</a>
 					</li>
 				</ul>

@@ -298,12 +298,204 @@ GET    /spends/summary?period=       → total per kategori & per periode
 - Perlu income/pemasukan juga, atau murni pengeluaran?
 - Kategori: enum tetap, teks bebas, atau tabel sendiri?
 
-### 11.3 Urutan Rilis yang Disarankan
+### 11.3 Kanban Board — `Planned / Next Update`
+
+**Tujuan (asumsi):** board visual untuk mengelola task personal generik (bukan pekerjaan klien/freelance — itu domain job tracker di §11.1), dengan kolom tetap merepresentasikan status pengerjaan. Fitur ini **sengaja dibuat terpisah dari job tracker**, bukan menggantikannya: job tracker (bila dibangun) punya semantik pekerjaan/klien, sedangkan kanban board di sini murni task list personal (mis. checklist harian, task rumah tangga, todo proyek pribadi non-klien).
+
+**Cakupan yang diusulkan (MVP fitur ini):**
+- CRUD task: `title`, `description`, `status`, `priority`, `due_date` opsional.
+- **Satu board saja** (tidak ada entitas `boards` terpisah/multi-board) — semua task milik user dalam satu board implisit, sesuai semangat single-user MVP.
+- **Kolom tetap** (bukan kustomisasi user): `todo → in_progress → done`, sama pola CHECK constraint seperti diusulkan di §11.1.
+- **Drag-and-drop:** pindah task antar kolom (ubah `status`) dan reorder dalam kolom (ubah `position`). ⚠️ Belum ada library drag-and-drop di dependency proyek saat ini — perlu ditambahkan (`svelte-dnd-action` diusulkan sebagai pilihan idiomatic untuk Svelte 5; ini rekomendasi, bukan keputusan final).
+- **Checklist/subtask:** setiap task bisa punya beberapa item checklist (dicentang selesai/belum), tabel terpisah agar tak membatasi jumlah.
+- **Tags:** reuse tabel `tags` yang sudah ada (pola sama seperti `item_tags`), bukan bikin sistem tag baru.
+- **Keterkaitan opsional ke spend:** task boleh menaut ke satu record `spends` (mis. "beli materialnya sudah dicatat di pengeluaran ini") via `spend_id` nullable. Ini **hanya referensi (FK)** — nilai uang tetap tunggal sumber di tabel `spends`, tidak diduplikasi ke `tasks`.
+
+**Skema usulan:**
+```sql
+CREATE TABLE tasks (
+  id          INTEGER PRIMARY KEY,
+  user_id     INTEGER NOT NULL REFERENCES users(id),
+  title       TEXT NOT NULL,
+  description TEXT,
+  status      TEXT NOT NULL DEFAULT 'todo'
+              CHECK (status IN ('todo','in_progress','done')),
+  priority    TEXT NOT NULL DEFAULT 'medium'
+              CHECK (priority IN ('low','medium','high')),        -- ⚠️ label visual saja, atau pengaruhi urutan default?
+  due_date    TEXT,
+  position    INTEGER NOT NULL DEFAULT 0,   -- urutan dalam kolom, di-reindex saat drag-drop
+  spend_id    INTEGER REFERENCES spends(id),  -- opsional, hanya jika §11.2 sudah dibangun
+  created_at  TEXT NOT NULL,
+  updated_at  TEXT NOT NULL,
+  archived_at TEXT
+);
+
+CREATE TABLE task_checklist_items (
+  id         INTEGER PRIMARY KEY,
+  task_id    INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  content    TEXT NOT NULL,
+  done       INTEGER NOT NULL DEFAULT 0,   -- 0/1
+  position   INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE task_tags (
+  task_id INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  tag_id  INTEGER NOT NULL REFERENCES tags(id)  ON DELETE CASCADE,
+  PRIMARY KEY (task_id, tag_id)
+);
+```
+
+**API/route usulan** (mengikuti pola SvelteKit existing — form actions untuk operasi biasa, `+server.ts` untuk yang butuh respons cepat tanpa reload halaman seperti drag-drop):
+```
+src/routes/kanban/+page.svelte + +page.server.ts
+  → load: task terkelompok per status untuk render 3 kolom
+  → actions: create, update field dasar, archive (form actions biasa)
+
+PATCH  /kanban/tasks/:id/move        → { status, position }  (dipanggil client saat drag-drop selesai)
+POST   /kanban/tasks/:id/checklist   → tambah item checklist
+PATCH  /kanban/tasks/:id/checklist/:itemId  → toggle done / reorder
+DELETE /kanban/tasks/:id/checklist/:itemId
+```
+
+**Catatan non-fungsional:**
+- Drag-drop harus terasa instan: update UI optimistic di client dulu, sinkron ke server di background, rollback bila request gagal.
+- Harus berfungsi baik dengan mouse (desktop) maupun touch (mobile), sesuai dua konteks penggunaan di §3.
+- Tidak menambah test framework formal — konsisten dengan pola existing proyek (tanpa vitest/jest saat ini).
+
+**Keputusan yang masih dibutuhkan (⚠️):**
+- Apakah task berstatus `done` otomatis diarsipkan setelah N hari, atau dibiarkan menumpuk di kolom Done sampai diarsipkan manual?
+- Apakah `priority` murni label warna/visual, atau memengaruhi urutan default (mis. high selalu di atas dalam kolom)?
+- Apakah task dengan `due_date` yang terlewat perlu indikator visual (highlight overdue)?
+- Batas jumlah checklist item per task — dibiarkan bebas, atau ada limit wajar?
+- Library drag-and-drop: konfirmasi `svelte-dnd-action`, atau ada preferensi lain?
+
+### 11.4 Urutan Rilis yang Disarankan
 1. **v0.1 (MVP):** bookmark, note, snippet — §4.
 2. **v0.2:** Spend tracker (lebih sederhana, requirement lebih jelas).
 3. **v0.3:** Job tracker (tunggu kejelasan apakah job ↔ spend perlu terhubung, agar tak refactor relasi).
+4. **Kanban board (§11.3):** independen dari job tracker — bisa dibangun kapan saja setelah v0.2, tidak wajib menunggu job tracker selesai. Satu-satunya dependency lunak: bila dibangun sebelum §11.2 selesai, kolom `spend_id` di skema `tasks` cukup ditunda (nullable, tambahkan via migration kecil belakangan) tanpa mengubah tabel lain.
 
 Alasan spend sebelum job: spend punya bentuk yang lebih stabil & mandiri, sedangkan job berpotensi butuh relasi ke spend — mendahulukan spend menghindari perubahan skema job dua kali.
+
+---
+
+## 12. Redesign UI — "Brutalist Dark" — `Planned / Next Update`
+
+> **Status: Planned.** Bagian ini mengunci arah visual untuk redesign seluruh web app. Referensi utama: screenshot aplikasi desktop *Plynk* (halaman "Your Boards"). Tidak ada perubahan skema/API — ini murni lapisan presentasi, tapi berdampak ke **semua** komponen di `src/lib/components` dan `src/routes`.
+
+### 12.1 Ringkasan Gaya
+
+Empat kata kunci: **Brutalist · Dark Mode · Zinc borders · Blackboards.**
+
+| Prinsip | Artinya dalam praktik |
+|---|---|
+| **Brutalist** | Tanpa `border-radius` (0px), tanpa shadow, tanpa gradient, tanpa blur. Hierarki dibangun dari *border 1px*, *ukuran tipografi*, dan *ruang kosong* — bukan dari elevasi/kedalaman. |
+| **Dark Mode (default)** | Kanvas hitam pekat `#000000`; panel/permukaan *obsidian* `#09090B` (zinc-950). Bukan navy/slate seperti tema `dashboard` saat ini. |
+| **Zinc borders** | Semua garis pemisah, outline kartu, dan tombol sekunder memakai `#27272A` (zinc-800), 1px, solid. Border putus-putus (`dashed`) khusus untuk *empty state / slot kosong*. |
+| **Blackboards** | Kartu/panel diperlakukan seperti *papan tulis hitam*: permukaan matte `#09090B` dibingkai zinc, isi "kapur" putih. Tak ada kartu yang "melayang" — semua *flat* dan rata dengan grid. |
+| **Monokrom** | Satu-satunya "warna" adalah putih. Status ditandai titik putih ● + label mono uppercase, bukan hijau/kuning. Warna semantik (error/warning) dibatasi ke kasus yang benar-benar butuh (validasi form, toast error) — lihat §12.2. |
+
+### 12.2 Token Warna
+
+Definisikan sebagai CSS custom properties di `src/app.css`, lalu dipetakan ke tema daisyUI (lihat §12.6). Skala mengikuti **Tailwind `zinc`** agar konsisten dan mudah diingat.
+
+| Token | Hex | Pemakaian |
+|---|---|---|
+| `--bg-canvas` | `#000000` | Background `body` & area konten utama |
+| `--bg-surface` | `#09090B` | Sidebar, kartu (*blackboard*), modal, dropdown, tooltip |
+| `--bg-raised` | `#18181B` (zinc-900) | Item nav *hover*, baris tabel *hover*, input background |
+| `--bg-active` | `#27272A` (zinc-800) | Nav item aktif tingkat utama (lihat "BOARDS" di referensi), *pressed state* |
+| `--border` | `#27272A` (zinc-800) | Semua border 1px default |
+| `--border-strong` | `#3F3F46` (zinc-700) | Border saat hover/fokus pada elemen interaktif |
+| `--fg` | `#FFFFFF` | Judul, teks utama, ikon aktif, titik status |
+| `--fg-muted` | `#A1A1AA` (zinc-400) | Label mono uppercase, nav item non-aktif, teks sekunder |
+| `--fg-subtle` | `#71717A` (zinc-500) | Placeholder, teks disabled, ID/metadata dekoratif |
+| `--accent` | `#FFFFFF` | Tombol primer (bg putih, teks hitam), garis aktif 2px di sisi kiri nav item |
+| `--danger` | `#F87171` | **Hanya** untuk aksi destruktif (hard delete, toast error). Tidak dipakai untuk dekorasi. |
+| `--warning` | `#FBBF24` | **Hanya** untuk peringatan nyata (mis. OCR gagal parsial). Opsional. |
+
+> ⚠️ **Kontras:** `#71717A` di atas `#000000` ≈ 4.3:1 — sedikit di bawah AA (4.5:1) untuk teks kecil. Karena itu label mono berukuran 10–12px **wajib** memakai `--fg-muted` (`#A1A1AA`, ≈ 8:1), dan `--fg-subtle` dibatasi untuk placeholder/disabled/metadata yang tidak esensial. Ini menyimpang sedikit dari referensi demi mempertahankan a11y yang sudah dicapai di commit `aea1912`.
+
+**Light mode (opsional, prioritas rendah):** inversi langsung — canvas `#FFFFFF`, surface `#FAFAFA` (zinc-50), border `#E4E4E7` (zinc-200), fg `#09090B`, accent hitam. Toggle ☾/☀ diletakkan di kaki sidebar seperti referensi. Dark tetap default dan `prefers-color-scheme` **tidak** diikuti otomatis (single user → preferensi disimpan di `localStorage`).
+
+### 12.3 Tipografi
+
+Dua keluarga huruf, peran tegas, tidak dicampur:
+
+| Peran | Font | Spesifikasi |
+|---|---|---|
+| **Display / Judul** | Sans geometris netral — **Geist** (rekomendasi) atau Inter | Bold, `tracking-tight` (−0.02em), `leading-none`. H1 halaman 36–40px, judul kartu 20–22px semibold, judul modal 24px. Putih `--fg`. |
+| **Label / UI / Meta** | Monospace — **Geist Mono** (rekomendasi) atau JetBrains Mono | **Uppercase**, `tracking-widest` (+0.1em), 10–12px, `--fg-muted`. Dipakai untuk: heading section sidebar ("NAVIGATION"), nav item, ID (`ID-001`), subtitle halaman ("ACTIVE PROJECTS WORKSPACE"), status badge, label tombol, kolom header tabel. |
+| **Body** | Sans yang sama dengan display | Regular 14–15px, `--fg` untuk isi, `--fg-muted` untuk deskripsi kartu. |
+| **Code** (snippet) | Monospace yang sama, **tidak** uppercase | 13px, `leading-relaxed`, preserve whitespace — tetap seperti `CodeBlock.svelte` sekarang. |
+
+Font di-*self-host* (mis. `@fontsource-variable/geist` + `@fontsource-variable/geist-mono`) agar tak ada request ke pihak ketiga dan tetap konsisten dengan PWA/offline shell. Fallback: `ui-sans-serif, system-ui` dan `ui-monospace, Consolas`.
+
+### 12.4 Bentuk, Ruang & Grid
+
+- **Radius:** `0px` untuk semua elemen (kartu, tombol, input, modal, badge, avatar). Satu-satunya pengecualian: titik status ● (`rounded-full`, 6px) dan *focus ring*.
+- **Border:** 1px `--border` di semua sisi. Tak ada border yang "lebih tebal untuk penekanan" — penekanan dilakukan lewat **garis aksen 2px putih di sisi kiri** (nav item aktif) atau **inversi warna** (tombol primer).
+- **Shadow / blur / gradient:** dilarang. Modal memakai overlay hitam `rgba(0,0,0,0.7)` polos.
+- **Spacing:** basis 4px. Padding kartu 24px, gap grid 24px, padding sidebar 24px horizontal, tinggi item nav 40px, tinggi tombol 40px (desktop) / 44px (mobile, `tap-target`).
+- **Grid konten:** desktop 3 kolom (`grid-cols-3`), tablet 2, mobile 1. Sidebar tetap 256px di ≥ `lg`, drawer hamburger di bawahnya (perilaku existing dipertahankan).
+- **Pemisah halaman:** setiap halaman diawali blok header — **H1 + subtitle mono** di kiri, **tombol aksi primer** di kanan — lalu **garis 1px** full-width di bawahnya (lihat "Your Boards ——— + CREATE BOARD").
+- **Transisi:** hanya `background-color`/`border-color`, 100–150ms, `ease-out`. Tanpa animasi scale/slide kecuali drawer mobile. Hormati `prefers-reduced-motion` (sudah ada di `app.css`).
+
+### 12.5 Katalog Komponen (spesifikasi visual)
+
+| Komponen | Spesifikasi |
+|---|---|
+| **Sidebar** | Lebar 256px, bg `--bg-surface`, `border-r` 1px. Bagian atas: logotype (ikon kotak putih + wordmark bold) + sub-label mono ("PREMIUM ACCESS" → di sini mis. "SINGLE USER"). Section heading mono `--fg-muted` 10px ("NAVIGATION", "WORKSPACES"). Item nav: ikon 16px + label mono uppercase 12px, tinggi 40px; hover → bg `--bg-raised`; **aktif** → bg `--bg-active`, teks putih, garis 2px putih di kiri. Kaki sidebar: baris ikon (toggle tema, settings, trash/arsip) dalam kotak berborder, lalu kartu user (avatar kotak berinisial + nama mono uppercase). |
+| **Header halaman** | H1 display bold + subtitle mono uppercase `--fg-muted`; tombol primer di kanan; `border-b` 1px setelahnya; margin bawah 48px. |
+| **Kartu (Blackboard)** | bg `--bg-surface`, border 1px, padding 24px. Struktur: baris meta (ID/tipe mono `--fg-subtle` di kiri, tombol ⋯ berborder 32×32 di kanan) → judul display 20–22px → deskripsi `--fg-muted` 14px → `border-t` 1px → footer status (● putih + mono uppercase, mis. `PINNED`, `ARCHIVED`, `2 TAGS`). Hover → border `--border-strong`. Tak ada shadow. |
+| **Kartu kosong / slot** | Border **dashed** 1px `--border`, bg transparan, ikon ⊕ di tengah 40px `--fg-muted`, label mono uppercase ("INITIALIZE NEW BOARD" → "NEW ITEM" / "NEW SPEND"). Klik → buka `CaptureForm`. |
+| **Tombol primer** | bg putih, teks hitam, mono uppercase 12px `tracking-widest`, ikon `+` opsional, padding 12px 24px, radius 0. Hover → bg `#E4E4E7`. |
+| **Tombol sekunder / ikon** | bg transparan, border 1px `--border`, teks `--fg`. Hover → border `--border-strong`, bg `--bg-raised`. Ukuran ikon-only 32×32 (desktop) / 44×44 (mobile). |
+| **Tombol destruktif** | Sama seperti sekunder, tapi teks & ikon `--danger`; hover → border `--danger`. Tidak ada tombol merah solid. |
+| **Input / textarea / select** | bg `--bg-raised`, border 1px `--border`, teks putih, placeholder `--fg-subtle`, radius 0, tinggi 40px. Fokus → border putih (bukan ring biru). Label di atas input: mono uppercase 10px `--fg-muted`. |
+| **Chip / tag** (`.chip`) | Ganti `rounded-full` → radius 0; border 1px `--border`, bg transparan, mono uppercase 10px, padding 2px 8px. Tag aktif (filter) → inversi: bg putih, teks hitam. |
+| **Status badge** | ● 6px putih + teks mono uppercase 11px putih. Untuk state non-aktif (arsip) titik `--fg-subtle`. |
+| **Tabel** (`ItemTable`) | Tanpa zebra. Header kolom mono uppercase 10px `--fg-muted`, `border-b` 1px. Baris tinggi 48px, `border-b` 1px `--border`, hover → bg `--bg-raised`. Kolom aksi pakai tombol ikon berborder. |
+| **Modal** (`ItemDetailModal`) | Overlay `rgba(0,0,0,.7)`. Panel bg `--bg-surface`, border 1px, radius 0, lebar maks 640px, padding 32px. Header: judul display + tombol ✕ berborder. Footer: `border-t` 1px + baris aksi rata kanan (pertahankan bottom padding dari fix `bfece27`). Mobile → full-screen sheet dari bawah. |
+| **Code block** (`CodeBlock`) | bg `#000000` (lebih gelap dari kartu), border 1px, radius 0. Bar atas: label bahasa mono uppercase `--fg-muted` di kiri, tombol COPY berborder di kanan. Syntax highlight (jika ada) **monokrom**: keyword putih bold, string `--fg-muted`, comment `--fg-subtle` italic. |
+| **Toast** | Kotak `--bg-surface` border 1px, radius 0, posisi bawah-tengah (mobile) / kanan-bawah (desktop). Teks mono uppercase 12px. Error → border `--danger`, teks `--danger`. Tanpa ikon berwarna. |
+| **Chart** (`SpendChart`) | Bar putih penuh untuk **hari ini**, bar `--border-strong` (zinc-700) untuk hari lain, hover → `--fg-muted`. Sumbu & gridline `--border` 1px. Tooltip = kotak `--bg-surface` border 1px, teks mono. Tanpa gradient/rounded bar. |
+| **Empty state halaman** | Sama seperti kartu kosong tapi memenuhi lebar konten: border dashed, ikon ⊕, satu kalimat mono uppercase, tombol primer di bawahnya. |
+| **Shortcuts overlay** (`Shortcuts`) | Modal kecil; tiap shortcut = `<kbd>` kotak berborder 1px, mono uppercase, bg `--bg-raised`. |
+| **Login** | Kanvas hitam, satu blackboard 400px di tengah: logotype, sub-label mono, dua input, tombol primer putih full-width. Tanpa ilustrasi. |
+
+### 12.6 Strategi Implementasi (SvelteKit + Tailwind + daisyUI)
+
+Pilihan sadar: **pertahankan daisyUI**, tapi ganti tema — bukan cabut daisyUI. Alasan: komponen existing (modal, drawer, toast) sudah memakai kelas daisyUI; mencabutnya = refactor besar tanpa manfaat visual. Cukup:
+
+1. **Tema baru di `tailwind.config.js`** — ganti tema `dashboard` (navy/sky) dengan `brutal`:
+   - `base-100: #000000`, `base-200: #09090B`, `base-300: #18181B`, `base-content: #FFFFFF`, `neutral: #27272A`, `primary: #FFFFFF`, `primary-content: #000000`, `error: #F87171`, `warning: #FBBF24`.
+   - Variabel radius daisyUI: `--rounded-box: 0`, `--rounded-btn: 0`, `--rounded-badge: 0`, `--tab-radius: 0`, `--animation-btn: 0`, `--btn-focus-scale: 1`.
+   - `darkTheme: 'brutal'`; tema `light` diganti `brutal-light` (inversi §12.2) bila light mode dibangun.
+2. **`fontFamily` di Tailwind:** `sans: ['Geist Variable', ...]`, `mono: ['Geist Mono Variable', ...]`; import fontsource di `src/routes/+layout.svelte`.
+3. **`src/app.css`:** deklarasi token CSS (§12.2) di `:root`/`[data-theme]`; update `.chip` (radius 0, border), `.skip-link` (radius 0), focus-visible → `outline: 2px solid #fff; outline-offset: 2px; border-radius: 0`.
+4. **Kelas utilitas baru** di `@layer components`: `.label-mono` (mono uppercase tracking-widest 10px muted), `.blackboard` (bg surface + border 1px + p-6), `.page-header` (flex + border-b), `.btn-brutal` / `.btn-brutal-ghost`.
+5. **Refactor komponen** urut dampak: layout & sidebar → `ItemCard` → `ItemTable` → `CaptureForm` → `ItemDetailModal` → `CodeBlock` → `Toast` → `SpendChart` → halaman `spends`, `receipts`, `archive`, `login`.
+6. **Grep-and-kill:** cari & hapus semua `rounded-*`, `shadow-*`, `bg-gradient-*`, `btn-primary` berwarna, `badge-success/warning` dekoratif. Sisakan `rounded-full` hanya untuk titik status.
+
+**Tidak berubah:** struktur route, form actions, skema DB, PWA manifest (kecuali `theme_color` → `#000000` dan `background_color` → `#000000`), perilaku a11y (skip link, tap-target, reduce-motion, focus-visible).
+
+### 12.7 Kriteria Selesai
+
+1. Tidak ada elemen dengan `border-radius > 0` kecuali titik status & focus ring (bisa dicek dengan grep `rounded-` di `src/`).
+2. Tidak ada `box-shadow`, gradient, atau warna selain skala zinc + putih + `--danger`/`--warning` terbatas.
+3. Semua teks lolos **WCAG AA** (≥ 4.5:1) — label mono kecil memakai `#A1A1AA`, bukan `#71717A`.
+4. Lighthouse a11y & PWA installability tidak turun dari sebelum redesign.
+5. Screenshot halaman `items`, `spends`, dan `login` di desktop & mobile dapat disandingkan dengan referensi Plynk dan terbaca sebagai "keluarga" yang sama.
+
+### 12.8 Keputusan yang masih dibutuhkan (⚠️)
+
+- **Font:** Geist + Geist Mono (rekomendasi, lisensi OFL), atau Inter + JetBrains Mono? Keduanya self-host via fontsource.
+- **Light mode:** dibangun sekaligus (toggle ☾/☀ seperti referensi) atau ditunda sampai dark selesai?
+- **Konsep "Workspaces" di sidebar referensi:** dipetakan ke apa di sini — filter tipe (Bookmark/Note/Snippet), tag ter-pin, atau dihilangkan? Rekomendasi: **tag ter-pin** (maks 5), karena tipe sudah ada di nav utama.
+- **Syntax highlighting monokrom:** dipertahankan dengan tema custom, atau dilepas sama sekali demi konsistensi brutalist?
+- **Kartu vs tabel** di halaman items desktop: referensi memakai grid kartu; saat ini desktop memakai `ItemTable`. Tetap tabel (padat, cepat scan) dengan gaya §12.5, atau ikut grid kartu?
 
 ---
 
@@ -311,3 +503,6 @@ Alasan spend sebelum job: spend punya bentuk yang lebih stabil & mandiri, sedang
 - Perlukah **share target Android** di MVP, atau ditunda? (menambah kompleksitas manifest + handler)
 - Syntax highlighting snippet: MVP atau nanti? (menambah dependency frontend)
 - Backup: cukup file `.db` via cron, atau juga export JSON manual dari UI?
+- Kanban board (§11.3): library drag-and-drop mana yang dipakai (`svelte-dnd-action` diusulkan) — ini dependency baru pertama untuk interaksi drag-drop di proyek, perlu dikonfirmasi sebelum implementasi dimulai.
+- Redesign UI (§12): dikerjakan **sebelum** kanban (agar kanban langsung lahir dengan gaya baru) atau **sesudah**? Rekomendasi: sebelum — redesign menyentuh semua komponen, lebih murah dilakukan saat komponen masih sedikit.
+- Redesign UI (§12): pasangan font & nasib light mode — lihat §12.8.
