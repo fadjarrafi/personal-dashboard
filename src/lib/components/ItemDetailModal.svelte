@@ -48,9 +48,9 @@
 	}
 
 	const badgeClass = {
-		bookmark: 'badge-success',
-		note: 'badge-warning',
-		snippet: 'badge-info'
+		bookmark: 'badge-outline',
+		note: 'badge-outline',
+		snippet: 'badge-outline'
 	} as const;
 </script>
 
@@ -63,8 +63,10 @@
 			<header class="mb-4 flex items-start justify-between gap-2">
 				<div class="min-w-0">
 					<div class="mb-1 flex items-center gap-2">
-						<span class="badge {badgeClass[item.type]} badge-sm font-mono">{item.type}</span>
-						{#if item.pinned}<span class="text-warning">★</span>{/if}
+						<span class="badge {badgeClass[item.type]} badge-sm font-mono uppercase tracking-wide"
+							>{item.type}</span
+						>
+						{#if item.pinned}<span class="text-base-content">★</span>{/if}
 					</div>
 					{#if item.title}
 						<h3 class="text-lg font-semibold break-words">{item.title}</h3>
@@ -80,7 +82,7 @@
 								<img
 									src={item.faviconUrl}
 									alt=""
-									class="inline-block h-4 w-4 rounded-sm align-text-bottom"
+									class="inline-block h-4 w-4 align-text-bottom"
 									onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
 								/>
 							{/if}
@@ -89,7 +91,7 @@
 					{/if}
 				</div>
 				<form method="dialog">
-					<button class="btn btn-ghost btn-sm btn-circle" aria-label="Tutup">✕</button>
+					<button class="btn btn-ghost btn-sm btn-square" aria-label="Tutup">✕</button>
 				</form>
 			</header>
 
@@ -108,7 +110,7 @@
 						{#if item.type === 'snippet'}
 							<CodeBlock code={item.body} lang={item.language} maxHeight="24rem" />
 						{:else}
-							<div class="rounded-box bg-base-200 p-4 text-sm">
+							<div class="border border-base-300 bg-base-200 p-4 text-sm">
 								<p class="whitespace-pre-wrap break-words">{item.body}</p>
 							</div>
 						{/if}

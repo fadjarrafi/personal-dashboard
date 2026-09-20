@@ -70,7 +70,7 @@
 		</h2>
 		<ul class="space-y-2">
 			{#each data.notes as note (note.path)}
-				<li class="rounded-lg bg-base-200 p-2">
+				<li class="border border-base-300 bg-base-200 p-2">
 					<a class="link link-hover text-sm font-medium" href={noteHref(note.path)}>{note.title}</a>
 					<div class="mt-1 flex flex-wrap items-center gap-2 text-xs opacity-60">
 						<time>{formatDate(note.updatedAt)}</time>
@@ -100,7 +100,7 @@
 		</h2>
 		<ul class="space-y-2">
 			{#each data.notes as note (note.path)}
-				<li class="rounded-lg bg-base-200 p-2">
+				<li class="border border-base-300 bg-base-200 p-2">
 					<a class="link link-hover text-sm font-medium" href={noteHref(note.path)}>{note.title}</a>
 					{#if note.excerpt}<p class="mt-1 truncate text-xs opacity-70">{note.excerpt}</p>{/if}
 					<div class="mt-1 text-xs opacity-50">{formatDate(note.updatedAt)}</div>

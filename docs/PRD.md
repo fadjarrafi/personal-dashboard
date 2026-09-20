@@ -385,9 +385,9 @@ Alasan spend sebelum job: spend punya bentuk yang lebih stabil & mandiri, sedang
 
 ---
 
-## 12. Redesign UI — "Brutalist Dark" — `Planned / Next Update`
+## 12. Redesign UI — "Brutalist Dark" — `Built`
 
-> **Status: Planned.** Bagian ini mengunci arah visual untuk redesign seluruh web app. Referensi utama: screenshot aplikasi desktop *Plynk* (halaman "Your Boards"). Tidak ada perubahan skema/API — ini murni lapisan presentasi, tapi berdampak ke **semua** komponen di `src/lib/components` dan `src/routes`.
+> **Status: Built.** Redesign diterapkan: token warna (`src/lib/tokens.css`), tema daisyUI `brutal` (`tailwind.config.js`), dan seluruh komponen/halaman di-refactor ke gaya monokrom-brutalist. Keputusan §12.8 yang diambil saat implementasi: font Geist + Geist Mono (sudah terpasang sebelumnya), **light mode ditunda** (dark-only, sesuai prioritas rendah di bawah), konsep "Workspaces" **tidak** ditambahkan (di luar cakupan lapisan-presentasi murni), syntax highlighting **dipertahankan** dengan tema monokrom kustom (`.hljs-mono` di `app.css`, menggantikan `github-dark.css`), dan halaman items desktop **tetap tabel** (`ItemTable`). Detail asli di bawah ini dipertahankan sebagai referensi spek.
 
 ### 12.1 Ringkasan Gaya
 

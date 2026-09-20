@@ -35,7 +35,7 @@
 
 <a
 	href="/kanban/{task.id}"
-	class="block cursor-grab rounded-box border border-base-300 bg-base-100 p-3 shadow-sm transition hover:border-primary/50 active:cursor-grabbing"
+	class="block cursor-grab border border-base-300 bg-base-200 p-3 transition hover:border-base-content/40 active:cursor-grabbing"
 >
 	<div class="flex items-start justify-between gap-2">
 		<h3 class="min-w-0 flex-1 truncate text-sm font-medium">{task.title}</h3>

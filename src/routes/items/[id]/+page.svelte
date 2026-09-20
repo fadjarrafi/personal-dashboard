@@ -26,7 +26,7 @@
 					<img
 						src={item.faviconUrl}
 						alt=""
-						class="h-5 w-5 rounded-sm"
+						class="h-5 w-5"
 						onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
 					/>
 				{/if}

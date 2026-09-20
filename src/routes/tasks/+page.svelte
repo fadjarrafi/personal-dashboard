@@ -155,7 +155,7 @@
 								<input type="hidden" name="id" value={t.id} />
 								<button
 									type="submit"
-									class="tap-target flex h-6 w-6 items-center justify-center rounded-full border {t.doneAt
+									class="tap-target flex h-6 w-6 items-center justify-center border {t.doneAt
 										? 'border-success bg-success text-success-content'
 										: 'border-base-300'}"
 									aria-label={t.doneAt ? 'Tandai belum selesai' : 'Tandai selesai'}

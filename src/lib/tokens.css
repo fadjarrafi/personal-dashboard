@@ -1,8 +1,6 @@
-/* Hallmark · macrostructure: Workbench-adapted (dense two-pane app panels) · design-system: design.md · designed-as-app
- * genre: modern-minimal · theme: custom · vibe: "quiet instrument panel, dense, no-nonsense"
- * paper: oklch(20% 0.016 235) · accent: oklch(74% 0.130 227) — brand-carried from the app's original sky-blue
- * display: Geist Variable · body: Geist Variable · mono: Geist Mono Variable
- * axes: dark / geometric-sans / cool · studied: no · context: user-confirmed
+/* Redesign "Brutalist Dark" — PRD docs/PRD.md §12.
+ * genre: brutalist · theme: dark (monochrome + zinc) · vibe: "blackboards, zinc borders, no radius"
+ * display: Geist Variable · mono: Geist Mono Variable
  */
 
 @font-face {
@@ -22,26 +20,29 @@
 }
 
 :root {
-	--color-paper: oklch(20% 0.016 235);
-	--color-paper-2: oklch(23.5% 0.018 235);
-	--color-paper-3: oklch(28% 0.02 235);
-	--color-ink: oklch(94% 0.01 235);
-	--color-ink-2: oklch(74% 0.012 235);
-	--color-rule: oklch(34% 0.016 235);
-	--color-rule-2: oklch(29% 0.016 235);
-	--color-muted: oklch(58% 0.014 235);
+	/* §12.2 token warna */
+	--color-paper: #000000; /* bg-canvas */
+	--color-paper-2: #09090b; /* bg-surface (blackboard) */
+	--color-paper-3: #18181b; /* bg-raised (hover) */
+	--color-paper-4: #27272a; /* bg-active (pressed / nav aktif) */
+	--color-ink: #ffffff; /* fg */
+	--color-ink-2: #a1a1aa; /* fg-muted — label mono, teks sekunder */
+	--color-muted: #71717a; /* fg-subtle — placeholder/disabled/metadata saja */
+	--color-rule: #27272a; /* border */
+	--color-rule-2: #3f3f46; /* border-strong (hover/fokus) */
 
-	--color-accent: oklch(74% 0.13 227);
-	--color-accent-ink: oklch(20% 0.016 235);
-	--color-focus: oklch(78% 0.17 227);
+	--color-accent: #ffffff;
+	--color-accent-ink: #000000;
+	--color-focus: #ffffff;
 
-	--color-success: oklch(74% 0.15 152);
-	--color-warning: oklch(80% 0.15 80);
-	--color-danger: oklch(68% 0.18 25);
+	--color-success: #ffffff;
+	--color-warning: #fbbf24;
+	--color-danger: #f87171;
 
-	--color-cat-bookmark: oklch(74% 0.13 152);
-	--color-cat-note: oklch(80% 0.13 80);
-	--color-cat-snippet: oklch(74% 0.12 245);
+	/* Titik kategori di nav — tetap ada tapi diredam (monokrom, bukan warna-warni). */
+	--color-cat-bookmark: #a1a1aa;
+	--color-cat-note: #a1a1aa;
+	--color-cat-snippet: #a1a1aa;
 
 	--font-display: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
 	--font-body: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
@@ -57,13 +58,15 @@
 	--space-xl: 3rem;
 	--space-2xl: 4.5rem;
 
-	--ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-	--ease-in: cubic-bezier(0.7, 0, 0.84, 0);
-	--ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-	--dur-short: 160ms;
-	--dur-med: 220ms;
+	/* Transisi warna saja, cepat — §12.4. */
+	--ease-out: ease-out;
+	--ease-in: ease-out;
+	--ease-in-out: ease-out;
+	--dur-short: 120ms;
+	--dur-med: 150ms;
 
-	--radius-box: 0.625rem;
-	--radius-btn: 0.5rem;
-	--radius-badge: 0.375rem;
+	/* Brutalist: tanpa radius di mana pun kecuali titik status/focus ring. */
+	--radius-box: 0;
+	--radius-btn: 0;
+	--radius-badge: 0;
 }

@@ -53,9 +53,9 @@
 		badge: string;
 		rows: ItemRow[];
 	}> = $derived([
-		{ key: 'bookmark', label: 'Bookmark', dot: 'text-[--color-cat-bookmark]', badge: 'badge-success', rows: bookmarks },
-		{ key: 'note', label: 'Note', dot: 'text-[--color-cat-note]', badge: 'badge-warning', rows: notes },
-		{ key: 'snippet', label: 'Snippet', dot: 'text-[--color-cat-snippet]', badge: 'badge-info', rows: snippets }
+		{ key: 'bookmark', label: 'Bookmark', dot: 'text-[--color-cat-bookmark]', badge: 'badge-outline', rows: bookmarks },
+		{ key: 'note', label: 'Note', dot: 'text-[--color-cat-note]', badge: 'badge-outline', rows: notes },
+		{ key: 'snippet', label: 'Snippet', dot: 'text-[--color-cat-snippet]', badge: 'badge-outline', rows: snippets }
 	]);
 
 	const shownSections = $derived(
@@ -183,7 +183,7 @@
 
 <a
 	href="#capture-form"
-	class="btn btn-primary btn-circle btn-lg fixed bottom-5 right-5 z-40 shadow-lg lg:hidden"
+	class="btn btn-primary btn-square btn-lg fixed bottom-5 right-5 z-40 lg:hidden"
 	aria-label="Tambah baru"
 	title="Tambah baru"
 	style="padding-bottom: env(safe-area-inset-bottom);"

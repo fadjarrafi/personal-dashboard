@@ -34,7 +34,7 @@
 							<input type="hidden" name="id" value={task.id} />
 							<button
 								type="submit"
-								class="btn btn-ghost btn-xs btn-circle"
+								class="btn btn-ghost btn-xs btn-square"
 								aria-label={task.done ? 'Tandai belum selesai' : 'Tandai selesai'}
 							>
 								{task.done ? '☑' : '☐'}
@@ -104,7 +104,7 @@
 			</h2>
 			<ul class="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
 				{#each data.captures as note (note.path)}
-					<li class="rounded-lg bg-base-300/50 p-2">
+					<li class="border border-base-300 bg-base-300/50 p-2">
 						<a class="link link-hover text-sm font-medium" href={vaultHref(note.path)}>{note.title}</a>
 						{#if note.excerpt}<p class="mt-1 truncate text-xs opacity-70">{note.excerpt}</p>{/if}
 					</li>

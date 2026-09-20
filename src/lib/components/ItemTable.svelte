@@ -83,7 +83,7 @@
 								src={item.faviconUrl}
 								alt=""
 								loading="lazy"
-								class="h-4 w-4 shrink-0 rounded-sm"
+								class="h-4 w-4 shrink-0"
 								onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
 							/>
 						{/if}
@@ -94,7 +94,7 @@
 						{/if}
 					</div>
 					{#if item.pinned}
-						<span class="shrink-0 text-warning" aria-label="Disematkan" title="Pinned">★</span>
+						<span class="shrink-0 text-base-content" aria-label="Disematkan" title="Pinned">★</span>
 					{/if}
 				</div>
 

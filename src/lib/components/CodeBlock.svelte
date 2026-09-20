@@ -13,6 +13,7 @@
 
 	let html = $state<string>('');
 	let ready = $state(false);
+	let copied = $state(false);
 
 	$effect(() => {
 		let cancelled = false;
@@ -42,10 +43,28 @@
 			.replace(/</g, '&lt;')
 			.replace(/>/g, '&gt;');
 	}
+
+	async function copyCode() {
+		try {
+			await navigator.clipboard.writeText(code);
+			copied = true;
+			setTimeout(() => (copied = false), 1200);
+		} catch {
+			// ignore
+		}
+	}
 </script>
 
-<pre
-	class="hljs overflow-auto rounded-box border border-base-300 p-3 text-xs leading-relaxed"
-	style="max-height: {maxHeight}"><code
-		>{#if ready}<!-- eslint-disable-next-line svelte/no-at-html-tags -->{@html html}{:else}{code}{/if}</code
-	></pre>
+<div class="border border-base-300">
+	<div class="flex items-center justify-between border-b border-base-300 bg-base-200 px-3 py-1.5">
+		<span class="label-mono">{lang ?? 'plaintext'}</span>
+		<button type="button" class="btn btn-ghost btn-xs rounded-none" onclick={copyCode}>
+			{copied ? 'Tersalin' : 'Copy'}
+		</button>
+	</div>
+	<pre
+		class="hljs-mono overflow-auto bg-black p-3 text-xs leading-relaxed"
+		style="max-height: {maxHeight}"><code
+			>{#if ready}<!-- eslint-disable-next-line svelte/no-at-html-tags -->{@html html}{:else}{code}{/if}</code
+		></pre>
+</div>

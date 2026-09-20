@@ -347,7 +347,7 @@
 
 <a
 	href="#spend-form"
-	class="btn btn-primary btn-circle btn-lg fixed bottom-5 right-5 z-40 shadow-lg lg:hidden"
+	class="btn btn-primary btn-square btn-lg fixed bottom-5 right-5 z-40 lg:hidden"
 	aria-label="Tambah pengeluaran"
 	title="Tambah pengeluaran"
 	style="padding-bottom: env(safe-area-inset-bottom);"

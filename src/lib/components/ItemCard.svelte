@@ -16,19 +16,21 @@
 	}
 
 	const badgeClass = {
-		bookmark: 'badge-success',
-		note: 'badge-warning',
-		snippet: 'badge-info'
+		bookmark: 'badge-outline',
+		note: 'badge-outline',
+		snippet: 'badge-outline'
 	} as const;
 </script>
 
-<article class="card bg-base-200 transition hover:bg-base-300">
+<article class="card border border-base-300 bg-base-200 transition hover:border-base-content/40">
 	<div class="card-body p-3">
 		<header class="flex items-start justify-between gap-2">
 			<div class="min-w-0">
 				<div class="flex items-center gap-2 text-xs">
-					<span class="badge {badgeClass[item.type]} badge-sm font-mono">{item.type}</span>
-					{#if item.pinned}<span class="text-warning">★</span>{/if}
+					<span class="badge {badgeClass[item.type]} badge-sm font-mono uppercase tracking-wide"
+						>{item.type}</span
+					>
+					{#if item.pinned}<span class="text-base-content">★</span>{/if}
 					<time class="opacity-60">{item.updatedAt.slice(0, 16).replace('T', ' ')}</time>
 				</div>
 				{#if item.title}

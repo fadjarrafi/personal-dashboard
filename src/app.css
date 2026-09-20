@@ -41,7 +41,7 @@
 	:where(a, button, [role='button'], input, select, textarea, summary):focus-visible {
 		outline: 2px solid var(--color-focus);
 		outline-offset: 2px;
-		border-radius: 0.375rem;
+		border-radius: 0;
 		transition: none;
 	}
 
@@ -58,13 +58,17 @@
 }
 
 @layer components {
+	/* Chip/tag — border 1px, tanpa radius, mono uppercase (§12.5). */
 	.chip {
-		@apply inline-flex items-center rounded-full bg-base-300 px-2 py-0.5 text-xs text-base-content/80;
+		@apply inline-flex items-center gap-1 border border-base-300 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-base-content/70;
+	}
+	.chip.chip-active {
+		@apply border-base-content bg-base-content text-base-100;
 	}
 
 	/* Skip link untuk pengguna keyboard/screen reader. */
 	.skip-link {
-		@apply sr-only fixed left-2 top-2 z-[100] rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-content shadow-lg;
+		@apply sr-only fixed left-2 top-2 z-[100] bg-primary px-3 py-2 text-sm font-semibold text-primary-content;
 	}
 	.skip-link:focus,
 	.skip-link:focus-visible {
@@ -77,14 +81,69 @@
 		min-width: 44px;
 	}
 
-	/* Penanda kategori kecil — pengganti emoji dekoratif di chrome (nav, eyebrow). */
+	/* Penanda kategori/status kecil — satu-satunya elemen yang boleh rounded-full (§12.4). */
 	.cat-dot {
 		display: inline-block;
 		width: 0.4rem;
 		height: 0.4rem;
 		border-radius: 999px;
 		background: currentColor;
+		flex-shrink: 0;
 	}
+
+	/* Label mono uppercase — heading section, meta, badge status (§12.3). */
+	.label-mono {
+		@apply font-mono text-[10px] uppercase tracking-widest text-base-content/60;
+	}
+
+	/* Kartu "blackboard" — permukaan matte + border zinc (§12.5). */
+	.blackboard {
+		@apply border border-base-300 bg-base-200 p-6;
+	}
+
+	/* Blok header halaman: H1 + subtitle mono di kiri, aksi di kanan, garis di bawah (§12.4). */
+	.page-header {
+		@apply flex flex-wrap items-end justify-between gap-3 border-b border-base-300 pb-4;
+	}
+
+	/* Tombol primer brutalist: bg putih, teks hitam, mono uppercase (§12.5). */
+	.btn-brutal {
+		@apply btn btn-primary rounded-none border-none font-mono text-xs uppercase tracking-widest hover:bg-base-content/80;
+	}
+
+	/* Tombol sekunder/ikon brutalist: transparan + border zinc (§12.5). */
+	.btn-brutal-ghost {
+		@apply btn btn-ghost rounded-none border border-base-300 font-mono text-xs uppercase tracking-widest hover:border-base-content/40 hover:bg-base-300;
+	}
+}
+
+/* Syntax highlighting monokrom (§12.5) — hierarki lewat weight/italic/opacity,
+   bukan hue. Menggantikan tema highlight.js berwarna (github-dark). */
+.hljs-mono .hljs-keyword,
+.hljs-mono .hljs-built_in,
+.hljs-mono .hljs-title,
+.hljs-mono .hljs-title.function_,
+.hljs-mono .hljs-title.class_,
+.hljs-mono .hljs-literal {
+	color: var(--color-ink);
+	font-weight: 600;
+}
+.hljs-mono .hljs-string,
+.hljs-mono .hljs-attr,
+.hljs-mono .hljs-attribute,
+.hljs-mono .hljs-number,
+.hljs-mono .hljs-symbol {
+	color: var(--color-ink-2);
+}
+.hljs-mono .hljs-comment,
+.hljs-mono .hljs-quote {
+	color: var(--color-muted);
+	font-style: italic;
+}
+.hljs-mono .hljs-tag,
+.hljs-mono .hljs-name,
+.hljs-mono .hljs-selector-tag {
+	color: var(--color-ink);
 }
 
 @layer utilities {

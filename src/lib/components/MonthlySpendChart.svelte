@@ -43,10 +43,7 @@
 	}
 </script>
 
-<figure
-	class="rounded-box border border-base-300 bg-base-200/40 p-3"
-	aria-label="Grafik pengeluaran bulanan"
->
+<figure class="border border-base-300 bg-base-200 p-3" aria-label="Grafik pengeluaran bulanan">
 	<figcaption class="mb-2 flex items-baseline justify-between gap-2 text-xs">
 		<span class="font-semibold uppercase tracking-wider opacity-60">Pengeluaran bulanan</span>
 		<span class="opacity-70">
@@ -87,14 +84,20 @@
 			{@const y = H - PAD_BOTTOM - h}
 			{@const isEmpty = d.total === 0}
 			{@const isActive = hoverIdx === i}
+			{@const isCurrent = d.month === currentMonth}
 			<rect
 				{x}
 				{y}
 				width={w}
 				height={h}
-				rx="0.4"
 				fill="currentColor"
-				class={isActive ? 'text-primary' : isEmpty ? 'text-base-content/20' : 'text-primary/60'}
+				class={isCurrent
+					? 'text-base-content'
+					: isActive
+						? 'text-base-content/70'
+						: isEmpty
+							? 'text-base-content/10'
+							: 'text-base-content/40'}
 			/>
 			<!-- Tap-friendly hitbox penuh tinggi -->
 			<rect

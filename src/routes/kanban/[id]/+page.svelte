@@ -117,7 +117,7 @@
 							<input type="hidden" name="item_id" value={item.id} />
 							<button
 								type="submit"
-								class="btn btn-circle btn-xs {item.done ? 'btn-primary' : 'btn-outline'}"
+								class="btn btn-square btn-xs {item.done ? 'btn-primary' : 'btn-outline'}"
 								aria-pressed={!!item.done}
 								aria-label={item.done ? 'Tandai belum selesai' : 'Tandai selesai'}
 							>
