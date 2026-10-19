@@ -40,7 +40,9 @@ async function main() {
 
 		if (daysUntilDue <= 0) {
 			if (bill.dueDayNotifiedAt === bill.nextDueAt) continue;
-			await sendToUser(bill.userId, payload);
+			// Hanya tandai bila minimal satu device menerima - kalau tidak, run
+			// cron berikutnya mencoba lagi alih-alih reminder hilang diam-diam.
+			if ((await sendToUser(bill.userId, payload)) === 0) continue;
 			markNotified(bill.userId, bill.id, 'due_day', bill.nextDueAt);
 			sent++;
 			continue;
@@ -48,7 +50,7 @@ async function main() {
 
 		if (daysUntilDue <= REMINDER_DAYS_BEFORE) {
 			if (bill.windowNotifiedAt === bill.nextDueAt) continue;
-			await sendToUser(bill.userId, payload);
+			if ((await sendToUser(bill.userId, payload)) === 0) continue;
 			markNotified(bill.userId, bill.id, 'window', bill.nextDueAt);
 			sent++;
 		}

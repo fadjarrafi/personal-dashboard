@@ -236,13 +236,15 @@ di tiap device.
 
 Service worker custom (`src/service-worker.ts`, strategi `injectManifest`)
 tidak aktif di `vite dev` (`devOptions.enabled: false` — sama seperti sebelumnya).
-Untuk uji end-to-end harus lewat build produksi:
+Untuk uji end-to-end harus lewat build produksi, dijalankan seperti PM2
+(`--env-file`) — `bun run preview` tidak memuat `.env` ke `process.env`, jadi
+VAPID key akan kosong dan tombol aktifkan notifikasi gagal:
 
 ```bash
-bun run build && bun run preview
+bun run build && node --env-file=.env build
 ```
 
-Buka di Chrome, login, buka `/bills`, tekan **Aktifkan notifikasi tagihan**,
+Buka `http://localhost:3000` di Chrome, login, buka `/bills`, tekan **Aktifkan notifikasi tagihan**,
 lalu jalankan skrip reminder secara manual untuk memicu notifikasi nyata:
 
 ```bash

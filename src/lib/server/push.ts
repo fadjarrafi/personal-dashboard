@@ -77,9 +77,16 @@ export interface BillPushPayload {
  * Kirim ke semua device milik user. Kegagalan pada satu subscription tidak
  * boleh menghentikan pengiriman ke yang lain (NFR PRD §7). Subscription yang
  * sudah tidak valid (404/410) dibersihkan diam-diam.
+ *
+ * Mengembalikan jumlah device yang benar-benar terkirim, supaya pemanggil
+ * tidak menandai tagihan "sudah dinotifikasi" padahal tidak ada yang sampai.
  */
-export async function sendToUser(userId: number, payload: BillPushPayload): Promise<void> {
+export async function sendToUser(userId: number, payload: BillPushPayload): Promise<number> {
+	if (!publicKey || !privateKey) {
+		throw new Error('VAPID_PUBLIC_KEY/VAPID_PRIVATE_KEY belum diset - push tidak bisa dikirim.');
+	}
 	const subs = listSubscriptions(userId);
+	let delivered = 0;
 	await Promise.all(
 		subs.map(async (sub) => {
 			try {
@@ -90,6 +97,7 @@ export async function sendToUser(userId: number, payload: BillPushPayload): Prom
 					},
 					JSON.stringify(payload)
 				);
+				delivered++;
 			} catch (err) {
 				const statusCode = (err as { statusCode?: number }).statusCode;
 				if (statusCode === 404 || statusCode === 410) {
@@ -100,4 +108,5 @@ export async function sendToUser(userId: number, payload: BillPushPayload): Prom
 			}
 		})
 	);
+	return delivered;
 }
