@@ -2,7 +2,7 @@
  * Uji parser regex extractor pada transkripsi manual (tanpa OCR).
  *
  * Jalankan:
- *   npm run test:extract:text
+ *   bun run test:extract:text
  *
  * Tujuan: memverifikasi logika parser terpisah dari kualitas OCR.
  * Kalau semua PASS di sini tapi test:extract:image ada yang FAIL, berarti

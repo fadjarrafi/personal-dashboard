@@ -41,7 +41,7 @@ Fitur untuk mencatat tagihan berulang (listrik, internet, kartu kredit, langgana
 ### 2.1 Konsekuensi ke bagian lain proyek
 
 - `vite.config.ts`: `SvelteKitPWA({...})` perlu tambahan opsi `strategies: 'injectManifest'`, `srcDir: 'src'`, `filename: 'service-worker.ts'`, dan `manifest` tetap sama. `workbox.navigateFallbackDenylist` yang sudah ada perlu dipindah/disesuaikan karena sebagian konfigurasi Workbox berubah bentuk di mode `injectManifest`.
-- `.env.example`: tambah `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (mis. `mailto:dark.fir21@gmail.com`) — digenerate sekali via `npx web-push generate-vapid-keys` dan disimpan permanen (mengganti keypair akan meng-invalidate semua subscription lama).
+- `.env.example`: tambah `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (mis. `mailto:dark.fir21@gmail.com`) — digenerate sekali via `bunx web-push generate-vapid-keys` dan disimpan permanen (mengganti keypair akan meng-invalidate semua subscription lama).
 - `package.json`: tambah dependency `web-push` + `@types/web-push`, dan script baru `bills:remind` (pola sama seperti `db:backup`) untuk dipanggil cron.
 - `hooks.server.ts` / `CSRF_EXEMPT`: **tidak perlu perubahan.** Endpoint subscribe/unsubscribe adalah fetch same-origin biasa dari halaman yang sudah login: request menyertakan cookie sesi apa adanya, jadi cek CSRF manual yang sudah ada otomatis berlaku tanpa pengecualian baru.
 - README.md: perlu bagian baru "Bill reminder" mengikuti pola bagian "Spend tracker (v0.2)" yang sudah ada — cara generate VAPID key, cara daftar cron, cara uji push secara lokal.

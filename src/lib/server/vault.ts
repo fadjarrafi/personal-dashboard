@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSy
 import { dirname, join, resolve, sep } from 'node:path';
 import { eq } from 'drizzle-orm';
 import matter from 'gray-matter';
+import yaml from 'js-yaml';
 import { marked } from 'marked';
 import { db } from './db';
 import { vaultTasks } from './db/schema';
@@ -11,6 +12,20 @@ const MIRROR_ROOT = resolve(process.env.VAULT_MIRROR_PATH ?? './data/vault-mirro
 const DASHBOARD_FOLDER = process.env.VAULT_DASHBOARD_FOLDER ?? 'Dashboard Sync';
 const PUSH_CMD = process.env.VAULT_SYNC_PUSH_CMD;
 const TASKS_FILENAME = 'Tasks.md';
+
+/**
+ * gray-matter bawaan memanggil `safeLoad`/`safeDump` milik js-yaml 3, yang sudah
+ * dihapus di js-yaml 4 (dipaksa lewat `overrides` karena js-yaml 3 rentan).
+ * Engine ini wajib diteruskan ke setiap panggilan matter()/matter.stringify().
+ */
+const MATTER_OPTS = {
+	engines: {
+		yaml: {
+			parse: (src: string) => (yaml.load(src) ?? {}) as object,
+			stringify: (data: object) => yaml.dump(data)
+		}
+	}
+};
 
 export interface VaultNoteSummary {
 	path: string;
@@ -54,7 +69,7 @@ function excerptOf(content: string): string | null {
 
 function readNoteSummary(absPath: string, relPath: string): VaultNoteSummary {
 	const raw = readFileSync(absPath, 'utf8');
-	const { data, content } = matter(raw);
+	const { data, content } = matter(raw, MATTER_OPTS);
 	const stat = statSync(absPath);
 	return {
 		path: relPath,
@@ -146,7 +161,7 @@ export function readNote(relPath: string): VaultNote | null {
 	if (!existsSync(abs) || !statSync(abs).isFile()) return null;
 	const summary = readNoteSummary(abs, relPath);
 	const raw = readFileSync(abs, 'utf8');
-	const { content } = matter(raw);
+	const { content } = matter(raw, MATTER_OPTS);
 	return { ...summary, raw: content, html: marked.parse(content, { async: false }) as string };
 }
 
@@ -196,7 +211,7 @@ export function createNote(input: CreateNoteInput): string {
 		created: new Date().toISOString(),
 		tags: input.tags ?? []
 	};
-	writeFileSync(safeResolve(relPath), matter.stringify(input.body, frontmatter), 'utf8');
+	writeFileSync(safeResolve(relPath), matter.stringify(input.body, frontmatter, MATTER_OPTS), 'utf8');
 	triggerPush();
 	return relPath;
 }

@@ -3,7 +3,7 @@
  * vault_tasks, supaya centang yang dibuat langsung di Obsidian ikut muncul
  * di dashboard.
  *
- * Jalankan: npm run vault:resync
+ * Jalankan: bun run vault:resync
  * Cron: setelah tiap pull sync rclone selesai - lihat docs/DEPLOY-vault-sync.md.
  */
 import { syncTasksFromFile } from '../src/lib/server/vault';

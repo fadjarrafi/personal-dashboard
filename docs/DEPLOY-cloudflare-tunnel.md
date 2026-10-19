@@ -35,13 +35,18 @@ Di zona `fadjarrafi.my.id`:
 ## 3. Prasyarat VPS
 
 Ubuntu, akses `sudo`. Install Node 22 atau 24 (LTS) via nvm — hindari
-Node 26+ karena `better-sqlite3` belum kompatibel dengannya.
+Node 26+ karena `better-sqlite3` belum kompatibel dengannya. Bun dipakai sebagai
+package manager + script runner saja; runtime aplikasi tetap Node (`better-sqlite3`
+belum didukung runtime Bun), jadi keduanya wajib terpasang.
 
 ```bash
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 # reload shell
 nvm install 22 && nvm alias default 22
 node -v      # v22.x.x
+curl -fsSL https://bun.sh/install | bash
+# reload shell
+bun -v
 sudo apt install -y build-essential python3 sqlite3
 ```
 
@@ -53,7 +58,7 @@ sudo chown -R $USER:$USER /var/www/html
 cd /var/www/html
 git clone https://github.com/<user>/personal-dashboard.git
 cd personal-dashboard
-npm install
+bun install
 ```
 
 Kalau `EACCES` di `mkdir node_modules` — folder milik root. Fix:
@@ -98,20 +103,20 @@ sudo ufw allow from 192.168.0.0/16 to any port 5173 proto tcp
 ## 6. Migrasi + user pertama
 
 ```bash
-npx tsx src/lib/server/db/migrate.ts
-npx tsx scripts/seed.ts you@mail.com yourStrongPassword
+bunx tsx src/lib/server/db/migrate.ts
+bunx tsx scripts/seed.ts you@mail.com yourStrongPassword
 ```
 
 ## 7. Build produksi
 
 ```bash
-npm run build
+bun run build
 ```
 
 ## 8. PM2 — install, config, run
 
 ```bash
-npm install -g pm2
+bun add -g pm2
 cp deploy/pm2/ecosystem.config.cjs .
 pm2 start ecosystem.config.cjs
 pm2 status
@@ -135,10 +140,12 @@ Jadwalkan backup DB harian jam 03:00:
 crontab -e
 ```
 
-Tambahkan (sesuaikan path Node jika berbeda dari nvm default):
+Tambahkan (sesuaikan path Node jika berbeda dari nvm default). `PATH` Node wajib
+diset karena cron tidak load shell profile — tanpa `node` di PATH, `bun run`
+akan menjalankan skrip dengan runtime Bun dan `better-sqlite3` gagal load:
 
 ```cron
-0 3 * * * cd /var/www/html/personal-dashboard && /home/$USER/.nvm/versions/node/v22/bin/npm run db:backup >> /var/log/dashboard-backup.log 2>&1
+0 3 * * * cd /var/www/html/personal-dashboard && PATH=/home/$USER/.nvm/versions/node/v22/bin:$PATH /home/$USER/.bun/bin/bun run db:backup >> /var/log/dashboard-backup.log 2>&1
 ```
 
 Buat log writable:
@@ -175,14 +182,14 @@ cd /var/www/html/personal-dashboard
 # 1. tarik perubahan
 git pull
 
-# 2. sinkronkan dependencies (kalau package-lock.json berubah)
-npm install
+# 2. sinkronkan dependencies (kalau bun.lock berubah)
+bun install
 
 # 3. build ulang
-npm run build
+bun run build
 
 # 4. terapkan migrasi database (idempotent — aman diulang)
-npx tsx src/lib/server/db/migrate.ts
+bunx tsx src/lib/server/db/migrate.ts
 
 # 5. restart PM2 dengan env terbaru
 pm2 restart personal-dashboard --update-env
@@ -206,8 +213,8 @@ dengan `.env` lokal, tambahkan yang hilang, lalu `pm2 restart --update-env`.
 cd /var/www/html/personal-dashboard
 git log --oneline -5              # cari commit sebelumnya
 git reset --hard <commit-sha>     # ⚠️ destruktif untuk file tracked
-npm install
-npm run build
+bun install
+bun run build
 pm2 restart personal-dashboard --update-env
 ```
 
@@ -240,8 +247,8 @@ Cache Rule "Bypass cache" (§2) belum aktif untuk hostname ini, atau
 purge manual di Cloudflare → Caching → Purge Everything.
 
 **`better-sqlite3` gagal load / NODE_MODULE_VERSION mismatch**
-Node versi berubah antara `npm install` dan runtime. Bangun ulang:
-`npm rebuild better-sqlite3`.
+Node versi berubah antara `bun install` dan runtime. Bangun ulang:
+`rm -rf node_modules/better-sqlite3 && bun install`.
 
 **Setelah reboot `pm2 status` kosong**
 `pm2 startup` belum dijalankan. Ulangi §8 langkah `pm2 startup` + `pm2 save`.

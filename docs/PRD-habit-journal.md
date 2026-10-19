@@ -158,4 +158,4 @@ POST /journal/[date]?/delete         → hapus entri tanggal tsb
 2. Tanggal masa depan tidak bisa ditandai selesai, baik dari UI maupun percobaan langsung ke server action.
 3. User bisa menulis, menyimpan ulang (tanpa duplikat), menavigasi ke tanggal lain, dan menghapus entri jurnal.
 4. Mengunjungi tanggal jurnal yang valid tapi belum punya entri menampilkan form kosong, bukan error.
-5. Kedua fitur muncul di navigasi ("Kebiasaan", "Jurnal") dan `npm run check` tetap bersih tanpa error baru.
+5. Kedua fitur muncul di navigasi ("Kebiasaan", "Jurnal") dan `bun run check` tetap bersih tanpa error baru.

@@ -63,12 +63,16 @@ static/                         # manifest.webmanifest (dengan share_target), ic
 
 ## Setup lokal
 
+Butuh **Node 22/24** (runtime aplikasi) dan **Bun** (package manager + script
+runner). Runtime tetap Node karena `better-sqlite3` belum didukung runtime Bun —
+`bun run` otomatis memakai `node` yang ada di PATH.
+
 ```bash
-npm install
+bun install
 cp .env.example .env
-npm run db:migrate
-npm run db:seed -- you@mail.com yourStrongPassword
-npm run dev
+bun run db:migrate
+bun run db:seed you@mail.com yourStrongPassword
+bun run dev
 ```
 
 Buka http://localhost:5173 dan login.
@@ -80,14 +84,14 @@ Sesuai PRD §5 — scheduler bukan bawaan SvelteKit, jadi jadwalkan lewat cron O
 ### Skrip backup (aman untuk WAL)
 
 ```bash
-npm run db:backup
+bun run db:backup
 ```
 
 Skrip ini pakai `sqlite3_backup` (via `better-sqlite3`) sehingga aman meski
 proses aplikasi sedang menulis. Hasil di `data/backups/app-YYYY-MM-DDTHH-MM-SS.db`,
 dan otomatis merotasi — mempertahankan 14 file terbaru.
 
-Ubah lewat env: `BACKUP_DIR=/mnt/backups BACKUP_KEEP=30 npm run db:backup`.
+Ubah lewat env: `BACKUP_DIR=/mnt/backups BACKUP_KEEP=30 bun run db:backup`.
 
 > ⚠️ **Jangan** pakai `cp app.db*` untuk backup — WAL bisa membuat salinannya
 > inkonsisten. Selalu lewat skrip di atas atau `sqlite3 .backup`.
@@ -95,7 +99,7 @@ Ubah lewat env: `BACKUP_DIR=/mnt/backups BACKUP_KEEP=30 npm run db:backup`.
 ### Cron VPS (Ubuntu)
 
 ```cron
-0 3 * * * cd /srv/personal-dashboard && /usr/bin/npm run db:backup >> /var/log/dashboard-backup.log 2>&1
+0 3 * * * cd /srv/personal-dashboard && PATH=/home/$USER/.nvm/versions/node/v22/bin:$PATH /home/$USER/.bun/bin/bun run db:backup >> /var/log/dashboard-backup.log 2>&1
 ```
 
 ### Export manual dari UI
@@ -196,13 +200,13 @@ Dua skrip di `scripts/`:
 
 ```bash
 # 1) Cepat — cek regex terhadap transkripsi manual 4 receipt (tanpa OCR).
-npm run test:extract:text
+bun run test:extract:text
 
 # 2) End-to-end — jalankan OCR + regex pada gambar asli.
 #    Simpan gambar di scripts/fixtures/receipts/ dengan nama:
 #      gopay.png · blu.png · jago.png · livin.png
 #    File yang tidak ada dilewati.
-npm run test:extract:image
+bun run test:extract:image
 ```
 
 Fixture dan expected values ada di [`scripts/fixtures/receipts.ts`](./scripts/fixtures/receipts.ts).
@@ -220,7 +224,7 @@ Tidak ada email/SMS — push PWA saja, keputusan tetap, bukan batasan sementara.
 ### Setup VAPID (sekali saja)
 
 ```bash
-npx web-push generate-vapid-keys
+bunx web-push generate-vapid-keys
 ```
 
 Salin `Public Key`/`Private Key` ke `.env` (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`,
@@ -235,20 +239,20 @@ tidak aktif di `vite dev` (`devOptions.enabled: false` — sama seperti sebelumn
 Untuk uji end-to-end harus lewat build produksi:
 
 ```bash
-npm run build && npm run preview
+bun run build && bun run preview
 ```
 
 Buka di Chrome, login, buka `/bills`, tekan **Aktifkan notifikasi tagihan**,
 lalu jalankan skrip reminder secara manual untuk memicu notifikasi nyata:
 
 ```bash
-npm run bills:remind
+bun run bills:remind
 ```
 
 ### Cron reminder harian
 
 ```cron
-0 8 * * * cd /srv/personal-dashboard && /usr/bin/npm run bills:remind >> /var/log/dashboard-bills.log 2>&1
+0 8 * * * cd /srv/personal-dashboard && PATH=/home/$USER/.nvm/versions/node/v22/bin:$PATH /home/$USER/.bun/bin/bun run bills:remind >> /var/log/dashboard-bills.log 2>&1
 ```
 
 Maksimal 2 notifikasi per siklus tagihan (awal jendela reminder + hari-H) —
@@ -295,19 +299,19 @@ Template PM2 ecosystem siap-copy di [deploy/pm2/](./deploy/pm2).
 - **`tesseract.js`** — tidak bisa di-bundle Rollup karena membawa worker + WASM.
   Sudah dikonfigurasi sebagai `external` di [`vite.config.ts`](./vite.config.ts)
   (`build.rollupOptions.external` + `ssr.external`). Konsekuensi: `tesseract.js`
-  wajib ada di `node_modules` runtime — pastikan `npm ci` di server tidak
+  wajib ada di `node_modules` runtime — pastikan `bun install --frozen-lockfile` di server tidak
   memakai `--omit=optional` yang bisa memangkas sub-dep, dan **bukan** di
   `devDependencies`.
 - **`better-sqlite3`** — native module, di-external via `optimizeDeps.exclude`.
-  Butuh `build-essential` + `python3` saat `npm ci` di server VPS baru.
+  Butuh `build-essential` + `python3` saat `bun install --frozen-lockfile` di server VPS baru.
 
 Setelah pull update, alur biasa di server:
 
 ```bash
 cd /var/www/html/personal-dashboard
 git pull
-npm ci
-npm run db:migrate   # kalau ada migrasi baru
-npm run build
+bun install --frozen-lockfile
+bun run db:migrate   # kalau ada migrasi baru
+bun run build
 pm2 restart personal-dashboard
 ```

@@ -1,7 +1,7 @@
 /**
  * Buat backup DB SQLite yang aman-untuk-WAL, dan rotasi file lama.
  *
- * Jalankan: npm run db:backup
+ * Jalankan: bun run db:backup
  * Cron: lihat README bagian Backup.
  *
  * Env:

@@ -1,7 +1,7 @@
 /**
  * Buat user pertama (single-user MVP).
  * Jalankan: pnpm db:seed -- <email> <password>
- *          npm run db:seed -- <email> <password>
+ *          bun run db:seed <email> <password>
  */
 import { hash } from '@node-rs/argon2';
 import { db } from '../src/lib/server/db';

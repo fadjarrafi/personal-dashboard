@@ -7,7 +7,7 @@
  *        - blu.png
  *        - jago.png
  *        - livin.png
- *   2. Jalankan: npm run test:extract:image
+ *   2. Jalankan: bun run test:extract:image
  *
  * Panggilan pertama akan mengunduh ind.traineddata (~10 MB) — subsequent runs cepat.
  * File yang tidak ada dilewati.

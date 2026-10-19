@@ -83,7 +83,7 @@ pm2 restart personal-dashboard --update-env
 ## 6. Migrasi tabel `vault_tasks`
 
 ```bash
-npx tsx src/lib/server/db/migrate.ts
+bunx tsx src/lib/server/db/migrate.ts
 ```
 
 ## 7. Timer pull otomatis (systemd)
@@ -94,8 +94,9 @@ sudo cp deploy/systemd/vault-sync-pull.timer /etc/systemd/system/
 ```
 
 Edit `/etc/systemd/system/vault-sync-pull.service`: ganti dua `<user>` dengan
-user VPS (`whoami`), dan path npm dengan output `which npm` (biasanya lewat
-nvm, mis. `/home/<user>/.nvm/versions/node/v22/bin/npm`).
+user VPS (`whoami`), `<node-bin-dir>` dengan output `dirname "$(which node)"`
+(biasanya lewat nvm, mis. `/home/<user>/.nvm/versions/node/v22/bin`), dan path bun
+dengan output `which bun` (default `/home/<user>/.bun/bin/bun`).
 
 ```bash
 sudo systemctl daemon-reload
@@ -112,7 +113,7 @@ crontab -e
 ```
 
 ```cron
-*/5 * * * * cd /var/www/html/personal-dashboard && /usr/bin/rclone copy "gdrive-vault:rclone/Fadjar's Article Sync GDrive" /srv/vault-mirror --fast-list && /home/$USER/.nvm/versions/node/v22/bin/npm run vault:resync >> /var/log/vault-sync.log 2>&1
+*/5 * * * * cd /var/www/html/personal-dashboard && /usr/bin/rclone copy "gdrive-vault:rclone/Fadjar's Article Sync GDrive" /srv/vault-mirror --fast-list && PATH=/home/$USER/.nvm/versions/node/v22/bin:$PATH /home/$USER/.bun/bin/bun run vault:resync >> /var/log/vault-sync.log 2>&1
 ```
 
 ## 8. Verifikasi end-to-end
@@ -146,8 +147,8 @@ belum pernah sampai ke Drive. Jalankan `bash /srv/vault-sync-push.sh` manual
 dan baca error-nya.
 
 **Task yang dicentang di Obsidian tidak muncul di dashboard**
-`npm run vault:resync` tidak ikut jalan setelah pull (cek `ExecStartPost` di
-service, atau baris cron). Jalankan manual: `npm run vault:resync` lalu cek
+`bun run vault:resync` tidak ikut jalan setelah pull (cek `ExecStartPost` di
+service, atau baris cron). Jalankan manual: `bun run vault:resync` lalu cek
 tabel `vault_tasks`.
 
 **`rclone: command not found` di ExecStart**

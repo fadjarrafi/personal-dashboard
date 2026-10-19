@@ -3,7 +3,7 @@
  * Maksimal 2 notifikasi per siklus per tagihan: sekali saat memasuki awal
  * jendela reminder, sekali lagi tepat di hari-H (docs/PRD-bill-reminder.md §4.4).
  *
- * Jalankan: npm run bills:remind
+ * Jalankan: bun run bills:remind
  * Cron: sekali sehari, mis. jam 08:00 - lihat README bagian "Bill reminder".
  */
 import {
