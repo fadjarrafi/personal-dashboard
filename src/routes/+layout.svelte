@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import { page } from '$app/state';
+	import { untrack } from 'svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import Shortcuts from '$lib/components/Shortcuts.svelte';
 	import type { LayoutData } from './$types';
@@ -41,7 +42,57 @@
 		!isArchive && !isSpends && !isBills && !isVault && !isTasks && !isBoards && !isKanban
 	);
 
+	type NavLink = {
+		href: string;
+		label: string;
+		active: () => boolean;
+		icon?: string;
+		dot?: string | null;
+	};
+
+	const navSections: { title: string; links: NavLink[] }[] = [
+		{
+			title: 'Katalog',
+			links: navItems.map((item) => ({
+				href: item.href,
+				label: item.label,
+				dot: item.dot,
+				active: () => isCatalog && item.match(activeType)
+			}))
+		},
+		{
+			title: 'Keuangan',
+			links: [
+				{ href: '/spends', label: 'Pengeluaran', dot: 'text-primary', active: () => isSpends },
+				{ href: '/bills', label: 'Tagihan', dot: 'text-primary', active: () => isBills }
+			]
+		},
+		{
+			title: 'Produktivitas',
+			links: [
+				{ href: '/tasks', label: 'Tugas', active: () => isTasks },
+				{ href: '/kanban', label: 'Kanban', active: () => isKanban },
+				{ href: '/boards', label: 'Board', active: () => isBoards }
+			]
+		},
+		{
+			title: 'Lainnya',
+			links: [
+				{ href: '/vault', label: 'Vault', active: () => isVault },
+				{ href: '/archive', label: 'Arsip', active: () => isArchive },
+				{ href: '/export', label: 'Export JSON', icon: '↓', active: () => false }
+			]
+		}
+	];
+
 	let drawerOpen = $state(false);
+	// Hanya nilai awal dari cookie; setelah itu state dikelola di klien.
+	let sidebarCollapsed = $state(untrack(() => data.sidebarCollapsed));
+
+	function toggleSidebar() {
+		sidebarCollapsed = !sidebarCollapsed;
+		document.cookie = `sidebar=${sidebarCollapsed ? 'collapsed' : 'expanded'}; path=/; max-age=31536000; samesite=lax`;
+	}
 
 	function closeDrawer() {
 		drawerOpen = false;
@@ -59,133 +110,58 @@
 	}
 </script>
 
-{#snippet navGroups(onItemClick: () => void)}
-	<div class="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider opacity-50">Katalog</div>
-	<ul class="menu menu-lg w-full rounded-box p-0">
-		{#each navItems as item}
-			{@const active = isCatalog && item.match(activeType)}
-			<li>
-				<a
-					href={item.href}
-					class={active ? 'active' : ''}
-					aria-current={active ? 'page' : undefined}
-					onclick={onItemClick}
-				>
-					{#if item.dot}
-						<span class="cat-dot {item.dot}" aria-hidden="true"></span>
-					{:else}
-						<span class="w-5 text-center opacity-60" aria-hidden="true">◈</span>
-					{/if}
-					<span>{item.label}</span>
-				</a>
-			</li>
-		{/each}
-	</ul>
+{#snippet navLink(
+	href: string,
+	label: string,
+	active: boolean,
+	icon: string,
+	dot: string | null,
+	compact: boolean,
+	onItemClick: () => void
+)}
+	<li>
+		<a
+			{href}
+			class="{active ? 'active' : ''} {compact ? 'justify-center px-0' : ''}"
+			aria-current={active ? 'page' : undefined}
+			aria-label={compact ? label : undefined}
+			title={compact ? label : undefined}
+			onclick={onItemClick}
+		>
+			{#if dot}
+				<span class="flex w-5 justify-center" aria-hidden="true">
+					<span class="cat-dot {dot}"></span>
+				</span>
+			{:else}
+				<span class="w-5 text-center opacity-60" aria-hidden="true">{icon}</span>
+			{/if}
+			{#if !compact}<span>{label}</span>{/if}
+		</a>
+	</li>
+{/snippet}
 
-	<div class="my-3 border-t border-base-300"></div>
-
-	<div class="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider opacity-50">
-		Keuangan
-	</div>
-	<ul class="menu menu-lg w-full rounded-box p-0">
-		<li>
-			<a
-				href="/spends"
-				class={isSpends ? 'active' : ''}
-				aria-current={isSpends ? 'page' : undefined}
-				onclick={onItemClick}
-			>
-				<span class="cat-dot text-primary" aria-hidden="true"></span>
-				<span>Pengeluaran</span>
-			</a>
-		</li>
-		<li>
-			<a
-				href="/bills"
-				class={isBills ? 'active' : ''}
-				aria-current={isBills ? 'page' : undefined}
-				onclick={onItemClick}
-			>
-				<span class="cat-dot text-primary" aria-hidden="true"></span>
-				<span>Tagihan</span>
-			</a>
-		</li>
-	</ul>
-
-	<div class="my-3 border-t border-base-300"></div>
-
-	<div class="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider opacity-50">
-		Produktivitas
-	</div>
-	<ul class="menu menu-lg w-full rounded-box p-0">
-		<li>
-			<a
-				href="/tasks"
-				class={isTasks ? 'active' : ''}
-				aria-current={isTasks ? 'page' : undefined}
-				onclick={onItemClick}
-			>
-				<span class="w-5 text-center opacity-60" aria-hidden="true">◈</span>
-				<span>Tugas</span>
-			</a>
-		</li>
-		<li>
-			<a
-				href="/kanban"
-				class={isKanban ? 'active' : ''}
-				aria-current={isKanban ? 'page' : undefined}
-				onclick={onItemClick}
-			>
-				<span class="w-5 text-center opacity-60" aria-hidden="true">◈</span>
-				<span>Kanban</span>
-			</a>
-		</li>
-		<li>
-			<a
-				href="/boards"
-				class={isBoards ? 'active' : ''}
-				aria-current={isBoards ? 'page' : undefined}
-				onclick={onItemClick}
-			>
-				<span class="w-5 text-center opacity-60" aria-hidden="true">◈</span>
-				<span>Board</span>
-			</a>
-		</li>
-	</ul>
-
-	<div class="my-3 border-t border-base-300"></div>
-
-	<div class="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider opacity-50">Lainnya</div>
-	<ul class="menu menu-lg w-full rounded-box p-0">
-		<li>
-			<a
-				href="/vault"
-				class={isVault ? 'active' : ''}
-				aria-current={isVault ? 'page' : undefined}
-				onclick={onItemClick}
-			>
-				<span class="w-5 text-center opacity-60" aria-hidden="true">◈</span>
-				<span>Vault</span>
-			</a>
-		</li>
-		<li>
-			<a
-				href="/archive"
-				class={isArchive ? 'active' : ''}
-				aria-current={isArchive ? 'page' : undefined}
-				onclick={onItemClick}
-			>
-				<span class="w-5 text-center opacity-60" aria-hidden="true">◈</span>
-				<span>Arsip</span>
-			</a>
-		</li>
-		<li>
-			<a href="/export" onclick={onItemClick}>
-				<span class="w-5 text-center opacity-60" aria-hidden="true">↓</span>
-				<span>Export JSON</span>
-			</a>
-		</li>
-	</ul>
+{#snippet navGroups(onItemClick: () => void, compact = false)}
+	{#each navSections as section, i}
+		{#if i > 0}<div class="my-3 border-t border-base-300"></div>{/if}
+		{#if !compact}
+			<div class="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider opacity-50">
+				{section.title}
+			</div>
+		{/if}
+		<ul class="menu menu-lg w-full rounded-box p-0">
+			{#each section.links as link}
+				{@render navLink(
+					link.href,
+					link.label,
+					link.active(),
+					link.icon ?? '◈',
+					link.dot ?? null,
+					compact,
+					onItemClick
+				)}
+			{/each}
+		</ul>
+	{/each}
 {/snippet}
 
 <svelte:window onkeydown={onDrawerKeydown} />
@@ -199,32 +175,79 @@
 	{#if data.user}
 		<!-- Sidebar: persisten di desktop (>= lg), digantikan drawer di mobile. -->
 		<aside
-			class="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-base-300 bg-base-200 lg:flex"
+			class="sticky top-0 hidden h-screen shrink-0 flex-col border-r border-base-300 bg-base-200 transition-[width] duration-200 lg:flex {sidebarCollapsed
+				? 'w-16'
+				: 'w-64'}"
 		>
-			<div class="border-b border-base-300 px-4 py-4">
-				<a href="/" class="flex items-center gap-2 font-display text-lg font-semibold">
-					<span class="text-primary">◆</span>
-					<span>Dashboard</span>
-				</a>
-				<div class="label-mono mt-1">Single user</div>
-			</div>
-			<nav class="flex-1 overflow-y-auto p-3" aria-label="Navigasi utama">
-				{@render navGroups(noop)}
-			</nav>
-			<div class="border-t border-base-300 p-3">
-				<div class="mb-2 truncate px-2 text-xs opacity-60" title={data.user.email}>
-					{data.user.email}
+			<div
+				class="flex items-center border-b border-base-300 {sidebarCollapsed
+					? 'flex-col gap-2 px-2 py-3'
+					: 'justify-between gap-2 px-4 py-4'}"
+			>
+				<div class="min-w-0">
+					<a
+						href="/"
+						class="flex items-center gap-2 font-display text-lg font-semibold"
+						aria-label={sidebarCollapsed ? 'Dashboard' : undefined}
+						title={sidebarCollapsed ? 'Dashboard' : undefined}
+					>
+						<span class="text-primary">◆</span>
+						{#if !sidebarCollapsed}<span>Dashboard</span>{/if}
+					</a>
+					{#if !sidebarCollapsed}<div class="label-mono mt-1">Single user</div>{/if}
 				</div>
+				<button
+					type="button"
+					class="btn btn-ghost btn-sm btn-square tap-target"
+					aria-label={sidebarCollapsed ? 'Perluas sidebar' : 'Perkecil sidebar'}
+					aria-expanded={!sidebarCollapsed}
+					title={sidebarCollapsed ? 'Perluas sidebar' : 'Perkecil sidebar'}
+					onclick={toggleSidebar}
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="h-5 w-5 transition-transform duration-200 {sidebarCollapsed ? 'rotate-180' : ''}"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<polyline points="11 17 6 12 11 7" />
+						<polyline points="18 17 13 12 18 7" />
+					</svg>
+				</button>
+			</div>
+			<nav
+				class="flex-1 overflow-y-auto {sidebarCollapsed ? 'px-2 py-3' : 'p-3'}"
+				aria-label="Navigasi utama"
+			>
+				{@render navGroups(noop, sidebarCollapsed)}
+			</nav>
+			<div class="border-t border-base-300 {sidebarCollapsed ? 'px-2 py-3' : 'p-3'}">
+				{#if !sidebarCollapsed}
+					<div class="mb-2 truncate px-2 text-xs opacity-60" title={data.user.email}>
+						{data.user.email}
+					</div>
+				{/if}
 				<form method="post" action="/logout">
-					<button class="btn btn-ghost btn-block justify-start gap-2" type="submit">
-						<span aria-hidden="true">↩</span> Keluar
+					<button
+						class="btn btn-ghost btn-block gap-2 {sidebarCollapsed ? 'justify-center px-0' : 'justify-start'}"
+						type="submit"
+						aria-label={sidebarCollapsed ? 'Keluar' : undefined}
+						title={sidebarCollapsed ? `Keluar (${data.user.email})` : undefined}
+					>
+						<span aria-hidden="true">↩</span>
+						{#if !sidebarCollapsed}Keluar{/if}
 					</button>
 				</form>
 			</div>
 		</aside>
 	{/if}
 
-	<div class="mx-auto flex w-full max-w-7xl flex-1 flex-col px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-6">
+	<div class="flex w-full min-w-0 flex-1 flex-col px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-6">
 		{#if data.user}
 			<header class="mb-4 border-b border-base-300 pb-2 sm:mb-6 sm:pb-3 lg:hidden">
 				<div class="flex items-center gap-1">
