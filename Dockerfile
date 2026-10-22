@@ -9,10 +9,12 @@ ARG BUN_VERSION=1.4.3
 
 FROM oven/bun:${BUN_VERSION}-alpine AS bun
 
-# Node tetap dibutuhkan saat install: better-sqlite3 meng-compile/unduh binary
-# native untuk ABI Node runtime (bukan Bun).
+# Node tetap dibutuhkan saat install: better-sqlite3 v13 tidak punya prebuilt
+# binary, jadi selalu di-compile via `node-gyp rebuild` untuk ABI Node runtime
+# (bukan Bun). Bun tidak membawa node-gyp seperti npm, jadi pasang global.
 FROM node:${NODE_VERSION}-alpine AS base
-RUN apk add --no-cache libstdc++ libgcc python3 make g++
+RUN apk add --no-cache libstdc++ libgcc python3 make g++ \
+	&& npm install -g node-gyp@11.2.0
 COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
 WORKDIR /app
 
