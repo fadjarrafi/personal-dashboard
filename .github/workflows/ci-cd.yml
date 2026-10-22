@@ -1,0 +1,99 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - run: bun run build
+
+  image:
+    needs: check
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:sha-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: image
+    # Runner terpasang di server produksi - lihat docs/DEPLOY-docker.md.
+    runs-on: [self-hosted, production]
+    environment: production
+    permissions:
+      contents: read
+      packages: read
+    env:
+      DEPLOY_DIR: ${{ vars.DEPLOY_DIR || '/var/www/html/personal-dashboard' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: deploy/docker-compose.yml
+          sparse-checkout-cone-mode: false
+      - name: Sync compose file
+        run: |
+          test -f "$DEPLOY_DIR/.env" || { echo "::error::$DEPLOY_DIR/.env belum ada"; exit 1; }
+          mkdir -p "$DEPLOY_DIR/data"
+          cp deploy/docker-compose.yml "$DEPLOY_DIR/docker-compose.yml"
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Pull & restart
+        working-directory: ${{ env.DEPLOY_DIR }}
+        env:
+          IMAGE_TAG: sha-${{ github.sha }}
+        run: |
+          docker compose pull
+          docker compose up -d --remove-orphans
+          docker image prune -f
+      - name: Wait for healthy
+        run: |
+          for i in $(seq 1 30); do
+            status=$(docker inspect -f '{{.State.Health.Status}}' personal-dashboard)
+            echo "health: $status"
+            [ "$status" = healthy ] && exit 0
+            sleep 3
+          done
+          docker logs --tail 50 personal-dashboard
+          exit 1
