@@ -2,8 +2,10 @@
 
 Alur `.github/workflows/ci-cd.yml`:
 
-1. **check** (push `main`/`dev`, PR ke `main`) — `bun install`, `svelte-check`, `vite build`.
-2. **image** (push `main` saja) — build `Dockerfile`, push ke
+Workflow hanya jalan saat push ke `main` (atau manual via **Run workflow**).
+
+1. **check** — `bun install`, `svelte-check`, `vite build`.
+2. **image** — build `Dockerfile`, push ke
    `ghcr.io/fadjarrafi/personal-dashboard:{latest,sha-<commit>}`.
 3. **deploy** — jalan di runner self-hosted di server: salin
    `deploy/docker-compose.yml` ke `DEPLOY_DIR`, `docker compose pull && up -d`,
