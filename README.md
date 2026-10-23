@@ -262,6 +262,25 @@ lihat `REMINDER_DAYS_BEFORE` di [`src/lib/server/bills.ts`](./src/lib/server/bil
 Menandai lunas **tidak pernah** membuat baris `spends` otomatis — itu tetap
 alur manual terpisah.
 
+## Dev Tools & command palette
+
+`/tools` berisi utilitas developer yang berjalan **100% di browser** (tidak ada
+data/gambar yang dikirim ke server, tanpa tabel DB): JSON format/minify,
+Base64/URL/HTML encode, JWT decoder (tanpa verifikasi signature), UUID v4/v7,
+epoch ↔ tanggal, regex tester, hash (MD5 via `spark-md5`, SHA-1/256/384/512 via
+WebCrypto), color palette (skala shade OKLCH, harmoni, kontras WCAG, ekstrak
+palet dari gambar — lihat [`src/lib/color.ts`](./src/lib/color.ts)), dan image
+compressor (PNG dikuantisasi ke palet ≤256 warna via `upng-js` ala TinyPNG;
+JPEG/WebP via `canvas.toBlob`). Daftar tool ada di
+[`src/lib/tools.ts`](./src/lib/tools.ts) — tambah entri di sana dan buat
+`src/routes/tools/<slug>/+page.svelte`.
+
+**Ctrl+K / Cmd+K** membuka command palette dari halaman mana pun (juga tombol
+cari di sidebar/header mobile): lompat ke halaman (`src/lib/nav.ts`, sumber yang
+sama dengan sidebar) atau tool, dan cari item lewat `GET /api/search` (FTS5 yang
+sama dengan pencarian utama). Enter membuka item; **Shift+Enter** menyalin isi
+snippet atau membuka URL bookmark di tab baru.
+
 ## Keamanan: CSRF
 
 SvelteKit menerapkan cek CSRF bawaan yang menolak semua POST/PUT/PATCH/DELETE

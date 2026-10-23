@@ -4,87 +4,13 @@
 	import { untrack } from 'svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import Shortcuts from '$lib/components/Shortcuts.svelte';
+	import CommandPalette from '$lib/components/CommandPalette.svelte';
+	import { navSections } from '$lib/nav';
 	import type { LayoutData } from './$types';
 
 	let { data, children }: { data: LayoutData; children: any } = $props();
 
-	const navItems = [
-		{ href: '/', label: 'Semua', dot: null, match: (t: string | null) => t === null },
-		{
-			href: '/?type=bookmark',
-			label: 'Bookmark',
-			dot: 'text-[--color-cat-bookmark]',
-			match: (t: string | null) => t === 'bookmark'
-		},
-		{
-			href: '/?type=note',
-			label: 'Note',
-			dot: 'text-[--color-cat-note]',
-			match: (t: string | null) => t === 'note'
-		},
-		{
-			href: '/?type=snippet',
-			label: 'Snippet',
-			dot: 'text-[--color-cat-snippet]',
-			match: (t: string | null) => t === 'snippet'
-		}
-	];
-
-	const activeType = $derived(page.url.searchParams.get('type'));
-	const isArchive = $derived(page.url.pathname === '/archive');
-	const isSpends = $derived(page.url.pathname.startsWith('/spends'));
-	const isBills = $derived(page.url.pathname.startsWith('/bills'));
-	const isVault = $derived(page.url.pathname.startsWith('/vault'));
-	const isTasks = $derived(page.url.pathname.startsWith('/tasks'));
-	const isBoards = $derived(page.url.pathname.startsWith('/boards'));
-	const isKanban = $derived(page.url.pathname.startsWith('/kanban'));
-	const isCatalog = $derived(
-		!isArchive && !isSpends && !isBills && !isVault && !isTasks && !isBoards && !isKanban
-	);
-
-	type NavLink = {
-		href: string;
-		label: string;
-		active: () => boolean;
-		icon?: string;
-		dot?: string | null;
-	};
-
-	const navSections: { title: string; links: NavLink[] }[] = [
-		{
-			title: 'Katalog',
-			links: navItems.map((item) => ({
-				href: item.href,
-				label: item.label,
-				dot: item.dot,
-				active: () => isCatalog && item.match(activeType)
-			}))
-		},
-		{
-			title: 'Keuangan',
-			links: [
-				{ href: '/spends', label: 'Pengeluaran', dot: 'text-primary', active: () => isSpends },
-				{ href: '/bills', label: 'Tagihan', dot: 'text-primary', active: () => isBills }
-			]
-		},
-		{
-			title: 'Produktivitas',
-			links: [
-				{ href: '/tasks', label: 'Tugas', active: () => isTasks },
-				{ href: '/kanban', label: 'Kanban', active: () => isKanban },
-				{ href: '/boards', label: 'Board', active: () => isBoards }
-			]
-		},
-		{
-			title: 'Lainnya',
-			links: [
-				{ href: '/vault', label: 'Vault', active: () => isVault },
-				{ href: '/archive', label: 'Arsip', active: () => isArchive },
-				{ href: '/export', label: 'Export JSON', icon: '↓', active: () => false }
-			]
-		}
-	];
-
+	let palette = $state<CommandPalette>();
 	let drawerOpen = $state(false);
 	// Hanya nilai awal dari cookie; setelah itu state dikelola di klien.
 	let sidebarCollapsed = $state(untrack(() => data.sidebarCollapsed));
@@ -153,7 +79,7 @@
 				{@render navLink(
 					link.href,
 					link.label,
-					link.active(),
+					link.match(page.url),
 					link.icon ?? '◈',
 					link.dot ?? null,
 					compact,
@@ -167,7 +93,7 @@
 <svelte:window onkeydown={onDrawerKeydown} />
 
 <Toast flash={data.flash} />
-{#if data.user}<Shortcuts />{/if}
+{#if data.user}<Shortcuts /><CommandPalette bind:this={palette} />{/if}
 
 <a href="#main" class="skip-link">Lompat ke konten</a>
 
@@ -224,6 +150,22 @@
 				class="flex-1 overflow-y-auto {sidebarCollapsed ? 'px-2 py-3' : 'p-3'}"
 				aria-label="Navigasi utama"
 			>
+				<button
+					type="button"
+					class="btn btn-ghost btn-sm mb-3 w-full border border-base-300 font-normal {sidebarCollapsed
+						? 'justify-center px-0'
+						: 'justify-between'}"
+					aria-label="Cari & perintah (Ctrl+K)"
+					title={sidebarCollapsed ? 'Cari (Ctrl+K)' : undefined}
+					onclick={() => palette?.open()}
+				>
+					{#if sidebarCollapsed}
+						<span aria-hidden="true">⌕</span>
+					{:else}
+						<span class="opacity-60">Cari…</span>
+						<kbd class="kbd kbd-xs">Ctrl K</kbd>
+					{/if}
+				</button>
 				{@render navGroups(noop, sidebarCollapsed)}
 			</nav>
 			<div class="border-t border-base-300 {sidebarCollapsed ? 'px-2 py-3' : 'p-3'}">
@@ -282,6 +224,27 @@
 						<span class="text-primary">◆</span>
 						<span>Dashboard</span>
 					</a>
+					<button
+						type="button"
+						class="btn btn-ghost btn-sm tap-target ml-auto"
+						aria-label="Cari & perintah (Ctrl+K)"
+						onclick={() => palette?.open()}
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="h-5 w-5"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							aria-hidden="true"
+						>
+							<circle cx="11" cy="11" r="7" />
+							<line x1="21" y1="21" x2="16.65" y2="16.65" />
+						</svg>
+					</button>
 				</div>
 			</header>
 		{/if}
