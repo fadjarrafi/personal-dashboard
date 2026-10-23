@@ -47,7 +47,7 @@ export interface VaultNote extends VaultNoteSummary {
 function safeResolve(relPath: string): string {
 	const target = resolve(MIRROR_ROOT, relPath);
 	if (target !== MIRROR_ROOT && !target.startsWith(MIRROR_ROOT + sep)) {
-		throw new Error('Path di luar vault mirror.');
+		throw new Error('Path is outside the vault mirror.');
 	}
 	return target;
 }

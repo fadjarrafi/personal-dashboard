@@ -34,7 +34,7 @@
 
 	function labelDate(iso: string): string {
 		const d = new Date(iso + 'T00:00:00');
-		return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+		return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
 	}
 
 	function shortDay(iso: string): string {
@@ -49,16 +49,16 @@
 	}
 </script>
 
-<figure class="border border-base-300 bg-base-200 p-3" aria-label="Grafik pengeluaran harian">
+<figure class="border border-base-300 bg-base-200 p-3" aria-label="Daily spending chart">
 	<figcaption class="mb-2 flex items-baseline justify-between gap-2 text-xs">
-		<span class="font-semibold uppercase tracking-wider opacity-60">Pengeluaran harian</span>
+		<span class="font-semibold uppercase tracking-wider opacity-60">Daily spending</span>
 		<span class="opacity-70">
 			{#if active}
 				<span class="tabular-nums">{formatRupiah(active.total)}</span>
 				<span class="ml-1 opacity-50">· {labelDate(active.date)}</span>
 			{:else if avg > 0}
-				<span class="opacity-60">rata-rata</span>
-				<span class="tabular-nums">{formatRupiah(avg)}/hari</span>
+				<span class="opacity-60">average</span>
+				<span class="tabular-nums">{formatRupiah(avg)}/day</span>
 			{/if}
 		</span>
 	</figcaption>
@@ -67,7 +67,7 @@
 		viewBox="0 0 {W} {H}"
 		preserveAspectRatio="none"
 		role="img"
-		aria-label="Diagram batang pengeluaran per hari selama satu bulan"
+		aria-label="Bar chart of spending per day over one month"
 		class="block h-32 w-full sm:h-40"
 		onmouseleave={() => (hoverIdx = null)}
 	>
@@ -149,6 +149,6 @@
 	</svg>
 
 	{#if avg === 0}
-		<div class="mt-2 text-center text-xs opacity-60">Belum ada pengeluaran bulan ini.</div>
+		<div class="mt-2 text-center text-xs opacity-60">No spending this month yet.</div>
 	{/if}
 </figure>

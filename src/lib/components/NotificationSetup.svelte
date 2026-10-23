@@ -28,7 +28,7 @@
 			const registration = await navigator.serviceWorker.ready;
 			const keyRes = await fetch('/api/push/vapid-public-key');
 			const { key } = await keyRes.json();
-			if (!key) throw new Error('VAPID public key belum dikonfigurasi di server.');
+			if (!key) throw new Error('VAPID public key is not configured on the server.');
 
 			const subscription = await registration.pushManager.subscribe({
 				userVisibleOnly: true,
@@ -43,14 +43,14 @@
 			status = 'enabled';
 		} catch (err) {
 			status = 'error';
-			errorMsg = err instanceof Error ? err.message : 'Gagal mengaktifkan notifikasi.';
+			errorMsg = err instanceof Error ? err.message : 'Failed to enable notifications.';
 		}
 	}
 </script>
 
 <div class="space-y-2">
 	{#if status === 'enabled'}
-		<div class="alert alert-success py-2 text-sm">Notifikasi aktif di device ini.</div>
+		<div class="alert alert-success py-2 text-sm">Notifications are enabled on this device.</div>
 	{:else}
 		<button
 			type="button"
@@ -58,13 +58,13 @@
 			onclick={enable}
 			disabled={status === 'working'}
 		>
-			{status === 'working' ? 'Mengaktifkan…' : 'Aktifkan notifikasi'}
+			{status === 'working' ? 'Enabling…' : 'Enable notifications'}
 		</button>
 		{#if status === 'unsupported'}
-			<div class="alert alert-warning py-2 text-xs">Browser ini tidak mendukung Web Push.</div>
+			<div class="alert alert-warning py-2 text-xs">This browser does not support Web Push.</div>
 		{:else if status === 'denied'}
 			<div class="alert alert-warning py-2 text-xs">
-				Izin notifikasi ditolak. Aktifkan lewat pengaturan browser lalu coba lagi.
+				Notification permission denied. Allow it in your browser settings and try again.
 			</div>
 		{:else if status === 'error'}
 			<div class="alert alert-error py-2 text-xs">{errorMsg}</div>
@@ -72,7 +72,7 @@
 	{/if}
 	<p class="px-1 text-xs opacity-60">
 		{deviceCount > 0
-			? `${deviceCount} device aktif menerima reminder.`
-			: 'Belum ada device yang aktif.'}
+			? `${deviceCount} device(s) receiving reminders.`
+			: 'No active devices yet.'}
 	</p>
 </div>

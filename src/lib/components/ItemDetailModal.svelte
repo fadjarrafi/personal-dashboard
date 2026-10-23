@@ -92,7 +92,7 @@
 					{/if}
 				</div>
 				<form method="dialog">
-					<button class="btn btn-ghost btn-sm btn-square" aria-label="Tutup">✕</button>
+					<button class="btn btn-ghost btn-sm btn-square" aria-label="Close">✕</button>
 				</form>
 			</header>
 
@@ -122,7 +122,7 @@
 
 				{#if item.language}
 					<div class="mb-3 text-xs opacity-70">
-						Bahasa: <span class="font-mono">{item.language}</span>
+						Language: <span class="font-mono">{item.language}</span>
 					</div>
 				{/if}
 
@@ -140,8 +140,8 @@
 				{/if}
 
 				<div class="mb-4 flex flex-wrap gap-x-6 gap-y-1 text-xs opacity-60">
-					<span>Dibuat: {item.createdAt.slice(0, 16).replace('T', ' ')}</span>
-					<span>Diperbarui: {item.updatedAt.slice(0, 16).replace('T', ' ')}</span>
+					<span>Created: {item.createdAt.slice(0, 16).replace('T', ' ')}</span>
+					<span>Updated: {item.updatedAt.slice(0, 16).replace('T', ' ')}</span>
 				</div>
 
 				<div
@@ -150,12 +150,12 @@
 					<div class="flex flex-wrap gap-2">
 						{#if item.body}
 							<button type="button" class="btn btn-sm" onclick={copyBody}>
-								{copied ? '✓ Tersalin' : 'Copy isi'}
+								{copied ? '✓ Copied' : 'Copy content'}
 							</button>
 						{/if}
 						{#if item.type === 'bookmark' && item.url}
 							<a class="btn btn-sm" href={item.url} target="_blank" rel="noopener noreferrer">
-								Buka ↗
+								Open ↗
 							</a>
 						{/if}
 					</div>
@@ -167,10 +167,10 @@
 								class="btn btn-sm btn-ghost"
 								type="submit"
 								onclick={(e) => {
-									if (!confirm('Arsipkan item ini?')) e.preventDefault();
+									if (!confirm('Archive this item?')) e.preventDefault();
 								}}
 							>
-								Arsipkan
+								Archive
 							</button>
 						</form>
 						<button type="button" class="btn btn-sm btn-primary" onclick={() => (editing = true)}>
@@ -198,7 +198,7 @@
 					<input type="hidden" name="id" value={item.id} />
 
 					<label class="form-control w-full">
-						<div class="label py-1"><span class="label-text text-xs">Judul</span></div>
+						<div class="label py-1"><span class="label-text text-xs">Title</span></div>
 						<input class="input input-bordered w-full" name="title" value={item.title ?? ''} />
 					</label>
 
@@ -216,13 +216,13 @@
 
 					{#if item.type === 'snippet'}
 						<label class="form-control w-full">
-							<div class="label py-1"><span class="label-text text-xs">Bahasa</span></div>
+							<div class="label py-1"><span class="label-text text-xs">Language</span></div>
 							<select
 								class="select select-bordered w-full"
 								name="language"
 								value={item.language ?? ''}
 							>
-								<option value="">— pilih bahasa (opsional) —</option>
+								<option value="">— choose language (optional) —</option>
 								{#each LANGUAGES as lang}
 									<option value={lang}>{lang}</option>
 								{/each}
@@ -231,7 +231,7 @@
 					{/if}
 
 					<label class="form-control w-full">
-						<div class="label py-1"><span class="label-text text-xs">Isi</span></div>
+						<div class="label py-1"><span class="label-text text-xs">Content</span></div>
 						<textarea
 							class="textarea textarea-bordered w-full {item.type === 'snippet'
 								? 'font-mono'
@@ -242,7 +242,7 @@
 					</label>
 
 					<label class="form-control w-full">
-						<div class="label py-1"><span class="label-text text-xs">Tag (pisah dengan koma)</span></div>
+						<div class="label py-1"><span class="label-text text-xs">Tags (comma-separated)</span></div>
 						<input
 							class="input input-bordered w-full"
 							name="tags"
@@ -263,7 +263,7 @@
 							class="checkbox checkbox-primary checkbox-sm"
 							checked={!!item.pinned}
 						/>
-						<span class="label-text text-xs">Pin ke atas</span>
+						<span class="label-text text-xs">Pin to top</span>
 					</label>
 
 					<div class="modal-action flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -273,10 +273,10 @@
 							disabled={saving}
 							onclick={() => (editing = false)}
 						>
-							Batal
+							Cancel
 						</button>
 						<button class="btn btn-primary" type="submit" disabled={saving}>
-							{saving ? 'Menyimpan…' : 'Simpan'}
+							{saving ? 'Saving…' : 'Save'}
 						</button>
 					</div>
 				</form>
@@ -284,6 +284,6 @@
 		{/if}
 	</div>
 	<form method="dialog" class="modal-backdrop">
-		<button aria-label="Tutup">close</button>
+		<button aria-label="Close">close</button>
 	</form>
 </dialog>

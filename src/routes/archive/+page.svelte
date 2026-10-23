@@ -11,17 +11,17 @@
 
 <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
 	<div class="min-w-0">
-		<h1 class="text-lg font-semibold sm:text-xl">Arsip</h1>
+		<h1 class="text-lg font-semibold sm:text-xl">Archive</h1>
 		<p class="text-sm opacity-60">
-			{data.items.length} item diarsipkan. Hard-delete hanya bisa dari sini.
+			{data.items.length} archived item(s). Permanent deletion is only possible from here.
 		</p>
 	</div>
-	<a class="btn btn-ghost btn-sm tap-target" href="/">← Kembali</a>
+	<a class="btn btn-ghost btn-sm tap-target" href="/">← Back</a>
 </div>
 
 {#if data.items.length === 0}
 	<p class="rounded-box border border-dashed border-base-300 p-6 text-center text-sm opacity-60">
-		Arsip kosong.
+		Archive is empty.
 	</p>
 {:else}
 	<!-- Mobile: kartu -->
@@ -47,8 +47,8 @@
 				<div class="mt-2 flex flex-wrap justify-end gap-1">
 					<form method="post" action="?/unarchive">
 						<input type="hidden" name="id" value={item.id} />
-						<button class="btn btn-ghost btn-xs tap-target" type="submit" aria-label="Pulihkan">
-							↺ Pulihkan
+						<button class="btn btn-ghost btn-xs tap-target" type="submit" aria-label="Restore">
+							↺ Restore
 						</button>
 					</form>
 					<form method="post" action="?/delete">
@@ -57,13 +57,13 @@
 							class="btn btn-error btn-outline btn-xs tap-target"
 							type="submit"
 							onclick={(e) => {
-								if (!confirm('Hapus permanen? Tindakan ini tidak bisa dibatalkan.')) {
+								if (!confirm('Delete permanently? This cannot be undone.')) {
 									e.preventDefault();
 								}
 							}}
-							aria-label="Hapus permanen"
+							aria-label="Delete permanently"
 						>
-							Hapus
+							Delete
 						</button>
 					</form>
 				</div>
@@ -76,10 +76,10 @@
 		<table class="table table-sm">
 			<thead>
 				<tr class="text-xs uppercase tracking-wider">
-					<th class="w-24">Tipe</th>
-					<th>Judul / Isi</th>
-					<th class="w-40">Diarsipkan</th>
-					<th class="w-48 text-right">Aksi</th>
+					<th class="w-24">Type</th>
+					<th>Title / Content</th>
+					<th class="w-40">Archived</th>
+					<th class="w-48 text-right">Actions</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -109,8 +109,8 @@
 							<div class="flex justify-end gap-1">
 								<form method="post" action="?/unarchive" style="display:inline">
 									<input type="hidden" name="id" value={item.id} />
-									<button class="btn btn-ghost btn-xs" type="submit" title="Kembalikan">
-										↺ Pulihkan
+									<button class="btn btn-ghost btn-xs" type="submit" title="Restore">
+										↺ Restore
 									</button>
 								</form>
 								<form method="post" action="?/delete" style="display:inline">
@@ -119,13 +119,13 @@
 										class="btn btn-error btn-outline btn-xs"
 										type="submit"
 										onclick={(e) => {
-											if (!confirm('Hapus permanen? Tindakan ini tidak bisa dibatalkan.')) {
+											if (!confirm('Delete permanently? This cannot be undone.')) {
 												e.preventDefault();
 											}
 										}}
-										title="Hapus permanen"
+										title="Delete permanently"
 									>
-										Hapus
+										Delete
 									</button>
 								</form>
 							</div>

@@ -12,9 +12,9 @@ import {
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const user = locals.user!;
 	const id = Number(params.id);
-	if (!Number.isFinite(id)) throw error(404, 'Tidak ditemukan');
+	if (!Number.isFinite(id)) throw error(404, 'Not found');
 	const spend = getSpend(user.id, id);
-	if (!spend) throw error(404, 'Tidak ditemukan');
+	if (!spend) throw error(404, 'Not found');
 	const categories = listCategories(user.id);
 	return { spend, categories };
 };
@@ -37,10 +37,10 @@ export const actions: Actions = {
 
 		const amount = parseRupiah(String(data.get('amount') ?? ''));
 		if (!Number.isFinite(amount) || amount <= 0) {
-			return fail(400, { error: 'Jumlah tidak valid.' });
+			return fail(400, { error: 'Invalid amount.' });
 		}
 		const occurredAt = parseOccurredAt(String(data.get('occurred_at') ?? ''));
-		if (!occurredAt) return fail(400, { error: 'Tanggal tidak valid.' });
+		if (!occurredAt) return fail(400, { error: 'Invalid date.' });
 
 		updateSpend(user.id, id, {
 			amount,
@@ -50,7 +50,7 @@ export const actions: Actions = {
 			note: String(data.get('note') ?? '').trim() || null,
 			method: String(data.get('method') ?? '').trim() || null
 		});
-		setFlash(cookies, 'success', 'Pengeluaran diperbarui.');
+		setFlash(cookies, 'success', 'Spending updated.');
 		throw redirect(303, '/spends');
 	},
 
@@ -59,7 +59,7 @@ export const actions: Actions = {
 		const id = Number(params.id);
 		if (!Number.isFinite(id)) throw error(404);
 		deleteSpend(user.id, id);
-		setFlash(cookies, 'success', 'Pengeluaran dihapus.');
+		setFlash(cookies, 'success', 'Spending deleted.');
 		throw redirect(303, '/spends');
 	}
 };

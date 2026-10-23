@@ -10,9 +10,9 @@
 		high: 'badge-error'
 	};
 	const priorityLabel: Record<string, string> = {
-		low: 'Rendah',
-		medium: 'Sedang',
-		high: 'Tinggi'
+		low: 'Low',
+		medium: 'Medium',
+		high: 'High'
 	};
 
 	const checklistDone = $derived(task.checklist.filter((i) => i.done).length);
@@ -29,7 +29,7 @@
 	}
 
 	function shortDate(iso: string): string {
-		return new Date(iso).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+		return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
 	}
 </script>
 

@@ -95,7 +95,7 @@
 <Toast flash={data.flash} />
 {#if data.user}<Shortcuts /><CommandPalette bind:this={palette} />{/if}
 
-<a href="#main" class="skip-link">Lompat ke konten</a>
+<a href="#main" class="skip-link">Skip to content</a>
 
 <div class="flex min-h-screen">
 	{#if data.user}
@@ -125,9 +125,9 @@
 				<button
 					type="button"
 					class="btn btn-ghost btn-sm btn-square tap-target"
-					aria-label={sidebarCollapsed ? 'Perluas sidebar' : 'Perkecil sidebar'}
+					aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
 					aria-expanded={!sidebarCollapsed}
-					title={sidebarCollapsed ? 'Perluas sidebar' : 'Perkecil sidebar'}
+					title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
 					onclick={toggleSidebar}
 				>
 					<svg
@@ -148,21 +148,21 @@
 			</div>
 			<nav
 				class="flex-1 overflow-y-auto {sidebarCollapsed ? 'px-2 py-3' : 'p-3'}"
-				aria-label="Navigasi utama"
+				aria-label="Main navigation"
 			>
 				<button
 					type="button"
 					class="btn btn-ghost btn-sm mb-3 w-full border border-base-300 font-normal {sidebarCollapsed
 						? 'justify-center px-0'
 						: 'justify-between'}"
-					aria-label="Cari & perintah (Ctrl+K)"
-					title={sidebarCollapsed ? 'Cari (Ctrl+K)' : undefined}
+					aria-label="Search & commands (Ctrl+K)"
+					title={sidebarCollapsed ? 'Search (Ctrl+K)' : undefined}
 					onclick={() => palette?.open()}
 				>
 					{#if sidebarCollapsed}
 						<span aria-hidden="true">⌕</span>
 					{:else}
-						<span class="opacity-60">Cari…</span>
+						<span class="opacity-60">Search…</span>
 						<kbd class="kbd kbd-xs">Ctrl K</kbd>
 					{/if}
 				</button>
@@ -178,11 +178,11 @@
 					<button
 						class="btn btn-ghost btn-block gap-2 {sidebarCollapsed ? 'justify-center px-0' : 'justify-start'}"
 						type="submit"
-						aria-label={sidebarCollapsed ? 'Keluar' : undefined}
-						title={sidebarCollapsed ? `Keluar (${data.user.email})` : undefined}
+						aria-label={sidebarCollapsed ? 'Log out' : undefined}
+						title={sidebarCollapsed ? `Log out (${data.user.email})` : undefined}
 					>
 						<span aria-hidden="true">↩</span>
-						{#if !sidebarCollapsed}Keluar{/if}
+						{#if !sidebarCollapsed}Log out{/if}
 					</button>
 				</form>
 			</div>
@@ -196,7 +196,7 @@
 					<button
 						type="button"
 						class="btn btn-ghost btn-sm tap-target"
-						aria-label="Buka menu"
+						aria-label="Open menu"
 						aria-expanded={drawerOpen}
 						aria-controls="mobile-drawer"
 						onclick={() => (drawerOpen = true)}
@@ -227,7 +227,7 @@
 					<button
 						type="button"
 						class="btn btn-ghost btn-sm tap-target ml-auto"
-						aria-label="Cari & perintah (Ctrl+K)"
+						aria-label="Search & commands (Ctrl+K)"
 						onclick={() => palette?.open()}
 					>
 						<svg
@@ -273,7 +273,7 @@
 			class="absolute inset-0 bg-black/60 transition-opacity duration-200 {drawerOpen
 				? 'opacity-100'
 				: 'opacity-0'}"
-			aria-label="Tutup menu"
+			aria-label="Close menu"
 			tabindex={drawerOpen ? 0 : -1}
 			onclick={closeDrawer}
 		></button>
@@ -286,7 +286,7 @@
 				: '-translate-x-full'}"
 			role="dialog"
 			aria-modal="true"
-			aria-label="Menu navigasi"
+			aria-label="Navigation menu"
 		>
 			<div class="flex items-center justify-between border-b border-base-300 px-4 py-3">
 				<span class="font-display text-base font-semibold">
@@ -295,14 +295,14 @@
 				<button
 					type="button"
 					class="btn btn-ghost btn-sm btn-square tap-target"
-					aria-label="Tutup menu"
+					aria-label="Close menu"
 					onclick={closeDrawer}
 				>
 					✕
 				</button>
 			</div>
 
-			<nav class="flex-1 overflow-y-auto p-3" aria-label="Menu utama">
+			<nav class="flex-1 overflow-y-auto p-3" aria-label="Main menu">
 				{@render navGroups(closeDrawer)}
 			</nav>
 
@@ -312,7 +312,7 @@
 				</div>
 				<form method="post" action="/logout">
 					<button class="btn btn-ghost btn-block justify-start gap-2" type="submit">
-						<span aria-hidden="true">↩</span> Keluar
+						<span aria-hidden="true">↩</span> Log out
 					</button>
 				</form>
 			</div>

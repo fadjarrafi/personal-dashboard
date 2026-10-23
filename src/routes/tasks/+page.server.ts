@@ -45,7 +45,7 @@ export const actions: Actions = {
 		const data = await request.formData();
 
 		const title = String(data.get('title') ?? '').trim();
-		if (!title) return fail(400, { error: 'Judul tugas wajib diisi.' });
+		if (!title) return fail(400, { error: 'Task title is required.' });
 
 		const notes = String(data.get('notes') ?? '').trim() || null;
 		const dueAt = parseDueDate(String(data.get('due_at') ?? '') || null);
@@ -59,7 +59,7 @@ export const actions: Actions = {
 		const tags = parseTags(String(data.get('tags') ?? ''));
 
 		createTask(user.id, { title, notes, dueAt, priority, pinned, tags });
-		setFlash(cookies, 'success', 'Tugas ditambahkan.');
+		setFlash(cookies, 'success', 'Task added.');
 		return { ok: true };
 	},
 
@@ -67,10 +67,10 @@ export const actions: Actions = {
 		const user = locals.user!;
 		const data = await request.formData();
 		const id = Number(data.get('id'));
-		if (!Number.isFinite(id)) return fail(400, { error: 'ID tidak valid.' });
+		if (!Number.isFinite(id)) return fail(400, { error: 'Invalid ID.' });
 		const ok = toggleDone(user.id, id);
-		if (!ok) return fail(404, { error: 'Tidak ditemukan' });
-		setFlash(cookies, 'success', 'Status tugas diperbarui.');
+		if (!ok) return fail(404, { error: 'Not found' });
+		setFlash(cookies, 'success', 'Task status updated.');
 		return { ok: true };
 	},
 
@@ -78,10 +78,10 @@ export const actions: Actions = {
 		const user = locals.user!;
 		const data = await request.formData();
 		const id = Number(data.get('id'));
-		if (!Number.isFinite(id)) return fail(400, { error: 'ID tidak valid.' });
+		if (!Number.isFinite(id)) return fail(400, { error: 'Invalid ID.' });
 		const ok = togglePin(user.id, id);
-		if (!ok) return fail(404, { error: 'Tidak ditemukan' });
-		setFlash(cookies, 'success', 'Pin diperbarui.');
+		if (!ok) return fail(404, { error: 'Not found' });
+		setFlash(cookies, 'success', 'Pin updated.');
 		return { ok: true };
 	}
 };

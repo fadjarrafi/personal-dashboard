@@ -8,23 +8,23 @@
 	let recurrence = $state('monthly');
 
 	const categoryLabels: Record<string, string> = {
-		listrik: 'Listrik',
+		listrik: 'Electricity',
 		internet: 'Internet',
-		cicilan: 'Cicilan',
-		langganan: 'Langganan',
-		kartu_kredit: 'Kartu Kredit',
-		lainnya: 'Lainnya'
+		cicilan: 'Installment',
+		langganan: 'Subscription',
+		kartu_kredit: 'Credit Card',
+		lainnya: 'Other'
 	};
 	const recurrenceLabels: Record<string, string> = {
-		none: 'Sekali',
-		monthly: 'Bulanan',
-		weekly: 'Mingguan',
-		custom_days: 'Interval hari'
+		none: 'One-time',
+		monthly: 'Monthly',
+		weekly: 'Weekly',
+		custom_days: 'Every N days'
 	};
 	const statusLabels: Record<string, string> = {
-		overdue: 'Lewat jatuh tempo',
-		due_soon: 'Segera jatuh tempo',
-		upcoming: 'Akan datang'
+		overdue: 'Overdue',
+		due_soon: 'Due soon',
+		upcoming: 'Upcoming'
 	};
 	const statusBadgeClass: Record<string, string> = {
 		overdue: 'badge-error',
@@ -33,13 +33,13 @@
 	};
 
 	function shortDate(iso: string): string {
-		return new Date(iso).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+		return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 	}
 
 	function dueLabel(days: number): string {
-		if (days < 0) return `Telat ${Math.abs(days)} hari`;
-		if (days === 0) return 'Jatuh tempo hari ini';
-		return `${days} hari lagi`;
+		if (days < 0) return `${Math.abs(days)} day(s) overdue`;
+		if (days === 0) return 'Due today';
+		return `In ${days} day(s)`;
 	}
 </script>
 
@@ -47,9 +47,9 @@
 	<aside class="order-2 space-y-3 lg:order-1 lg:sticky lg:top-4 lg:self-start">
 		<section
 			class="rounded-box border border-base-300 bg-base-200/60 p-4"
-			aria-label="Notifikasi tagihan"
+			aria-label="Bill notifications"
 		>
-			<h2 class="text-[10px] font-semibold uppercase tracking-wider opacity-50">Notifikasi</h2>
+			<h2 class="text-[10px] font-semibold uppercase tracking-wider opacity-50">Notifications</h2>
 			<div class="mt-2">
 				<NotificationSetup deviceCount={data.devices.length} />
 			</div>
@@ -60,7 +60,7 @@
 				id="bill-add-heading"
 				class="mb-2 px-1 text-xs font-semibold uppercase tracking-wider opacity-60"
 			>
-				Tambah tagihan
+				Add bill
 			</h2>
 			<form
 				method="post"
@@ -68,18 +68,18 @@
 				class="card space-y-2 border-l-2 border-l-[--color-accent] bg-base-200 p-3 sm:p-4"
 			>
 				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Nama tagihan</span></div>
+					<div class="label py-1"><span class="label-text text-xs">Bill name</span></div>
 					<input
 						class="input input-bordered w-full"
 						name="title"
-						placeholder="Listrik PLN, Internet, dsb."
+						placeholder="PLN electricity, Internet, etc."
 						required
 						autocomplete="off"
 					/>
 				</label>
 
 				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Jumlah (Rp)</span></div>
+					<div class="label py-1"><span class="label-text text-xs">Amount (Rp)</span></div>
 					<input
 						class="input input-bordered w-full"
 						name="amount"
@@ -91,12 +91,12 @@
 				</label>
 
 				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Jatuh tempo</span></div>
+					<div class="label py-1"><span class="label-text text-xs">Due date</span></div>
 					<input class="input input-bordered w-full" name="next_due_at" type="date" required />
 				</label>
 
 				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Kategori</span></div>
+					<div class="label py-1"><span class="label-text text-xs">Category</span></div>
 					<select class="select select-bordered w-full" name="category">
 						{#each data.categories as c}
 							<option value={c}>{categoryLabels[c]}</option>
@@ -105,7 +105,7 @@
 				</label>
 
 				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Pengulangan</span></div>
+					<div class="label py-1"><span class="label-text text-xs">Recurrence</span></div>
 					<select class="select select-bordered w-full" name="recurrence" bind:value={recurrence}>
 						{#each data.recurrences as r}
 							<option value={r}>{recurrenceLabels[r]}</option>
@@ -115,7 +115,7 @@
 
 				{#if recurrence === 'custom_days'}
 					<label class="form-control w-full">
-						<div class="label py-1"><span class="label-text text-xs">Interval (hari)</span></div>
+						<div class="label py-1"><span class="label-text text-xs">Interval (days)</span></div>
 						<input
 							class="input input-bordered w-full"
 							name="interval_days"
@@ -127,7 +127,7 @@
 					</label>
 				{/if}
 
-				<button class="btn btn-primary w-full" type="submit">Simpan</button>
+				<button class="btn btn-primary w-full" type="submit">Save</button>
 
 				{#if form && 'error' in form && form.error}
 					<div role="alert" class="alert alert-error py-2 text-sm">{form.error}</div>
@@ -138,12 +138,12 @@
 
 	<section class="order-1 min-w-0 space-y-3 lg:order-2">
 		<header class="px-1">
-			<h1 class="text-lg font-semibold sm:text-xl">Tagihan</h1>
+			<h1 class="text-lg font-semibold sm:text-xl">Bills</h1>
 		</header>
 
 		{#if data.bills.length === 0}
 			<p class="rounded-box border border-dashed border-base-300 p-6 text-center text-sm opacity-60">
-				Belum ada tagihan tercatat.
+				No bills recorded yet.
 			</p>
 		{:else}
 			<ul class="space-y-2" role="list">
@@ -169,7 +169,7 @@
 						</div>
 						<div class="mt-2 flex justify-end gap-2">
 							<form method="post" action="/bills/{b.id}?/markPaid">
-								<button class="btn btn-success btn-sm tap-target" type="submit">Tandai lunas</button>
+								<button class="btn btn-success btn-sm tap-target" type="submit">Mark as paid</button>
 							</form>
 						</div>
 					</li>

@@ -45,7 +45,7 @@
 
 	function canvasToBlob(canvas: HTMLCanvasElement, type: string, q: number): Promise<Blob> {
 		return new Promise((resolve, reject) =>
-			canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Encode gagal'))), type, q)
+			canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Encoding failed'))), type, q)
 		);
 	}
 
@@ -60,7 +60,7 @@
 			canvas.width = w;
 			canvas.height = h;
 			const ctx = canvas.getContext('2d');
-			if (!ctx) throw new Error('Canvas tidak tersedia');
+			if (!ctx) throw new Error('Canvas unavailable');
 			const fmt = targetFormat(job.file);
 			// JPEG tidak punya alpha: isi putih agar area transparan tidak jadi hitam.
 			if (fmt === 'jpeg') {
@@ -171,8 +171,8 @@
 		<label class="form-control">
 			<div class="label py-1"><span class="label-text text-xs">Format output</span></div>
 			<select class="select select-bordered select-sm" bind:value={format}>
-				<option value="same">Sama dengan asli</option>
-				<option value="png">PNG (kuantisasi)</option>
+				<option value="same">Same as original</option>
+				<option value="png">PNG (quantized)</option>
 				<option value="jpeg">JPEG</option>
 				<option value="webp">WebP</option>
 			</select>
@@ -180,32 +180,32 @@
 		{#if format !== 'jpeg' && format !== 'webp'}
 			<label class="form-control w-48">
 				<div class="label py-1">
-					<span class="label-text text-xs">Warna PNG: {colors === 0 ? 'lossless' : colors}</span>
+					<span class="label-text text-xs">PNG colors: {colors === 0 ? 'lossless' : colors}</span>
 				</div>
 				<select class="select select-bordered select-sm" bind:value={colors}>
-					<option value={256}>256 (disarankan)</option>
+					<option value={256}>256 (recommended)</option>
 					<option value={128}>128</option>
 					<option value={64}>64</option>
 					<option value={32}>32</option>
-					<option value={0}>Lossless (re-deflate saja)</option>
+					<option value={0}>Lossless (re-deflate only)</option>
 				</select>
 			</label>
 		{/if}
 		{#if format !== 'png'}
 			<label class="form-control w-48">
 				<div class="label py-1">
-					<span class="label-text text-xs">Kualitas JPEG/WebP: {quality}</span>
+					<span class="label-text text-xs">JPEG/WebP quality: {quality}</span>
 				</div>
 				<input type="range" min="30" max="100" class="range range-sm" bind:value={quality} />
 			</label>
 		{/if}
 		<label class="form-control w-36">
-			<div class="label py-1"><span class="label-text text-xs">Lebar maks (px)</span></div>
+			<div class="label py-1"><span class="label-text text-xs">Max width (px)</span></div>
 			<input
 				class="input input-bordered input-sm"
 				type="number"
 				min="1"
-				placeholder="Asli"
+				placeholder="Original"
 				bind:value={maxWidth}
 			/>
 		</label>
@@ -213,7 +213,7 @@
 			type="button"
 			class="btn-brutal-ghost btn-sm"
 			onclick={recompressAll}
-			disabled={!jobs.length}>Terapkan ulang</button
+			disabled={!jobs.length}>Re-apply</button
 		>
 	</div>
 
@@ -228,8 +228,8 @@
 		ondragleave={() => (dragging = false)}
 		ondrop={onDrop}
 	>
-		<span>Seret gambar ke sini, klik untuk memilih, atau tempel (Ctrl+V)</span>
-		<span class="text-xs opacity-60">Diproses di browser — gambar tidak diunggah ke server.</span>
+		<span>Drag images here, click to choose, or paste (Ctrl+V)</span>
+		<span class="text-xs opacity-60">Processed in the browser — images are not uploaded to the server.</span>
 		<input
 			type="file"
 			accept="image/png,image/jpeg,image/webp"
@@ -248,10 +248,10 @@
 			<span>
 				{totals.count} file · {fmtSize(totals.before)} → {fmtSize(totals.after)}
 				<strong class={totals.after < totals.before ? 'text-success' : 'text-warning'}>
-					({totals.before ? Math.round((1 - totals.after / totals.before) * 100) : 0}% hemat)
+					({totals.before ? Math.round((1 - totals.after / totals.before) * 100) : 0}% saved)
 				</strong>
 			</span>
-			<button type="button" class="btn-brutal btn-sm" onclick={downloadAll}>Download semua</button>
+			<button type="button" class="btn-brutal btn-sm" onclick={downloadAll}>Download all</button>
 		</div>
 	{/if}
 
@@ -281,7 +281,7 @@
 						{/if}
 					</div>
 					{#if job.status === 'done' && saved <= 0}
-						<div class="text-xs text-warning">Hasil tidak lebih kecil — pakai file asli saja.</div>
+						<div class="text-xs text-warning">Result is not smaller — keep the original file.</div>
 					{/if}
 				</div>
 				<div class="flex gap-1">
@@ -297,7 +297,7 @@
 						type="button"
 						class="btn btn-ghost btn-sm tap-target rounded-none"
 						onclick={() => remove(job)}
-						aria-label="Hapus {job.file.name}">✕</button
+						aria-label="Remove {job.file.name}">✕</button
 					>
 				</div>
 			</li>

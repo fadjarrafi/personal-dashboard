@@ -35,7 +35,7 @@
 </script>
 
 <svelte:head>
-	<title>{data.mode === 'search' ? `Cari "${data.query}"` : data.path || 'Semua note'} · Vault</title>
+	<title>{data.mode === 'search' ? `Search "${data.query}"` : data.path || 'All notes'} · Vault</title>
 </svelte:head>
 
 <div class="mx-auto max-w-3xl">
@@ -55,18 +55,18 @@
 			type="search"
 			name="q"
 			value={data.query}
-			placeholder="Cari note lewat judul/nama file..."
+			placeholder="Search notes by title/file name..."
 			class="input input-bordered input-sm flex-1"
 		/>
-		<button class="btn btn-primary btn-sm" type="submit">Cari</button>
+		<button class="btn btn-primary btn-sm" type="submit">Search</button>
 		{#if data.query}
-			<a class="btn btn-ghost btn-sm" href={browseHref(data.path)}>Bersihkan</a>
+			<a class="btn btn-ghost btn-sm" href={browseHref(data.path)}>Clear</a>
 		{/if}
 	</form>
 
 	{#if data.mode === 'search'}
 		<h2 class="mb-2 font-display text-sm font-semibold uppercase tracking-wide opacity-70">
-			Hasil untuk "{data.query}" ({data.notes.length})
+			Results for "{data.query}" ({data.notes.length})
 		</h2>
 		<ul class="space-y-2">
 			{#each data.notes as note (note.path)}
@@ -78,12 +78,12 @@
 					</div>
 				</li>
 			{:else}
-				<li class="text-sm opacity-60">Tidak ada note yang cocok.</li>
+				<li class="text-sm opacity-60">No matching notes.</li>
 			{/each}
 		</ul>
 	{:else}
 		{#if data.folders.length > 0}
-			<h2 class="mb-2 font-display text-sm font-semibold uppercase tracking-wide opacity-70">Folder</h2>
+			<h2 class="mb-2 font-display text-sm font-semibold uppercase tracking-wide opacity-70">Folders</h2>
 			<ul class="mb-4 grid gap-1 sm:grid-cols-2">
 				{#each data.folders as folder (folder.path)}
 					<li>
@@ -96,7 +96,7 @@
 		{/if}
 
 		<h2 class="mb-2 font-display text-sm font-semibold uppercase tracking-wide opacity-70">
-			Note ({data.notes.length})
+			Notes ({data.notes.length})
 		</h2>
 		<ul class="space-y-2">
 			{#each data.notes as note (note.path)}
@@ -106,12 +106,12 @@
 					<div class="mt-1 text-xs opacity-50">{formatDate(note.updatedAt)}</div>
 				</li>
 			{:else}
-				<li class="text-sm opacity-60">Tidak ada note di folder ini.</li>
+				<li class="text-sm opacity-60">No notes in this folder.</li>
 			{/each}
 		</ul>
 
 		{#if data.folders.length === 0 && data.notes.length === 0}
-			<p class="text-sm opacity-60">Folder kosong.</p>
+			<p class="text-sm opacity-60">Empty folder.</p>
 		{/if}
 	{/if}
 </div>

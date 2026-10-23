@@ -81,8 +81,8 @@
 	function grade(r: number) {
 		if (r >= 7) return 'AAA';
 		if (r >= 4.5) return 'AA';
-		if (r >= 3) return 'AA besar';
-		return 'Gagal';
+		if (r >= 3) return 'AA large';
+		return 'Fail';
 	}
 </script>
 
@@ -92,7 +92,7 @@
 		type="button"
 		class="flex h-16 min-w-0 flex-1 flex-col items-start justify-end p-1.5 text-left font-mono text-[10px] leading-tight"
 		style="background: {hex}; color: {readableOn(rgb)}"
-		title="Klik untuk copy {hex}"
+		title="Click to copy {hex}"
 		onclick={() => navigator.clipboard?.writeText(hex)}
 	>
 		<span>{label}</span>
@@ -104,17 +104,17 @@
 
 <div class="space-y-8">
 	<section class="space-y-3" aria-labelledby="shade-heading">
-		<h2 id="shade-heading" class="label-mono">Skala shade</h2>
+		<h2 id="shade-heading" class="label-mono">Shade scale</h2>
 		<div class="flex flex-wrap items-end gap-3">
 			<label class="form-control">
-				<div class="label py-1"><span class="label-text text-xs">Warna dasar</span></div>
+				<div class="label py-1"><span class="label-text text-xs">Base color</span></div>
 				<div class="flex items-center gap-2">
 					<input
 						type="color"
 						class="h-11 w-11 cursor-pointer border border-base-300 bg-transparent"
 						value={base ? toHex(base) : '#000000'}
 						oninput={(e) => (hexInput = e.currentTarget.value)}
-						aria-label="Pilih warna"
+						aria-label="Pick color"
 					/>
 					<input
 						class="input input-bordered w-32 font-mono {base ? '' : 'input-error'}"
@@ -125,7 +125,7 @@
 				</div>
 			</label>
 			<label class="form-control">
-				<div class="label py-1"><span class="label-text text-xs">Nama token</span></div>
+				<div class="label py-1"><span class="label-text text-xs">Token name</span></div>
 				<input class="input input-bordered w-32 font-mono" bind:value={name} spellcheck="false" />
 			</label>
 			{#if base}
@@ -164,7 +164,7 @@
 
 	{#if base}
 		<section class="space-y-3" aria-labelledby="harmony-heading">
-			<h2 id="harmony-heading" class="label-mono">Harmoni (rotasi hue di OKLCH)</h2>
+			<h2 id="harmony-heading" class="label-mono">Harmonies (hue rotation in OKLCH)</h2>
 			<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 				{#each HARMONIES as hm (hm.name)}
 					<div>
@@ -181,38 +181,38 @@
 	{/if}
 
 	<section class="space-y-3" aria-labelledby="contrast-heading">
-		<h2 id="contrast-heading" class="label-mono">Kontras WCAG</h2>
+		<h2 id="contrast-heading" class="label-mono">WCAG contrast</h2>
 		<div class="flex flex-wrap items-end gap-3">
 			<label class="form-control">
-				<div class="label py-1"><span class="label-text text-xs">Teks</span></div>
+				<div class="label py-1"><span class="label-text text-xs">Text</span></div>
 				<input class="input input-bordered w-32 font-mono" bind:value={fg} spellcheck="false" />
 			</label>
 			<label class="form-control">
-				<div class="label py-1"><span class="label-text text-xs">Latar</span></div>
+				<div class="label py-1"><span class="label-text text-xs">Background</span></div>
 				<input class="input input-bordered w-32 font-mono" bind:value={bg} spellcheck="false" />
 			</label>
 			<button
 				type="button"
 				class="btn-brutal-ghost btn-sm mb-1"
 				onclick={() => ([fg, bg] = [bg, fg])}
-				aria-label="Tukar warna teks dan latar">⇄</button
+				aria-label="Swap text and background colors">⇄</button
 			>
 			{#if base}
 				<button type="button" class="btn-brutal-ghost btn-sm mb-1" onclick={() => (bg = toHex(base))}>
-					Latar = warna dasar
+					Background = base color
 				</button>
 			{/if}
 		</div>
 		{#if contrast !== null}
 			<div class="flex flex-wrap items-center gap-4">
 				<div class="border border-base-300 px-4 py-3" style="background: {bg}; color: {fg}">
-					<div class="text-lg font-semibold">Aa Contoh teks</div>
-					<div class="text-sm">Teks body ukuran normal.</div>
+					<div class="text-lg font-semibold">Aa Sample text</div>
+					<div class="text-sm">Normal-size body text.</div>
 				</div>
 				<div>
 					<div class="font-mono text-2xl">{contrast.toFixed(2)}:1</div>
 					<div class="text-sm opacity-70">
-						Normal: {grade(contrast)} · Besar: {contrast >= 4.5 ? 'AAA' : contrast >= 3 ? 'AA' : 'Gagal'}
+						Normal: {grade(contrast)} · Large: {contrast >= 4.5 ? 'AAA' : contrast >= 3 ? 'AA' : 'Fail'}
 					</div>
 				</div>
 			</div>
@@ -220,23 +220,23 @@
 	</section>
 
 	<section class="space-y-3" aria-labelledby="extract-heading">
-		<h2 id="extract-heading" class="label-mono">Ekstrak palet dari gambar</h2>
+		<h2 id="extract-heading" class="label-mono">Extract palette from image</h2>
 		<div class="flex flex-wrap items-end gap-3">
 			<input
 				type="file"
 				accept="image/*"
 				class="file-input file-input-bordered w-full max-w-xs"
 				onchange={onImage}
-				aria-label="Pilih gambar"
+				aria-label="Choose image"
 			/>
 			<label class="form-control w-40">
-				<div class="label py-1"><span class="label-text text-xs">Jumlah warna: {k}</span></div>
+				<div class="label py-1"><span class="label-text text-xs">Colors: {k}</span></div>
 				<input type="range" min="3" max="10" class="range range-sm" bind:value={k} onchange={runExtract} />
 			</label>
 		</div>
 		{#if imageUrl}
 			<div class="flex flex-wrap items-start gap-4">
-				<img src={imageUrl} alt="Gambar sumber" class="max-h-48 max-w-full border border-base-300" />
+				<img src={imageUrl} alt="Palette source" class="max-h-48 max-w-full border border-base-300" />
 				<ul class="min-w-0 flex-1 space-y-1" role="list">
 					{#each extracted as e}
 						{@const hex = toHex(e.rgb)}
@@ -245,7 +245,7 @@
 							<code class="font-mono">{hex}</code>
 							<span class="opacity-50">{(e.share * 100).toFixed(0)}%</span>
 							<button type="button" class="btn btn-ghost btn-xs rounded-none" onclick={() => pick(e.rgb)}>
-								Jadikan dasar
+								Use as base
 							</button>
 						</li>
 					{/each}

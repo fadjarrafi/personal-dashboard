@@ -7,10 +7,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	try {
 		body = await request.json();
 	} catch {
-		throw error(400, 'Body tidak valid');
+		throw error(400, 'Invalid body');
 	}
 	if (!body.endpoint || !body.keys?.p256dh || !body.keys?.auth) {
-		throw error(400, 'Subscription tidak lengkap');
+		throw error(400, 'Incomplete subscription');
 	}
 	upsertSubscription(locals.user.id, {
 		endpoint: body.endpoint,
@@ -25,9 +25,9 @@ export const DELETE: RequestHandler = async ({ request, locals }) => {
 	try {
 		body = await request.json();
 	} catch {
-		throw error(400, 'Body tidak valid');
+		throw error(400, 'Invalid body');
 	}
-	if (!body.endpoint) throw error(400, 'endpoint wajib diisi');
+	if (!body.endpoint) throw error(400, 'endpoint is required');
 	removeSubscription(locals.user.id, body.endpoint);
 	return json({ ok: true });
 };

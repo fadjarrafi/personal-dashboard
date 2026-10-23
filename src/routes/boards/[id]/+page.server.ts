@@ -6,9 +6,9 @@ import { archiveBoard, deleteBoard, getBoard, readScene, renameBoard } from '$li
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const user = locals.user!;
 	const id = Number(params.id);
-	if (!Number.isFinite(id)) throw error(404, 'Tidak ditemukan');
+	if (!Number.isFinite(id)) throw error(404, 'Not found');
 	const board = getBoard(user.id, id);
-	if (!board) throw error(404, 'Tidak ditemukan');
+	if (!board) throw error(404, 'Not found');
 	const scene = await readScene(user.id, id);
 	return { board, scene };
 };
@@ -20,9 +20,9 @@ export const actions: Actions = {
 		if (!Number.isFinite(id)) throw error(404);
 		const data = await request.formData();
 		const title = String(data.get('title') ?? '').trim();
-		if (!title) return fail(400, { error: 'Judul tidak boleh kosong.' });
+		if (!title) return fail(400, { error: 'Title cannot be empty.' });
 		renameBoard(user.id, id, title);
-		setFlash(cookies, 'success', 'Board diganti nama.');
+		setFlash(cookies, 'success', 'Board renamed.');
 		return { ok: true };
 	},
 
@@ -31,7 +31,7 @@ export const actions: Actions = {
 		const id = Number(params.id);
 		if (!Number.isFinite(id)) throw error(404);
 		archiveBoard(user.id, id);
-		setFlash(cookies, 'success', 'Board diarsipkan.');
+		setFlash(cookies, 'success', 'Board archived.');
 		throw redirect(303, '/boards');
 	},
 
@@ -40,7 +40,7 @@ export const actions: Actions = {
 		const id = Number(params.id);
 		if (!Number.isFinite(id)) throw error(404);
 		await deleteBoard(user.id, id);
-		setFlash(cookies, 'success', 'Board dihapus.');
+		setFlash(cookies, 'success', 'Board deleted.');
 		throw redirect(303, '/boards');
 	}
 };

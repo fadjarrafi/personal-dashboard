@@ -5,9 +5,9 @@ import { archiveItem, getItem, listAllTags, updateItem } from '$lib/server/items
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const id = Number(params.id);
-	if (!Number.isFinite(id)) throw error(404, 'Tidak ditemukan');
+	if (!Number.isFinite(id)) throw error(404, 'Not found');
 	const item = getItem(locals.user!.id, id);
-	if (!item) throw error(404, 'Tidak ditemukan');
+	if (!item) throw error(404, 'Not found');
 	return { item, tags: listAllTags() };
 };
 
@@ -37,15 +37,15 @@ export const actions: Actions = {
 			pinned,
 			tags
 		});
-		if (!ok) return fail(404, { error: 'Tidak ditemukan' });
-		setFlash(cookies, 'success', 'Perubahan disimpan.');
+		if (!ok) return fail(404, { error: 'Not found' });
+		setFlash(cookies, 'success', 'Changes saved.');
 		throw redirect(303, '/');
 	},
 
 	archive: async ({ params, locals, cookies }) => {
 		const id = Number(params.id);
 		archiveItem(locals.user!.id, id);
-		setFlash(cookies, 'success', 'Item diarsipkan.');
+		setFlash(cookies, 'success', 'Item archived.');
 		throw redirect(303, '/');
 	}
 };

@@ -74,7 +74,7 @@
 	}}
 	class="card bg-base-200 p-3 sm:p-4 lg:min-h-0 lg:flex-1"
 >
-	<div role="tablist" aria-label="Jenis catatan" class="tabs tabs-boxed mb-3 w-full sm:w-fit">
+	<div role="tablist" aria-label="Entry type" class="tabs tabs-boxed mb-3 w-full sm:w-fit">
 		{#each ['note', 'bookmark', 'snippet'] as t}
 			<button
 				type="button"
@@ -98,23 +98,23 @@
 			required
 			onblur={(e) => autofillMeta(e.currentTarget)}
 		/>
-		<input class="input input-bordered mb-2 w-full" name="title" placeholder="Judul (auto bila kosong)" />
+		<input class="input input-bordered mb-2 w-full" name="title" placeholder="Title (auto-filled if empty)" />
 		<input type="hidden" name="faviconUrl" bind:this={faviconInput} />
 		<input type="hidden" name="previewImageUrl" bind:this={previewImageInput} />
 		<textarea
 			class="textarea textarea-bordered mb-2 w-full lg:min-h-24 lg:flex-1 lg:resize-none"
 			name="body"
 			rows="2"
-			placeholder="Catatan opsional"
+			placeholder="Optional note"
 		></textarea>
 	{:else if type === 'snippet'}
 		<input
 			class="input input-bordered mb-2 w-full"
 			name="title"
-			placeholder="Judul snippet"
+			placeholder="Snippet title"
 		/>
 		<select class="select select-bordered mb-2 w-full" name="language">
-			<option value="">— pilih bahasa (opsional) —</option>
+			<option value="">— choose language (optional) —</option>
 			{#each LANGUAGES as lang}
 				<option value={lang}>{lang}</option>
 			{/each}
@@ -123,7 +123,7 @@
 			class="textarea textarea-bordered mb-2 w-full font-mono lg:min-h-24 lg:flex-1 lg:resize-none"
 			name="body"
 			rows="5"
-			placeholder="Tempel kode di sini…"
+			placeholder="Paste code here…"
 			required
 		></textarea>
 	{:else}
@@ -131,7 +131,7 @@
 			class="textarea textarea-bordered mb-2 w-full lg:min-h-24 lg:flex-1 lg:resize-none"
 			name="body"
 			rows="3"
-			placeholder="Tulis fleeting note… (draft tersimpan otomatis)"
+			placeholder="Write a fleeting note… (draft auto-saved)"
 			required
 			autofocus
 			bind:value={noteBody}
@@ -144,10 +144,10 @@
 			id="capture-tags"
 			class="input input-bordered w-full min-w-0 flex-1"
 			name="tags"
-			placeholder="tag1, tag2 (opsional)"
+			placeholder="tag1, tag2 (optional)"
 			list="known-tags"
 		/>
-		<button class="btn btn-primary w-full sm:w-auto" type="submit">Simpan</button>
+		<button class="btn btn-primary w-full sm:w-auto" type="submit">Save</button>
 	</div>
 
 	<datalist id="known-tags">

@@ -83,7 +83,7 @@ export interface BillPushPayload {
  */
 export async function sendToUser(userId: number, payload: BillPushPayload): Promise<number> {
 	if (!publicKey || !privateKey) {
-		throw new Error('VAPID_PUBLIC_KEY/VAPID_PRIVATE_KEY belum diset - push tidak bisa dikirim.');
+		throw new Error('VAPID_PUBLIC_KEY/VAPID_PRIVATE_KEY not set - cannot send push.');
 	}
 	const subs = listSubscriptions(userId);
 	let delivered = 0;

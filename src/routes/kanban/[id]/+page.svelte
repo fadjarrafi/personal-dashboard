@@ -10,17 +10,17 @@
 <div class="mx-auto max-w-2xl space-y-4">
 	<div class="mb-2 flex flex-wrap items-center justify-between gap-2">
 		<h1 class="text-lg font-semibold sm:text-xl">Edit task</h1>
-		<a class="btn btn-ghost btn-sm tap-target" href="/kanban">← Kembali ke board</a>
+		<a class="btn btn-ghost btn-sm tap-target" href="/kanban">← Back to board</a>
 	</div>
 
 	<form method="post" action="?/update" class="space-y-3">
 		<label class="form-control w-full">
-			<div class="label"><span class="label-text">Judul</span></div>
+			<div class="label"><span class="label-text">Title</span></div>
 			<input class="input input-bordered w-full" name="title" value={task.title} required />
 		</label>
 
 		<label class="form-control w-full">
-			<div class="label"><span class="label-text">Deskripsi</span></div>
+			<div class="label"><span class="label-text">Description</span></div>
 			<textarea class="textarea textarea-bordered w-full" name="description" rows="3"
 				>{task.description ?? ''}</textarea
 			>
@@ -28,11 +28,11 @@
 
 		<div class="grid grid-cols-2 gap-3">
 			<label class="form-control w-full">
-				<div class="label"><span class="label-text">Prioritas</span></div>
+				<div class="label"><span class="label-text">Priority</span></div>
 				<select class="select select-bordered w-full" name="priority">
-					<option value="low" selected={task.priority === 'low'}>Rendah</option>
-					<option value="medium" selected={task.priority === 'medium'}>Sedang</option>
-					<option value="high" selected={task.priority === 'high'}>Tinggi</option>
+					<option value="low" selected={task.priority === 'low'}>Low</option>
+					<option value="medium" selected={task.priority === 'medium'}>Medium</option>
+					<option value="high" selected={task.priority === 'high'}>High</option>
 				</select>
 			</label>
 
@@ -48,7 +48,7 @@
 		</div>
 
 		<label class="form-control w-full">
-			<div class="label"><span class="label-text">Tags (pisahkan dengan koma)</span></div>
+			<div class="label"><span class="label-text">Tags (comma-separated)</span></div>
 			<input
 				class="input input-bordered w-full"
 				name="tags"
@@ -64,9 +64,9 @@
 		</label>
 
 		<label class="form-control w-full">
-			<div class="label"><span class="label-text">Kaitkan ke pengeluaran (opsional)</span></div>
+			<div class="label"><span class="label-text">Link to a spending entry (optional)</span></div>
 			<select class="select select-bordered w-full" name="spend_id">
-				<option value="">— tidak ada —</option>
+				<option value="">— none —</option>
 				{#each data.spendOptions as s}
 					<option value={s.id} selected={task.spendId === s.id}>
 						{formatRupiah(s.amount)} · {s.merchant ?? s.note ?? s.occurredAt.slice(0, 10)}
@@ -86,22 +86,22 @@
 					formmethod="post"
 					class="btn btn-ghost btn-outline"
 				>
-					Arsipkan
+					Archive
 				</button>
 				<button
 					formaction="?/delete"
 					formmethod="post"
 					class="btn btn-error btn-outline"
 					onclick={(e) => {
-						if (!confirm('Hapus task ini permanen?')) e.preventDefault();
+						if (!confirm('Permanently delete this task?')) e.preventDefault();
 					}}
 				>
-					Hapus
+					Delete
 				</button>
 			</div>
 			<div class="flex gap-2 sm:justify-end">
-				<a class="btn btn-ghost flex-1 sm:flex-none" href="/kanban">Batal</a>
-				<button class="btn btn-primary flex-1 sm:flex-none" type="submit">Simpan</button>
+				<a class="btn btn-ghost flex-1 sm:flex-none" href="/kanban">Cancel</a>
+				<button class="btn btn-primary flex-1 sm:flex-none" type="submit">Save</button>
 			</div>
 		</div>
 	</form>
@@ -119,7 +119,7 @@
 								type="submit"
 								class="btn btn-square btn-xs {item.done ? 'btn-primary' : 'btn-outline'}"
 								aria-pressed={!!item.done}
-								aria-label={item.done ? 'Tandai belum selesai' : 'Tandai selesai'}
+								aria-label={item.done ? 'Mark as not done' : 'Mark as done'}
 							>
 								{#if item.done}✓{/if}
 							</button>
@@ -129,7 +129,7 @@
 						</span>
 						<form method="post" action="?/deleteChecklistItem" class="contents">
 							<input type="hidden" name="item_id" value={item.id} />
-							<button type="submit" class="btn btn-ghost btn-xs" aria-label="Hapus item">
+							<button type="submit" class="btn btn-ghost btn-xs" aria-label="Delete item">
 								✕
 							</button>
 						</form>
@@ -137,14 +137,14 @@
 				{/each}
 			</ul>
 		{:else}
-			<p class="mb-2 text-xs opacity-50">Belum ada item checklist.</p>
+			<p class="mb-2 text-xs opacity-50">No checklist items yet.</p>
 		{/if}
 
 		<form method="post" action="?/addChecklistItem" class="flex gap-1">
 			<input
 				class="input input-sm input-bordered w-full"
 				name="content"
-				placeholder="+ Tambah item checklist"
+				placeholder="+ Add checklist item"
 				autocomplete="off"
 				required
 			/>

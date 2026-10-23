@@ -102,11 +102,11 @@ export function shadeScale(base: RGB): Array<{ step: number; rgb: RGB; oklch: OK
 }
 
 export const HARMONIES: Array<{ name: string; offsets: number[] }> = [
-	{ name: 'Komplementer', offsets: [0, 180] },
-	{ name: 'Analog', offsets: [-30, 0, 30] },
-	{ name: 'Triadik', offsets: [0, 120, 240] },
-	{ name: 'Split komplementer', offsets: [0, 150, 210] },
-	{ name: 'Tetradik', offsets: [0, 90, 180, 270] }
+	{ name: 'Complementary', offsets: [0, 180] },
+	{ name: 'Analogous', offsets: [-30, 0, 30] },
+	{ name: 'Triadic', offsets: [0, 120, 240] },
+	{ name: 'Split complementary', offsets: [0, 150, 210] },
+	{ name: 'Tetradic', offsets: [0, 90, 180, 270] }
 ];
 
 export function rotateHue(base: RGB, deg: number): RGB {

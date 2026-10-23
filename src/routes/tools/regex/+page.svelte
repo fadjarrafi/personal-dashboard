@@ -11,7 +11,7 @@
 
 	let pattern = $state('(\\d{4})-(\\d{2})-(\\d{2})');
 	let flags = $state('g');
-	let text = $state('Rilis 2025-01-15, patch 2025-02-03.');
+	let text = $state('Release 2025-01-15, patch 2025-02-03.');
 
 	const MAX_MATCHES = 1000;
 
@@ -59,14 +59,14 @@
 <div class="space-y-4">
 	<div class="flex flex-wrap items-end gap-3">
 		<label class="form-control min-w-0 flex-1">
-			<div class="label py-1"><span class="label-mono">Pola</span></div>
+			<div class="label py-1"><span class="label-mono">Pattern</span></div>
 			<div class="flex items-center border border-base-300 bg-base-100 font-mono">
 				<span class="px-2 opacity-50">/</span>
 				<input
 					class="input input-ghost min-w-0 flex-1 rounded-none px-0 font-mono focus:outline-none"
 					bind:value={pattern}
 					spellcheck="false"
-					aria-label="Pola regex"
+					aria-label="Regex pattern"
 				/>
 				<span class="px-2 opacity-50">/{flags}</span>
 			</div>
@@ -90,16 +90,16 @@
 
 	<div class="grid gap-4 lg:grid-cols-2">
 		<section class="space-y-2">
-			<span class="label-mono">Teks uji</span>
+			<span class="label-mono">Test text</span>
 			<textarea
 				class="textarea textarea-bordered h-56 w-full font-mono text-xs"
 				bind:value={text}
 				spellcheck="false"
-				aria-label="Teks uji"
+				aria-label="Test text"
 			></textarea>
 			<div
 				class="max-h-56 overflow-auto whitespace-pre-wrap break-all border border-base-300 bg-black p-3 font-mono text-xs"
-				aria-label="Hasil highlight"
+				aria-label="Highlighted result"
 			>
 				{#each segments as seg}{#if seg.hit}<mark class="bg-primary/40 text-base-content"
 							>{seg.text}</mark
@@ -116,7 +116,7 @@
 					{#each result.matches as m, i}
 						<li class="border border-base-300 p-2 text-xs">
 							<div class="flex justify-between gap-2">
-								<code class="break-all font-mono">{m[0] || '(kosong)'}</code>
+								<code class="break-all font-mono">{m[0] || '(empty)'}</code>
 								<span class="shrink-0 opacity-50">#{i + 1} @ {m.index}</span>
 							</div>
 							{#if m.length > 1 || m.groups}

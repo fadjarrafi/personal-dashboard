@@ -34,25 +34,25 @@
 
 	function labelMonth(ym: string): string {
 		const [y, m] = ym.split('-').map(Number);
-		return new Date(y, m - 1, 1).toLocaleDateString('id-ID', { month: 'short', year: '2-digit' });
+		return new Date(y, m - 1, 1).toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
 	}
 
 	function shortMonth(ym: string): string {
 		const [y, m] = ym.split('-').map(Number);
-		return new Date(y, m - 1, 1).toLocaleDateString('id-ID', { month: 'short' });
+		return new Date(y, m - 1, 1).toLocaleDateString('en-GB', { month: 'short' });
 	}
 </script>
 
-<figure class="border border-base-300 bg-base-200 p-3" aria-label="Grafik pengeluaran bulanan">
+<figure class="border border-base-300 bg-base-200 p-3" aria-label="Monthly spending chart">
 	<figcaption class="mb-2 flex items-baseline justify-between gap-2 text-xs">
-		<span class="font-semibold uppercase tracking-wider opacity-60">Pengeluaran bulanan</span>
+		<span class="font-semibold uppercase tracking-wider opacity-60">Monthly spending</span>
 		<span class="opacity-70">
 			{#if active}
 				<span class="tabular-nums">{formatRupiah(active.total)}</span>
 				<span class="ml-1 opacity-50">· {labelMonth(active.month)}</span>
 			{:else if avg > 0}
-				<span class="opacity-60">rata-rata</span>
-				<span class="tabular-nums">{formatRupiah(avg)}/bulan</span>
+				<span class="opacity-60">average</span>
+				<span class="tabular-nums">{formatRupiah(avg)}/month</span>
 			{/if}
 		</span>
 	</figcaption>
@@ -61,7 +61,7 @@
 		viewBox="0 0 {W} {H}"
 		preserveAspectRatio="none"
 		role="img"
-		aria-label="Diagram batang pengeluaran per bulan selama {data.length} bulan terakhir"
+		aria-label="Bar chart of spending per month over the last {data.length} months"
 		class="block h-32 w-full sm:h-40"
 		onmouseleave={() => (hoverIdx = null)}
 	>
@@ -141,6 +141,6 @@
 	</svg>
 
 	{#if avg === 0}
-		<div class="mt-2 text-center text-xs opacity-60">Belum ada pengeluaran.</div>
+		<div class="mt-2 text-center text-xs opacity-60">No spending yet.</div>
 	{/if}
 </figure>

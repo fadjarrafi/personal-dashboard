@@ -17,10 +17,10 @@ export const actions: Actions = {
 		const body = String(data.get('body') ?? '').trim();
 		const tags = parseTags(String(data.get('tags') ?? ''));
 
-		if (!title) return fail(400, { error: 'Judul tidak boleh kosong.' });
+		if (!title) return fail(400, { error: 'Title cannot be empty.' });
 
 		const path = createNote({ title, body, tags });
-		setFlash(cookies, 'success', 'Note dibuat di vault.');
+		setFlash(cookies, 'success', 'Note created in vault.');
 		throw redirect(303, `/vault/${path.split('/').map(encodeURIComponent).join('/')}`);
 	}
 };

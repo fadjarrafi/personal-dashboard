@@ -14,9 +14,9 @@ export const actions: Actions = {
 		const user = locals.user!;
 		const data = await request.formData();
 		const id = Number(data.get('id'));
-		if (!Number.isFinite(id)) return fail(400, { error: 'ID tidak valid.' });
+		if (!Number.isFinite(id)) return fail(400, { error: 'Invalid ID.' });
 		unarchiveItem(user.id, id);
-		setFlash(cookies, 'success', 'Item dikembalikan.');
+		setFlash(cookies, 'success', 'Item restored.');
 		return { ok: true };
 	},
 
@@ -24,9 +24,9 @@ export const actions: Actions = {
 		const user = locals.user!;
 		const data = await request.formData();
 		const id = Number(data.get('id'));
-		if (!Number.isFinite(id)) return fail(400, { error: 'ID tidak valid.' });
+		if (!Number.isFinite(id)) return fail(400, { error: 'Invalid ID.' });
 		deleteItem(user.id, id);
-		setFlash(cookies, 'success', 'Item dihapus permanen.');
+		setFlash(cookies, 'success', 'Item permanently deleted.');
 		return { ok: true };
 	}
 };

@@ -75,7 +75,7 @@
 			output = dir === 'encode' ? encode(input) : decode(input);
 		} catch (e) {
 			output = '';
-			error = `Gagal ${dir}: ${e instanceof Error ? e.message : e}`;
+			error = `Failed to ${dir}: ${e instanceof Error ? e.message : e}`;
 		}
 	}
 
@@ -88,7 +88,7 @@
 <ToolHeader slug="encode" />
 
 <div class="space-y-3">
-	<div class="join" role="group" aria-label="Jenis encoding">
+	<div class="join" role="group" aria-label="Encoding type">
 		{#each codecs as [value, label]}
 			<button
 				type="button"
@@ -114,7 +114,7 @@
 					Decode
 				</button>
 				<button type="button" class="btn-brutal-ghost btn-sm" onclick={useOutput} disabled={!output}>
-					↑ Pakai output
+					↑ Use output
 				</button>
 			</div>
 		</section>

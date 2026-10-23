@@ -21,9 +21,9 @@ export const actions: Actions = {
 		const user = locals.user!;
 		const data = await request.formData();
 		const id = Number(data.get('id'));
-		if (!Number.isFinite(id)) return fail(400, { error: 'ID tidak valid.' });
+		if (!Number.isFinite(id)) return fail(400, { error: 'Invalid ID.' });
 		archiveBoard(user.id, id);
-		setFlash(cookies, 'success', 'Board diarsipkan.');
+		setFlash(cookies, 'success', 'Board archived.');
 		return { ok: true };
 	},
 
@@ -31,9 +31,9 @@ export const actions: Actions = {
 		const user = locals.user!;
 		const data = await request.formData();
 		const id = Number(data.get('id'));
-		if (!Number.isFinite(id)) return fail(400, { error: 'ID tidak valid.' });
+		if (!Number.isFinite(id)) return fail(400, { error: 'Invalid ID.' });
 		await deleteBoard(user.id, id);
-		setFlash(cookies, 'success', 'Board dihapus.');
+		setFlash(cookies, 'success', 'Board deleted.');
 		return { ok: true };
 	}
 };

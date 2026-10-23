@@ -15,7 +15,7 @@
 		const t = token.trim().replace(/^Bearer\s+/i, '');
 		if (!t) return null;
 		const parts = t.split('.');
-		if (parts.length !== 3) return { error: 'JWT harus terdiri dari 3 bagian dipisah titik.' };
+		if (parts.length !== 3) return { error: 'A JWT must have 3 dot-separated parts.' };
 		try {
 			return {
 				header: decodePart(parts[0]) as Record<string, unknown>,
@@ -23,7 +23,7 @@
 				signature: parts[2]
 			};
 		} catch (e) {
-			return { error: `Gagal decode: ${e instanceof Error ? e.message : e}` };
+			return { error: `Failed to decode: ${e instanceof Error ? e.message : e}` };
 		}
 	});
 
@@ -31,18 +31,18 @@
 
 	function fmtClaim(v: unknown): string {
 		if (typeof v !== 'number') return '';
-		return new Date(v * 1000).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+		return new Date(v * 1000).toLocaleString('en-GB', { timeZone: 'Asia/Jakarta' });
 	}
 
 	const status = $derived.by(() => {
 		if (!decoded || 'error' in decoded) return null;
 		const exp = decoded.payload.exp;
-		if (typeof exp !== 'number') return { label: 'Tanpa exp', cls: 'badge-ghost' };
+		if (typeof exp !== 'number') return { label: 'No exp', cls: 'badge-ghost' };
 		const diff = exp * 1000 - Date.now();
-		if (diff < 0) return { label: 'Kedaluwarsa', cls: 'badge-error' };
+		if (diff < 0) return { label: 'Expired', cls: 'badge-error' };
 		const mins = Math.round(diff / 60_000);
 		return {
-			label: `Berlaku ${mins < 120 ? `${mins} menit` : `${Math.round(mins / 60)} jam`} lagi`,
+			label: `Valid for ${mins < 120 ? `${mins} more min` : `${Math.round(mins / 60)} more h`}`,
 			cls: 'badge-success'
 		};
 	});
@@ -61,7 +61,7 @@
 		></textarea>
 	</label>
 	<p class="text-xs opacity-60">
-		Hanya decode — signature <strong>tidak</strong> diverifikasi. Token tidak dikirim ke mana pun.
+		Decode only — the signature is <strong>not</strong> verified. The token is not sent anywhere.
 	</p>
 
 	{#if decoded && 'error' in decoded}

@@ -59,7 +59,7 @@
 	<div class="flex items-center justify-between border-b border-base-300 bg-base-200 px-3 py-1.5">
 		<span class="label-mono">{lang ?? 'plaintext'}</span>
 		<button type="button" class="btn btn-ghost btn-xs rounded-none" onclick={copyCode}>
-			{copied ? 'Tersalin' : 'Copy'}
+			{copied ? 'Copied' : 'Copy'}
 		</button>
 	</div>
 	<pre

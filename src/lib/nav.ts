@@ -38,9 +38,9 @@ function under(prefix: string) {
 
 export const navSections: NavSection[] = [
 	{
-		title: 'Katalog',
+		title: 'Catalog',
 		links: [
-			{ href: '/', label: 'Semua', match: catalogType(null) },
+			{ href: '/', label: 'All', match: catalogType(null) },
 			{
 				href: '/?type=bookmark',
 				label: 'Bookmark',
@@ -62,26 +62,26 @@ export const navSections: NavSection[] = [
 		]
 	},
 	{
-		title: 'Keuangan',
+		title: 'Finance',
 		links: [
-			{ href: '/spends', label: 'Pengeluaran', dot: 'text-primary', match: under('/spends') },
-			{ href: '/bills', label: 'Tagihan', dot: 'text-primary', match: under('/bills') }
+			{ href: '/spends', label: 'Spending', dot: 'text-primary', match: under('/spends') },
+			{ href: '/bills', label: 'Bills', dot: 'text-primary', match: under('/bills') }
 		]
 	},
 	{
-		title: 'Produktivitas',
+		title: 'Productivity',
 		links: [
 			{ href: '/tools', label: 'Dev Tools', icon: '⌘', match: under('/tools') },
-			{ href: '/tasks', label: 'Tugas', match: under('/tasks') },
+			{ href: '/tasks', label: 'Tasks', match: under('/tasks') },
 			{ href: '/kanban', label: 'Kanban', match: under('/kanban') },
-			{ href: '/boards', label: 'Board', match: under('/boards') }
+			{ href: '/boards', label: 'Boards', match: under('/boards') }
 		]
 	},
 	{
-		title: 'Lainnya',
+		title: 'Other',
 		links: [
 			{ href: '/vault', label: 'Vault', match: under('/vault') },
-			{ href: '/archive', label: 'Arsip', match: (url) => url.pathname === '/archive' },
+			{ href: '/archive', label: 'Archive', match: (url) => url.pathname === '/archive' },
 			{ href: '/export', label: 'Export JSON', icon: '↓', match: () => false }
 		]
 	}

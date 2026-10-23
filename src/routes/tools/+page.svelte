@@ -8,7 +8,7 @@
 	<header class="px-1">
 		<h1 class="text-lg font-semibold sm:text-xl">Dev Tools</h1>
 		<p class="text-sm opacity-60">
-			Utilitas kecil yang berjalan sepenuhnya di browser — tidak ada data yang dikirim ke server.
+			Small utilities that run entirely in the browser — no data is sent to the server.
 		</p>
 	</header>
 

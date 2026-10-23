@@ -58,7 +58,7 @@
 			<div class="flex shrink-0 items-center gap-1">
 				{#if item.type === 'snippet' && item.body}
 					<button type="button" class="btn btn-ghost btn-xs" onclick={copyBody}>
-						{copied ? 'Tersalin' : 'Copy'}
+						{copied ? 'Copied' : 'Copy'}
 					</button>
 				{/if}
 				<form method="post" action="/?/togglePin" style="display:inline">

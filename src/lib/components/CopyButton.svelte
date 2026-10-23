@@ -19,5 +19,5 @@
 </script>
 
 <button type="button" class={className} onclick={copy} disabled={!text}>
-	{copied ? 'Tersalin' : label}
+	{copied ? 'Copied' : label}
 </button>

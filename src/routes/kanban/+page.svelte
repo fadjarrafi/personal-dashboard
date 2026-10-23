@@ -96,7 +96,7 @@
 					<input
 						class="input input-sm input-bordered w-full"
 						name="title"
-						placeholder="+ Tambah task"
+						placeholder="+ Add task"
 						autocomplete="off"
 						required
 					/>

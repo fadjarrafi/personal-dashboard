@@ -30,7 +30,7 @@
 		const before = input.slice(0, pos);
 		const line = before.split('\n').length;
 		const col = pos - before.lastIndexOf('\n');
-		return `${msg} (baris ${line}, kolom ${col})`;
+		return `${msg} (line ${line}, column ${col})`;
 	}
 
 	function run(mode: 'format' | 'minify') {
@@ -58,7 +58,7 @@
 		<div class="flex items-center justify-between">
 			<span class="label-mono">Input</span>
 			<button type="button" class="btn btn-ghost btn-xs rounded-none" onclick={() => (input = '')}>
-				Bersihkan
+				Clear
 			</button>
 		</div>
 		<textarea
@@ -73,14 +73,14 @@
 			<button type="button" class="btn-brutal-ghost btn-sm" onclick={() => run('minify')}>
 				Minify
 			</button>
-			<select class="select select-bordered select-sm" bind:value={indent} aria-label="Indentasi">
-				<option value="2">2 spasi</option>
-				<option value="4">4 spasi</option>
+			<select class="select select-bordered select-sm" bind:value={indent} aria-label="Indentation">
+				<option value="2">2 spaces</option>
+				<option value="4">4 spaces</option>
 				<option value="tab">Tab</option>
 			</select>
 			<label class="label cursor-pointer gap-2">
 				<input type="checkbox" class="checkbox checkbox-sm" bind:checked={sortKeys} />
-				<span class="label-text text-xs">Urutkan key</span>
+				<span class="label-text text-xs">Sort keys</span>
 			</label>
 		</div>
 	</section>
@@ -96,7 +96,7 @@
 			<pre
 				class="h-80 overflow-auto border border-base-300 bg-black p-3 font-mono text-xs">{output ||
 					'—'}</pre>
-			{#if output}<p class="text-xs opacity-60">JSON valid · {output.length} karakter</p>{/if}
+			{#if output}<p class="text-xs opacity-60">JSON valid · {output.length} characters</p>{/if}
 		{/if}
 	</section>
 </div>

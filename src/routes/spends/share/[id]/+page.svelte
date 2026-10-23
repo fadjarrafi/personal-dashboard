@@ -22,23 +22,23 @@
 <div class="mx-auto max-w-3xl">
 	<div class="mb-4 flex flex-wrap items-center justify-between gap-2">
 		<h1 class="text-lg font-semibold sm:text-xl">Preview receipt</h1>
-		<a class="btn btn-ghost btn-sm tap-target" href="/spends">Batal</a>
+		<a class="btn btn-ghost btn-sm tap-target" href="/spends">Cancel</a>
 	</div>
 
 	<div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
 		<!-- Gambar receipt -->
 		<figure
 			class="rounded-box border border-base-300 bg-base-200/40 p-2"
-			aria-label="Gambar receipt yang dibagikan"
+			aria-label="Shared receipt image"
 		>
 			<img
 				src={receiptSrc}
-				alt="Receipt yang dibagikan"
+				alt="Shared receipt"
 				class="mx-auto max-h-[70vh] w-auto rounded-box object-contain"
 				loading="eager"
 			/>
 			<figcaption class="mt-2 text-center text-[10px] opacity-50">
-				Receipt #{data.receipt.id} · {new Date(data.receipt.createdAt).toLocaleString('id-ID')}
+				Receipt #{data.receipt.id} · {new Date(data.receipt.createdAt).toLocaleString('en-GB')}
 			</figcaption>
 		</figure>
 
@@ -46,16 +46,16 @@
 		<form method="post" action="?/create" class="space-y-3">
 			{#if suggested.amount === null && suggested.merchant === ''}
 				<div class="alert alert-warning py-2 text-sm">
-					<span>OCR tidak menemukan jumlah — silakan isi manual dari gambar.</span>
+					<span>OCR could not find an amount — please fill it in from the image.</span>
 				</div>
 			{:else}
 				<div class="alert alert-info py-2 text-xs">
-					<span>Terisi otomatis oleh OCR. Periksa &amp; koreksi bila perlu sebelum simpan.</span>
+					<span>Auto-filled by OCR. Check &amp; correct if needed before saving.</span>
 				</div>
 			{/if}
 
 			<label class="form-control w-full">
-				<div class="label py-1"><span class="label-text">Jumlah (Rp)</span></div>
+				<div class="label py-1"><span class="label-text">Amount (Rp)</span></div>
 				<input
 					class="input input-bordered w-full text-lg font-semibold tabular-nums"
 					name="amount"
@@ -67,7 +67,7 @@
 			</label>
 
 			<label class="form-control w-full">
-				<div class="label py-1"><span class="label-text">Tanggal</span></div>
+				<div class="label py-1"><span class="label-text">Date</span></div>
 				<input
 					class="input input-bordered w-full"
 					name="occurred_at"
@@ -83,18 +83,18 @@
 					class="input input-bordered w-full"
 					name="merchant"
 					value={suggested.merchant}
-					placeholder="Kantin, GoRide, dsb."
+					placeholder="Canteen, GoRide, etc."
 				/>
 			</label>
 
 			<label class="form-control w-full">
-				<div class="label py-1"><span class="label-text">Kategori</span></div>
+				<div class="label py-1"><span class="label-text">Category</span></div>
 				<input
 					class="input input-bordered w-full"
 					name="category"
 					value={suggested.category}
 					list="share-categories"
-					placeholder="makan, transport, dsb."
+					placeholder="food, transport, etc."
 				/>
 				<datalist id="share-categories">
 					{#each data.categories as c}
@@ -104,17 +104,17 @@
 			</label>
 
 			<label class="form-control w-full">
-				<div class="label py-1"><span class="label-text">Metode</span></div>
+				<div class="label py-1"><span class="label-text">Method</span></div>
 				<input
 					class="input input-bordered w-full"
 					name="method"
 					value={suggested.method}
-					placeholder="gopay, blu, jago, livin, dsb."
+					placeholder="gopay, blu, jago, livin, etc."
 				/>
 			</label>
 
 			<label class="form-control w-full">
-				<div class="label py-1"><span class="label-text">Catatan</span></div>
+				<div class="label py-1"><span class="label-text">Note</span></div>
 				<input class="input input-bordered w-full" name="note" value={suggested.note} />
 			</label>
 
@@ -125,9 +125,9 @@
 			{/if}
 
 			<div class="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-				<a class="btn btn-ghost flex-1 sm:flex-none" href="/spends">Batal</a>
+				<a class="btn btn-ghost flex-1 sm:flex-none" href="/spends">Cancel</a>
 				<button class="btn btn-primary flex-1 sm:flex-none" type="submit">
-					Simpan{#if suggested.amount}
+					Save{#if suggested.amount}
 						{' '}{formatRupiah(suggested.amount)}
 					{/if}
 				</button>

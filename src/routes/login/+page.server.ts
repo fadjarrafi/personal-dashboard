@@ -11,17 +11,17 @@ export const actions: Actions = {
 		const password = String(data.get('password') ?? '');
 
 		if (!email || !password) {
-			return fail(400, { email, error: 'Email dan password wajib diisi.' });
+			return fail(400, { email, error: 'Email and password are required.' });
 		}
 
 		const user = db.select().from(users).where(eq(users.email, email)).get();
 		if (!user) {
-			return fail(400, { email, error: 'Kredensial salah.' });
+			return fail(400, { email, error: 'Invalid credentials.' });
 		}
 
 		const ok = await verifyPassword(user.password, password);
 		if (!ok) {
-			return fail(400, { email, error: 'Kredensial salah.' });
+			return fail(400, { email, error: 'Invalid credentials.' });
 		}
 
 		await createSession(user.id, cookies);

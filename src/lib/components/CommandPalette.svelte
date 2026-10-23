@@ -27,7 +27,7 @@
 		...navSections.flatMap((s) =>
 			s.links.map((l) => ({
 				key: `nav:${l.href}`,
-				group: 'Halaman',
+				group: 'Pages',
 				label: l.label,
 				hint: s.title,
 				haystack: `${l.label} ${s.title}`.toLowerCase(),
@@ -83,7 +83,7 @@
 	async function copy(text: string) {
 		try {
 			await navigator.clipboard.writeText(text);
-			toast = 'Snippet tersalin';
+			toast = 'Snippet copied';
 			setTimeout(() => (toast = null), 1200);
 		} catch {
 			// ignore
@@ -105,7 +105,7 @@
 					h.type === 'snippet'
 						? `${TYPE_LABEL[h.type]}${h.language ? ` · ${h.language}` : ''} · Shift+Enter copy`
 						: h.type === 'bookmark'
-							? `${TYPE_LABEL[h.type]} · Shift+Enter buka link`
+							? `${TYPE_LABEL[h.type]} · Shift+Enter open link`
 							: TYPE_LABEL[h.type],
 				haystack: '',
 				run: (alt) => {
@@ -207,7 +207,7 @@
 				bind:value={query}
 				onkeydown={onInputKeydown}
 				class="input input-ghost w-full rounded-none px-0 focus:outline-none"
-				placeholder="Cari halaman, tool, atau item…"
+				placeholder="Search pages, tools, or items…"
 				role="combobox"
 				aria-expanded="true"
 				aria-controls="cmdk-list"
@@ -220,7 +220,7 @@
 			<kbd class="kbd kbd-xs hidden sm:inline-flex">Esc</kbd>
 		</div>
 
-		<ul id="cmdk-list" role="listbox" class="flex-1 overflow-y-auto py-1" aria-label="Hasil">
+		<ul id="cmdk-list" role="listbox" class="flex-1 overflow-y-auto py-1" aria-label="Results">
 			{#each entries as entry, i (entry.key)}
 				{#if i === 0 || entries[i - 1].group !== entry.group}
 					<li role="presentation" class="label-mono px-3 pb-1 pt-2">{entry.group}</li>
@@ -242,7 +242,7 @@
 				</li>
 			{:else}
 				<li class="px-3 py-6 text-center text-sm opacity-60">
-					{loading ? 'Mencari…' : 'Tidak ada hasil'}
+					{loading ? 'Searching…' : 'No results'}
 				</li>
 			{/each}
 		</ul>
@@ -251,13 +251,13 @@
 			class="hidden gap-3 border-t border-base-300 px-3 py-1.5 text-[11px] opacity-60 sm:flex"
 			aria-hidden="true"
 		>
-			<span><kbd class="kbd kbd-xs">↑↓</kbd> pilih</span>
-			<span><kbd class="kbd kbd-xs">Enter</kbd> buka</span>
-			<span><kbd class="kbd kbd-xs">Shift Enter</kbd> copy snippet / buka link</span>
+			<span><kbd class="kbd kbd-xs">↑↓</kbd> select</span>
+			<span><kbd class="kbd kbd-xs">Enter</kbd> open</span>
+			<span><kbd class="kbd kbd-xs">Shift Enter</kbd> copy snippet / open link</span>
 		</div>
 	</div>
 	<form method="dialog" class="modal-backdrop">
-		<button aria-label="Tutup">close</button>
+		<button aria-label="Close">close</button>
 	</form>
 </dialog>
 

@@ -87,7 +87,7 @@ export const actions: Actions = {
 		const amountRaw = String(data.get('amount') ?? '');
 		const amount = parseRupiah(amountRaw);
 		if (!Number.isFinite(amount) || amount <= 0) {
-			return fail(400, { error: 'Jumlah tidak valid.', values: Object.fromEntries(data) });
+			return fail(400, { error: 'Invalid amount.', values: Object.fromEntries(data) });
 		}
 
 		const occurredAt = parseOccurredAt(String(data.get('occurred_at') ?? ''));
@@ -104,7 +104,7 @@ export const actions: Actions = {
 			note,
 			method
 		});
-		setFlash(cookies, 'success', 'Pengeluaran disimpan.');
+		setFlash(cookies, 'success', 'Spending saved.');
 		return { ok: true };
 	}
 };

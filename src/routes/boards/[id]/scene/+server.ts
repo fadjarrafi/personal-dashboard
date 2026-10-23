@@ -7,9 +7,9 @@ export const PATCH: RequestHandler = async ({ request, locals, params }) => {
 	if (!Number.isFinite(id)) throw error(404);
 
 	const body = await request.text();
-	if (!body) throw error(400, 'Body tidak boleh kosong');
+	if (!body) throw error(400, 'Body cannot be empty');
 
 	const ok = await writeScene(locals.user.id, id, body);
-	if (!ok) throw error(400, 'Scene tidak valid atau board tidak ditemukan');
+	if (!ok) throw error(400, 'Invalid scene or board not found');
 	return json({ ok: true });
 };

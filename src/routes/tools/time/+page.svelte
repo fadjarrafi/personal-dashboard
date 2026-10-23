@@ -20,10 +20,10 @@
 		if (/^-?\d+(\.\d+)?$/.test(s)) {
 			const n = Number(s);
 			const isSeconds = Math.abs(n) < 1e11;
-			return { date: new Date(isSeconds ? n * 1000 : n), unit: isSeconds ? 'detik' : 'milidetik' };
+			return { date: new Date(isSeconds ? n * 1000 : n), unit: isSeconds ? 'seconds' : 'milliseconds' };
 		}
 		const d = new Date(s);
-		return Number.isNaN(d.getTime()) ? { error: 'Format tidak dikenali.' } : { date: d, unit: null };
+		return Number.isNaN(d.getTime()) ? { error: 'Unrecognized format.' } : { date: d, unit: null };
 	});
 
 	function relative(ms: number): string {
@@ -37,7 +37,7 @@
 			['minute', 60_000],
 			['second', 1000]
 		];
-		const rtf = new Intl.RelativeTimeFormat('id-ID', { numeric: 'auto' });
+		const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
 		for (const [unit, size] of units) {
 			if (abs >= size || unit === 'second') return rtf.format(Math.round(diff / size), unit);
 		}
@@ -49,12 +49,12 @@
 		const d = parsed.date;
 		const ms = d.getTime();
 		return [
-			['Unix (detik)', String(Math.floor(ms / 1000))],
+			['Unix (seconds)', String(Math.floor(ms / 1000))],
 			['Unix (ms)', String(ms)],
 			['ISO 8601 (UTC)', d.toISOString()],
-			['WIB (Asia/Jakarta)', d.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })],
-			['Lokal browser', d.toString()],
-			['Relatif', relative(ms)]
+			['WIB (Asia/Jakarta)', d.toLocaleString('en-GB', { timeZone: 'Asia/Jakarta' })],
+			['Browser local', d.toString()],
+			['Relative', relative(ms)]
 		];
 	});
 </script>
@@ -64,29 +64,29 @@
 <div class="space-y-4">
 	<div class="blackboard flex flex-wrap items-center gap-x-6 gap-y-2 !p-4">
 		<div>
-			<div class="label-mono">Sekarang (detik)</div>
+			<div class="label-mono">Now (seconds)</div>
 			<div class="font-mono text-lg">{Math.floor(now / 1000)}</div>
 		</div>
 		<div>
-			<div class="label-mono">Sekarang (ms)</div>
+			<div class="label-mono">Now (ms)</div>
 			<div class="font-mono text-lg">{now}</div>
 		</div>
 		<button type="button" class="btn-brutal-ghost btn-sm" onclick={() => (input = String(now))}>
-			Pakai sekarang
+			Use now
 		</button>
 	</div>
 
 	<label class="form-control w-full max-w-xl">
 		<div class="label py-1">
-			<span class="label-mono">Epoch atau tanggal</span>
+			<span class="label-mono">Epoch or date</span>
 			{#if parsed && !('error' in parsed) && parsed.unit}
-				<span class="label-text-alt opacity-60">terbaca sebagai {parsed.unit}</span>
+				<span class="label-text-alt opacity-60">read as {parsed.unit}</span>
 			{/if}
 		</div>
 		<input
 			class="input input-bordered w-full font-mono"
 			bind:value={input}
-			placeholder="1735689600 atau 2025-01-01T00:00:00Z"
+			placeholder="1735689600 or 2025-01-01T00:00:00Z"
 			spellcheck="false"
 		/>
 	</label>

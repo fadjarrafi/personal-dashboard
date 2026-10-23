@@ -20,10 +20,10 @@
 	<section class="card bg-base-200 lg:col-span-1">
 		<div class="card-body p-3">
 			<div class="flex items-center justify-between">
-				<h2 class="font-display text-sm font-semibold uppercase tracking-wide opacity-70">Tugas</h2>
+				<h2 class="font-display text-sm font-semibold uppercase tracking-wide opacity-70">Tasks</h2>
 				<div class="flex gap-1">
-					<a class="btn btn-ghost btn-xs" href="/vault/browse">Jelajahi vault</a>
-					<a class="btn btn-ghost btn-xs" href="/vault/new">+ Note baru</a>
+					<a class="btn btn-ghost btn-xs" href="/vault/browse">Browse vault</a>
+					<a class="btn btn-ghost btn-xs" href="/vault/new">+ New note</a>
 				</div>
 			</div>
 
@@ -35,7 +35,7 @@
 							<button
 								type="submit"
 								class="btn btn-ghost btn-xs btn-square"
-								aria-label={task.done ? 'Tandai belum selesai' : 'Tandai selesai'}
+								aria-label={task.done ? 'Mark as not done' : 'Mark as done'}
 							>
 								{task.done ? '☑' : '☐'}
 							</button>
@@ -43,7 +43,7 @@
 						<span class="text-sm {task.done ? 'line-through opacity-50' : ''}">{task.text}</span>
 					</li>
 				{:else}
-					<li class="text-sm opacity-60">Belum ada tugas.</li>
+					<li class="text-sm opacity-60">No tasks yet.</li>
 				{/each}
 			</ul>
 
@@ -51,14 +51,14 @@
 				<input
 					type="text"
 					name="text"
-					placeholder="Tugas baru..."
+					placeholder="New task..."
 					class="input input-bordered input-sm flex-1"
 					required
 				/>
-				<button class="btn btn-primary btn-sm" type="submit">Tambah</button>
+				<button class="btn btn-primary btn-sm" type="submit">Add</button>
 			</form>
 			<p class="mt-2 text-xs opacity-50">
-				Tersimpan di <code>Dashboard Sync/Tasks.md</code> - juga bisa diedit langsung di Obsidian.
+				Saved to <code>Dashboard Sync/Tasks.md</code> - can also be edited directly in Obsidian.
 			</p>
 		</div>
 	</section>
@@ -73,7 +73,7 @@
 						<div class="text-xs opacity-60">{formatDate(note.updatedAt)}</div>
 					</li>
 				{:else}
-					<li class="text-sm opacity-60">Tidak ada entri.</li>
+					<li class="text-sm opacity-60">No entries.</li>
 				{/each}
 			</ul>
 		</div>
@@ -91,7 +91,7 @@
 						{/if}
 					</li>
 				{:else}
-					<li class="text-sm opacity-60">Tidak ada item.</li>
+					<li class="text-sm opacity-60">No items.</li>
 				{/each}
 			</ul>
 		</div>
@@ -100,7 +100,7 @@
 	<section class="card bg-base-200 lg:col-span-3">
 		<div class="card-body p-3">
 			<h2 class="font-display text-sm font-semibold uppercase tracking-wide opacity-70">
-				Capture dari dashboard
+				Captures from the dashboard
 			</h2>
 			<ul class="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
 				{#each data.captures as note (note.path)}
@@ -109,7 +109,7 @@
 						{#if note.excerpt}<p class="mt-1 truncate text-xs opacity-70">{note.excerpt}</p>{/if}
 					</li>
 				{:else}
-					<li class="text-sm opacity-60">Belum ada capture.</li>
+					<li class="text-sm opacity-60">No captures yet.</li>
 				{/each}
 			</ul>
 		</div>

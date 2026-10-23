@@ -41,7 +41,7 @@
 
 <div class="space-y-3">
 	<div class="flex flex-wrap items-end gap-3">
-		<div class="join" role="group" aria-label="Versi UUID">
+		<div class="join" role="group" aria-label="UUID version">
 			{#each VERSIONS as v}
 				<button
 					type="button"
@@ -52,15 +52,15 @@
 			{/each}
 		</div>
 		<label class="form-control w-24">
-			<div class="label py-1"><span class="label-text text-xs">Jumlah</span></div>
+			<div class="label py-1"><span class="label-text text-xs">Count</span></div>
 			<input class="input input-bordered input-sm" type="number" min="1" max="500" bind:value={count} />
 		</label>
 		<label class="label cursor-pointer gap-2">
 			<input type="checkbox" class="checkbox checkbox-sm" bind:checked={uppercase} />
-			<span class="label-text text-xs">Huruf besar</span>
+			<span class="label-text text-xs">Uppercase</span>
 		</label>
-		<button type="button" class="btn-brutal btn-sm" onclick={generate}>Generate ulang</button>
-		<CopyButton text={joined} label="Copy semua" class="btn-brutal-ghost btn-sm" />
+		<button type="button" class="btn-brutal btn-sm" onclick={generate}>Regenerate</button>
+		<CopyButton text={joined} label="Copy all" class="btn-brutal-ghost btn-sm" />
 	</div>
 
 	<ul class="divide-y divide-base-300 border border-base-300" role="list">

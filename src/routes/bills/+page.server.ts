@@ -34,15 +34,15 @@ export const actions: Actions = {
 		const data = await request.formData();
 
 		const title = String(data.get('title') ?? '').trim();
-		if (!title) return fail(400, { error: 'Nama tagihan wajib diisi.' });
+		if (!title) return fail(400, { error: 'Bill name is required.' });
 
 		const amount = parseRupiah(String(data.get('amount') ?? ''));
 		if (!Number.isFinite(amount) || amount <= 0) {
-			return fail(400, { error: 'Jumlah tidak valid.' });
+			return fail(400, { error: 'Invalid amount.' });
 		}
 
 		const nextDueAt = parseDueDate(String(data.get('next_due_at') ?? ''));
-		if (!nextDueAt) return fail(400, { error: 'Tanggal jatuh tempo tidak valid.' });
+		if (!nextDueAt) return fail(400, { error: 'Invalid due date.' });
 
 		const categoryRaw = String(data.get('category') ?? 'lainnya');
 		const category = (BILL_CATEGORIES as readonly string[]).includes(categoryRaw)
@@ -58,12 +58,12 @@ export const actions: Actions = {
 		if (recurrence === 'custom_days') {
 			intervalDays = Number.parseInt(String(data.get('interval_days') ?? ''), 10);
 			if (!Number.isFinite(intervalDays) || intervalDays < 1) {
-				return fail(400, { error: 'Interval hari tidak valid.' });
+				return fail(400, { error: 'Invalid day interval.' });
 			}
 		}
 
 		createBill(user.id, { title, amount, category, recurrence, intervalDays, nextDueAt });
-		setFlash(cookies, 'success', 'Tagihan disimpan.');
+		setFlash(cookies, 'success', 'Bill saved.');
 		return { ok: true };
 	}
 };

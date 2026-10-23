@@ -40,7 +40,7 @@ export const actions: Actions = {
 		const user = locals.user!;
 		const data = await request.formData();
 		const typeRaw = String(data.get('type') ?? '');
-		if (!TYPES.has(typeRaw as ItemType)) return fail(400, { error: 'Tipe tidak valid.' });
+		if (!TYPES.has(typeRaw as ItemType)) return fail(400, { error: 'Invalid type.' });
 		const type = typeRaw as ItemType;
 
 		const title = String(data.get('title') ?? '').trim() || null;
@@ -51,12 +51,12 @@ export const actions: Actions = {
 		const previewImageUrl = String(data.get('previewImageUrl') ?? '').trim() || null;
 		const tags = parseTags(String(data.get('tags') ?? ''));
 
-		if (type === 'bookmark' && !url) return fail(400, { error: 'Bookmark membutuhkan URL.' });
+		if (type === 'bookmark' && !url) return fail(400, { error: 'A bookmark requires a URL.' });
 		if (type !== 'bookmark' && !body && !title)
-			return fail(400, { error: 'Isi tidak boleh kosong.' });
+			return fail(400, { error: 'Content cannot be empty.' });
 
 		createItem(user.id, { type, title, body, url, language, faviconUrl, previewImageUrl, tags });
-		setFlash(cookies, 'success', `${type} disimpan.`);
+		setFlash(cookies, 'success', `${type} saved.`);
 		return { ok: true };
 	},
 
@@ -64,7 +64,7 @@ export const actions: Actions = {
 		const user = locals.user!;
 		const data = await request.formData();
 		const id = Number(data.get('id'));
-		if (!Number.isFinite(id)) return fail(400, { error: 'ID tidak valid.' });
+		if (!Number.isFinite(id)) return fail(400, { error: 'Invalid ID.' });
 
 		const title = String(data.get('title') ?? '').trim() || null;
 		const body = String(data.get('body') ?? '').trim() || null;
@@ -85,8 +85,8 @@ export const actions: Actions = {
 			pinned,
 			tags
 		});
-		if (!ok) return fail(404, { error: 'Tidak ditemukan' });
-		setFlash(cookies, 'success', 'Perubahan disimpan.');
+		if (!ok) return fail(404, { error: 'Not found' });
+		setFlash(cookies, 'success', 'Changes saved.');
 		return { ok: true };
 	},
 
@@ -97,7 +97,7 @@ export const actions: Actions = {
 		if (!Number.isFinite(id)) return { ok: false };
 		const before = getItem(user.id, id);
 		togglePin(user.id, id);
-		setFlash(cookies, 'success', before?.pinned ? 'Pin dilepas.' : 'Di-pin ke atas.');
+		setFlash(cookies, 'success', before?.pinned ? 'Unpinned.' : 'Pinned to top.');
 		return { ok: true };
 	},
 
@@ -107,7 +107,7 @@ export const actions: Actions = {
 		const id = Number(data.get('id'));
 		if (Number.isFinite(id)) {
 			archiveItem(user.id, id);
-			setFlash(cookies, 'success', 'Item diarsipkan.');
+			setFlash(cookies, 'success', 'Item archived.');
 		}
 		return { ok: true };
 	}

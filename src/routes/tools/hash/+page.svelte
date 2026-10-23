@@ -100,12 +100,12 @@
 
 <div class="space-y-4">
 	<div class="flex flex-wrap items-center gap-3">
-		<div class="join" role="group" aria-label="Sumber">
+		<div class="join" role="group" aria-label="Source">
 			<button
 				type="button"
 				class="btn join-item btn-sm rounded-none {mode === 'text' ? 'btn-active' : ''}"
 				aria-pressed={mode === 'text'}
-				onclick={() => (mode = 'text')}>Teks</button
+				onclick={() => (mode = 'text')}>Text</button
 			>
 			<button
 				type="button"
@@ -129,8 +129,8 @@
 			class="textarea textarea-bordered h-32 w-full font-mono text-xs"
 			bind:value={text}
 			spellcheck="false"
-			placeholder="Teks yang akan di-hash (UTF-8)"
-			aria-label="Teks"
+			placeholder="Text to hash (UTF-8)"
+			aria-label="Text"
 		></textarea>
 	{:else}
 		<div class="space-y-1">
@@ -155,7 +155,7 @@
 				<dt class="label-mono w-16 shrink-0">{algo}</dt>
 				<dd class="flex min-w-0 flex-1 items-center gap-1">
 					<code class="min-w-0 flex-1 break-all font-mono text-xs">{value || '—'}</code>
-					{#if matches(digests[algo])}<span class="badge badge-success rounded-none">cocok</span>{/if}
+					{#if matches(digests[algo])}<span class="badge badge-success rounded-none">match</span>{/if}
 					<CopyButton text={value} />
 				</dd>
 			</div>
@@ -163,18 +163,18 @@
 	</dl>
 
 	<label class="form-control w-full">
-		<div class="label py-1"><span class="label-mono">Bandingkan dengan hash</span></div>
+		<div class="label py-1"><span class="label-mono">Compare with hash</span></div>
 		<input
 			class="input input-bordered w-full font-mono text-sm"
 			bind:value={compare}
 			spellcheck="false"
-			placeholder="Tempel checksum untuk verifikasi"
+			placeholder="Paste a checksum to verify"
 		/>
 	</label>
 	{#if normalizedCompare && Object.keys(digests).length}
 		{@const hit = ALGOS.find((a) => matches(digests[a]))}
 		<p class="text-sm {hit ? 'text-success' : 'text-error'}">
-			{hit ? `✓ Cocok dengan ${hit}` : '✕ Tidak cocok dengan algoritma mana pun'}
+			{hit ? `✓ Matches ${hit}` : '✕ Does not match any algorithm'}
 		</p>
 	{/if}
 </div>
