@@ -53,6 +53,7 @@
 		"drizzle-kit": "^0.31.10",
 		"geist": "^1.7.2",
 		"highlight.js": "^11.11.1",
+		"pele": "^1.9.0",
 		"postcss": "^8.5.1",
 		"prettier": "^3.4.2",
 		"prettier-plugin-svelte": "^3.3.3",

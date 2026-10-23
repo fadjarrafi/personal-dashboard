@@ -3,6 +3,7 @@
 	import type { ItemRow } from '$lib/server/items';
 	import { LANGUAGES } from '$lib/languages';
 	import CodeBlock from './CodeBlock.svelte';
+	import MermaidDiagram from './MermaidDiagram.svelte';
 
 	let {
 		item,
@@ -107,7 +108,9 @@
 
 				{#if item.body}
 					<div class="mb-4">
-						{#if item.type === 'snippet'}
+						{#if item.type === 'snippet' && item.language === 'mermaid'}
+							<MermaidDiagram code={item.body} maxHeight="24rem" />
+						{:else if item.type === 'snippet'}
 							<CodeBlock code={item.body} lang={item.language} maxHeight="24rem" />
 						{:else}
 							<div class="border border-base-300 bg-base-200 p-4 text-sm">
