@@ -72,7 +72,7 @@
 		await update({ reset: true });
 		if (result.type === 'success') clearDraft();
 	}}
-	class="card bg-base-200 p-3 sm:p-4"
+	class="card bg-base-200 p-3 sm:p-4 lg:min-h-0 lg:flex-1"
 >
 	<div role="tablist" aria-label="Jenis catatan" class="tabs tabs-boxed mb-3 w-full sm:w-fit">
 		{#each ['note', 'bookmark', 'snippet'] as t}
@@ -102,7 +102,7 @@
 		<input type="hidden" name="faviconUrl" bind:this={faviconInput} />
 		<input type="hidden" name="previewImageUrl" bind:this={previewImageInput} />
 		<textarea
-			class="textarea textarea-bordered mb-2 w-full"
+			class="textarea textarea-bordered mb-2 w-full lg:min-h-24 lg:flex-1 lg:resize-none"
 			name="body"
 			rows="2"
 			placeholder="Catatan opsional"
@@ -120,7 +120,7 @@
 			{/each}
 		</select>
 		<textarea
-			class="textarea textarea-bordered mb-2 w-full font-mono"
+			class="textarea textarea-bordered mb-2 w-full font-mono lg:min-h-24 lg:flex-1 lg:resize-none"
 			name="body"
 			rows="5"
 			placeholder="Tempel kode di sini…"
@@ -128,7 +128,7 @@
 		></textarea>
 	{:else}
 		<textarea
-			class="textarea textarea-bordered mb-2 w-full"
+			class="textarea textarea-bordered mb-2 w-full lg:min-h-24 lg:flex-1 lg:resize-none"
 			name="body"
 			rows="3"
 			placeholder="Tulis fleeting note… (draft tersimpan otomatis)"

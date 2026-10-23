@@ -71,7 +71,11 @@
 </script>
 
 <div class="grid gap-4 sm:gap-6 lg:grid-cols-[380px_1fr]">
-	<aside class="order-2 space-y-3 lg:order-1 lg:sticky lg:top-4 lg:self-start">
+	<!-- Desktop: kolom capture setinggi viewport (top-4 + jarak bawah 1rem) supaya
+	     textarea bisa melar; di mobile/PWA tetap tinggi natural. -->
+	<aside
+		class="order-2 space-y-3 lg:order-1 lg:sticky lg:top-4 lg:flex lg:h-[calc(100dvh-2rem)] lg:flex-col lg:self-start"
+	>
 		<div class="flex items-center justify-between px-1">
 			<h2 class="text-xs font-semibold uppercase tracking-wider opacity-60">Tambah baru</h2>
 		</div>
