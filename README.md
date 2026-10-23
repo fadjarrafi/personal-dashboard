@@ -294,6 +294,8 @@ Panduan lengkap: [docs/DEPLOY-cloudflare-tunnel.md](./docs/DEPLOY-cloudflare-tun
 — VPS lokal (mis. Ubuntu di Proxmox) di belakang Cloudflare Tunnel + PM2.
 Termasuk alur update dari GitHub dan rollback.
 
+Deploy via Docker + GitHub Actions (self-hosted runner): [docs/DEPLOY-docker.md](./docs/DEPLOY-docker.md)
+
 Template PM2 ecosystem siap-copy di [deploy/pm2/](./deploy/pm2).
 
 ### Catatan build: dependency native/berat
