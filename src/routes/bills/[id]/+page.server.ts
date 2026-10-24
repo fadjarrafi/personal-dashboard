@@ -17,9 +17,9 @@ import { parseRupiah } from '$lib/format';
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const user = locals.user!;
 	const id = Number(params.id);
-	if (!Number.isFinite(id)) throw error(404, 'Tidak ditemukan');
+	if (!Number.isFinite(id)) throw error(404, 'Not found');
 	const bill = getBill(user.id, id);
-	if (!bill) throw error(404, 'Tidak ditemukan');
+	if (!bill) throw error(404, 'Not found');
 	return { bill, categories: BILL_CATEGORIES, recurrences: BILL_RECURRENCES };
 };
 
@@ -37,15 +37,15 @@ export const actions: Actions = {
 		const data = await request.formData();
 
 		const title = String(data.get('title') ?? '').trim();
-		if (!title) return fail(400, { error: 'Nama tagihan wajib diisi.' });
+		if (!title) return fail(400, { error: 'Bill name is required.' });
 
 		const amount = parseRupiah(String(data.get('amount') ?? ''));
 		if (!Number.isFinite(amount) || amount <= 0) {
-			return fail(400, { error: 'Jumlah tidak valid.' });
+			return fail(400, { error: 'Invalid amount.' });
 		}
 
 		const nextDueAt = parseDueDate(String(data.get('next_due_at') ?? ''));
-		if (!nextDueAt) return fail(400, { error: 'Tanggal jatuh tempo tidak valid.' });
+		if (!nextDueAt) return fail(400, { error: 'Invalid due date.' });
 
 		const categoryRaw = String(data.get('category') ?? 'lainnya');
 		const category = (BILL_CATEGORIES as readonly string[]).includes(categoryRaw)
@@ -61,12 +61,12 @@ export const actions: Actions = {
 		if (recurrence === 'custom_days') {
 			intervalDays = Number.parseInt(String(data.get('interval_days') ?? ''), 10);
 			if (!Number.isFinite(intervalDays) || intervalDays < 1) {
-				return fail(400, { error: 'Interval hari tidak valid.' });
+				return fail(400, { error: 'Invalid day interval.' });
 			}
 		}
 
 		updateBill(user.id, id, { title, amount, category, recurrence, intervalDays, nextDueAt });
-		setFlash(cookies, 'success', 'Tagihan diperbarui.');
+		setFlash(cookies, 'success', 'Bill updated.');
 		throw redirect(303, '/bills');
 	},
 
@@ -75,7 +75,7 @@ export const actions: Actions = {
 		const id = Number(params.id);
 		if (!Number.isFinite(id)) throw error(404);
 		deleteBill(user.id, id);
-		setFlash(cookies, 'success', 'Tagihan dihapus.');
+		setFlash(cookies, 'success', 'Bill deleted.');
 		throw redirect(303, '/bills');
 	},
 
@@ -84,7 +84,7 @@ export const actions: Actions = {
 		const id = Number(params.id);
 		if (!Number.isFinite(id)) throw error(404);
 		markPaid(user.id, id);
-		setFlash(cookies, 'success', 'Tagihan ditandai lunas.');
+		setFlash(cookies, 'success', 'Bill marked as paid.');
 		throw redirect(303, '/bills');
 	},
 

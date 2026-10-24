@@ -15,9 +15,9 @@ import {
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const user = locals.user!;
 	const id = Number(params.id);
-	if (!Number.isFinite(id)) throw error(404, 'Tidak ditemukan');
+	if (!Number.isFinite(id)) throw error(404, 'Not found');
 	const task = getTask(user.id, id);
-	if (!task) throw error(404, 'Tidak ditemukan');
+	if (!task) throw error(404, 'Not found');
 	return { task, tags: listAllTags(), priorities: TASK_PRIORITIES };
 };
 
@@ -43,7 +43,7 @@ export const actions: Actions = {
 		const data = await request.formData();
 
 		const title = String(data.get('title') ?? '').trim();
-		if (!title) return fail(400, { error: 'Judul tugas wajib diisi.' });
+		if (!title) return fail(400, { error: 'Task title is required.' });
 
 		const notes = String(data.get('notes') ?? '').trim() || null;
 		const dueAt = parseDueDate(String(data.get('due_at') ?? '') || null);
@@ -57,7 +57,7 @@ export const actions: Actions = {
 		const tags = parseTags(String(data.get('tags') ?? ''));
 
 		updateTask(user.id, id, { title, notes, dueAt, priority, pinned, tags });
-		setFlash(cookies, 'success', 'Tugas diperbarui.');
+		setFlash(cookies, 'success', 'Task updated.');
 		throw redirect(303, '/tasks');
 	},
 
@@ -66,7 +66,7 @@ export const actions: Actions = {
 		const id = Number(params.id);
 		if (!Number.isFinite(id)) throw error(404);
 		toggleDone(user.id, id);
-		setFlash(cookies, 'success', 'Status tugas diperbarui.');
+		setFlash(cookies, 'success', 'Task status updated.');
 		throw redirect(303, '/tasks');
 	},
 
@@ -75,7 +75,7 @@ export const actions: Actions = {
 		const id = Number(params.id);
 		if (!Number.isFinite(id)) throw error(404);
 		archiveTask(user.id, id);
-		setFlash(cookies, 'success', 'Tugas diarsipkan.');
+		setFlash(cookies, 'success', 'Task archived.');
 		throw redirect(303, '/tasks');
 	},
 
@@ -84,7 +84,7 @@ export const actions: Actions = {
 		const id = Number(params.id);
 		if (!Number.isFinite(id)) throw error(404);
 		deleteTask(user.id, id);
-		setFlash(cookies, 'success', 'Tugas dihapus.');
+		setFlash(cookies, 'success', 'Task deleted.');
 		throw redirect(303, '/tasks');
 	}
 };

@@ -71,7 +71,7 @@
 <div class="space-y-3">
 	<header class="flex flex-wrap items-center justify-between gap-2 px-1">
 		<div class="flex items-center gap-2">
-			<a href="/boards" class="link text-sm opacity-70">← Board</a>
+			<a href="/boards" class="link text-sm opacity-70">← Boards</a>
 			<form method="post" action="?/rename" class="flex items-center gap-1">
 				<input
 					class="input input-bordered input-sm"
@@ -79,24 +79,24 @@
 					value={data.board.title}
 					autocomplete="off"
 				/>
-				<button class="btn btn-ghost btn-sm" type="submit">Simpan nama</button>
+				<button class="btn btn-ghost btn-sm" type="submit">Save name</button>
 			</form>
 		</div>
 		<div class="flex items-center gap-2">
 			<span class="text-xs opacity-50">
-				{saveState === 'saving' ? 'Menyimpan…' : saveState === 'saved' ? 'Tersimpan' : ''}
+				{saveState === 'saving' ? 'Saving…' : saveState === 'saved' ? 'Saved' : ''}
 			</span>
 			<form method="post" action="?/archive">
-				<button class="btn btn-ghost btn-sm tap-target" type="submit">Arsipkan</button>
+				<button class="btn btn-ghost btn-sm tap-target" type="submit">Archive</button>
 			</form>
 			<form
 				method="post"
 				action="?/delete"
 				onsubmit={(e) => {
-					if (!confirm('Hapus board ini beserta isinya?')) e.preventDefault();
+					if (!confirm('Delete this board and its contents?')) e.preventDefault();
 				}}
 			>
-				<button class="btn btn-error btn-outline btn-sm tap-target" type="submit">Hapus</button>
+				<button class="btn btn-error btn-outline btn-sm tap-target" type="submit">Delete</button>
 			</form>
 		</div>
 	</header>

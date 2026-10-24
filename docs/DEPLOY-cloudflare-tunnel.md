@@ -18,6 +18,7 @@ Di Cloudflare Zero Trust dashboard, di tunnel yang sudah ada, tambah
 - **Service**: `HTTP` → `<TARGET>:5173`
 
 `<TARGET>`:
+
 - `localhost` — jika cloudflared berjalan di VPS yang sama
 - IP LAN VPS — jika cloudflared di host/VM lain di Proxmox
 
@@ -35,7 +36,9 @@ Di zona `fadjarrafi.my.id`:
 ## 3. Prasyarat VPS
 
 Ubuntu, akses `sudo`. Install Node 22 atau 24 (LTS) via nvm — hindari
-Node 26+ karena `better-sqlite3` belum kompatibel dengannya. Bun dipakai sebagai
+Node 26+ karena `better-sqlite3` belum kompatibel dengannya. Versi minimum
+(security release 21 Oktober 2026): **v22.23.4** atau **v24.22.1** — lihat
+`engines` di `package.json` dan "Upgrade Node" di "Update dari GitHub". Bun dipakai sebagai
 package manager + script runner saja; runtime aplikasi tetap Node (`better-sqlite3`
 belum didukung runtime Bun), jadi keduanya wajib terpasang.
 
@@ -165,7 +168,7 @@ Lalu di browser buka `https://personal.fadjarrafi.my.id`:
 
 1. Login berhasil.
 2. Chrome DevTools → Application → Manifest tanpa error; Service Worker `activated`.
-3. Lighthouse → PWA → *Installable* hijau.
+3. Lighthouse → PWA → _Installable_ hijau.
 4. Chrome Android → menu → **Install app** → ikon di home screen → open standalone.
 5. Tambah bookmark/note/snippet dari HP & desktop dalam < 5 detik.
 6. Copy snippet 1 klik dari list.
@@ -207,6 +210,35 @@ pm2 save
 Kalau ada perubahan di `.env.example` yang menuntut var baru: bandingkan
 dengan `.env` lokal, tambahkan yang hilang, lalu `pm2 restart --update-env`.
 
+### Upgrade Node (security release)
+
+Patch keamanan Node ada di runtime, bukan di repo — `git pull` saja tidak
+cukup. Contoh untuk security release 21 Oktober 2026 (22.x → v22.23.4):
+
+```bash
+cd /var/www/html/personal-dashboard
+nvm install 22 && nvm alias default 22
+node -v                              # wajib >= v22.23.4
+
+# daemon PM2 masih memegang binary Node lama — reload ke Node baru
+pm2 update
+pm2 restart personal-dashboard --update-env
+
+# systemd unit PM2 menyimpan path Node lama — regenerate
+pm2 unstartup systemd
+pm2 startup                          # jalankan baris sudo yang dicetak
+pm2 save
+```
+
+Lalu cek `crontab -e`: nvm memasang tiap versi di direktori sendiri
+(`~/.nvm/versions/node/v22.23.4/bin`), jadi `PATH` cron yang menunjuk direktori
+versi lama tetap menjalankan Node lama. Sesuaikan dengan `ls ~/.nvm/versions/node`.
+Hal yang sama berlaku untuk `Environment=PATH` di `deploy/systemd/*.service`.
+
+Upgrade dalam major yang sama tidak mengubah ABI, jadi `better-sqlite3` tidak
+perlu di-rebuild. Verifikasi: `pm2 describe personal-dashboard | grep "node.js version"`.
+Setelah itu `nvm uninstall <versi-lama>` supaya tidak ada yang terlanjur memakainya.
+
 ### Rollback cepat
 
 ```bash
@@ -232,7 +264,7 @@ Cek tunnel `HEALTHY` di Cloudflare Zero Trust dashboard dan target port = 5173.
 **403 di POST (form login gagal / redirect loop)**
 `ORIGIN` di `.env` tidak match. Fix: `ORIGIN=https://personal.fadjarrafi.my.id`
 persis tanpa trailing slash, lalu `pm2 restart personal-dashboard --update-env`.
-Log akan tercetak: *cross-site POST form submissions are forbidden*.
+Log akan tercetak: _cross-site POST form submissions are forbidden_.
 
 **413 Payload Too Large saat scan/share receipt**
 `BODY_SIZE_LIMIT` di `.env` lebih kecil dari ukuran foto (default

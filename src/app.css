@@ -146,6 +146,34 @@
 	color: var(--color-ink);
 }
 
+/* Diagram Mermaid (pele) — variabel tema dipetakan ke token Brutalist Dark. */
+.pele {
+	--pele-bg: var(--color-paper-2);
+	--pele-fg: var(--color-ink);
+	--pele-muted: var(--color-ink-2);
+	--pele-line: var(--color-ink-2);
+	--pele-surface: var(--color-paper-3);
+	--pele-surface-alt: var(--color-paper-4);
+	--pele-border: var(--color-rule-2);
+	--pele-accent: var(--color-ink);
+	--pele-critical: var(--color-danger);
+	--pele-error: var(--color-danger);
+	--pele-font: var(--font-body);
+	--pele-font-mono: var(--font-mono);
+	--pele-radius: 0;
+}
+.mermaid-diagram {
+	overflow: auto;
+	border: 1px solid var(--color-rule);
+	background: var(--color-paper-2);
+	padding: var(--space-xs);
+}
+/* Tombol zoom pele default 24px (inline style) — naikkan ke target sentuh 44x44. */
+.mermaid-diagram :is(.pele-zoom-in, .pele-zoom-out, .pele-zoom-reset) {
+	width: 44px !important;
+	height: 44px !important;
+}
+
 @layer utilities {
 	.safe-bottom {
 		padding-bottom: env(safe-area-inset-bottom);

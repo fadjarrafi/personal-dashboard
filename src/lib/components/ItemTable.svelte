@@ -4,7 +4,7 @@
 	let {
 		items,
 		onRowClick,
-		emptyText = 'Belum ada item.',
+		emptyText = 'No items yet.',
 		limit,
 		moreHref
 	}: {
@@ -94,7 +94,7 @@
 						{/if}
 					</div>
 					{#if item.pinned}
-						<span class="shrink-0 text-base-content" aria-label="Disematkan" title="Pinned">★</span>
+						<span class="shrink-0 text-base-content" aria-label="Pinned" title="Pinned">★</span>
 					{/if}
 				</div>
 
@@ -131,9 +131,9 @@
 								type="button"
 								class="btn btn-ghost btn-xs tap-target"
 								onclick={(e) => copy(e, item)}
-								aria-label="Salin snippet"
+								aria-label="Copy snippet"
 							>
-								{copiedId === item.id ? '✓ Tersalin' : 'Copy'}
+								{copiedId === item.id ? '✓ Copied' : 'Copy'}
 							</button>
 						{/if}
 						{#if item.type === 'bookmark' && item.url}
@@ -142,10 +142,10 @@
 								href={item.url}
 								target="_blank"
 								rel="noopener noreferrer"
-								aria-label="Buka di tab baru"
+								aria-label="Open in new tab"
 								onclick={(e) => e.stopPropagation()}
 							>
-								Buka ↗
+								Open ↗
 							</a>
 						{/if}
 						<form method="post" action="/?/togglePin">
@@ -153,7 +153,7 @@
 							<button
 								class="btn btn-ghost btn-xs tap-target"
 								type="submit"
-								aria-label={item.pinned ? 'Lepas pin' : 'Sematkan'}
+								aria-label={item.pinned ? 'Unpin' : 'Pin'}
 								onclick={(e) => e.stopPropagation()}
 							>
 								{item.pinned ? '☆' : '★'}
@@ -170,7 +170,7 @@
 				class="flex min-h-[8rem] flex-col items-center justify-center gap-1 rounded-box border border-dashed border-base-300 p-3 text-center text-sm opacity-70 transition hover:bg-base-300/40 hover:opacity-100"
 			>
 				<span class="font-mono text-lg tabular-nums">+{hiddenCount}</span>
-				<span>Lihat semua →</span>
+				<span>View all →</span>
 			</a>
 		{/if}
 	</div>

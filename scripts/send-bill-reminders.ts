@@ -16,9 +16,9 @@ import { sendToUser } from '../src/lib/server/push';
 import { formatRupiah } from '../src/lib/format';
 
 function humanDueLabel(daysUntilDue: number): string {
-	if (daysUntilDue < 0) return `telat ${Math.abs(daysUntilDue)} hari`;
-	if (daysUntilDue === 0) return 'jatuh tempo hari ini';
-	return `jatuh tempo ${daysUntilDue} hari lagi`;
+	if (daysUntilDue < 0) return `${Math.abs(daysUntilDue)} day(s) overdue`;
+	if (daysUntilDue === 0) return 'due today';
+	return `due in ${daysUntilDue} day(s)`;
 }
 
 async function main() {

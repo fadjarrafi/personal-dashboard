@@ -8,7 +8,7 @@
 
 	const [year, monthNum] = $derived(data.filters.month.split('-').map(Number));
 	const monthLabel = $derived(
-		new Date(year, monthNum - 1, 1).toLocaleString('id-ID', {
+		new Date(year, monthNum - 1, 1).toLocaleString('en-GB', {
 			month: 'long',
 			year: 'numeric'
 		})
@@ -35,7 +35,7 @@
 
 	function shortDate(iso: string): string {
 		const d = new Date(iso);
-		return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+		return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
 	}
 
 	// Merge sebuah override ke atas filter yang sedang aktif, supaya navigasi
@@ -59,28 +59,28 @@
 		<!-- Ringkasan -->
 		<section
 			class="rounded-box border border-base-300 bg-base-200/60 p-4"
-			aria-label="Ringkasan bulan berjalan"
+			aria-label="Current month summary"
 		>
-			<h2 class="text-[10px] font-semibold uppercase tracking-wider opacity-50">Ringkasan</h2>
+			<h2 class="text-[10px] font-semibold uppercase tracking-wider opacity-50">Summary</h2>
 			<div class="mt-0.5 text-sm font-medium opacity-80">{monthLabel}</div>
 			<div class="mt-2 font-display text-3xl font-semibold tabular-nums">
 				{formatRupiah(data.summary.total)}
 			</div>
 			<div class="mt-1 flex flex-wrap gap-x-3 text-xs opacity-70">
-				<span>{data.summary.count} transaksi</span>
+				<span>{data.summary.count} transaction(s)</span>
 				{#if trend !== null}
 					<span class={trend > 0 ? 'text-warning' : 'text-success'}>
-						{trend > 0 ? '↑' : '↓'} {Math.abs(trend)}% vs bulan lalu
+						{trend > 0 ? '↑' : '↓'} {Math.abs(trend)}% vs last month
 					</span>
 				{:else if data.summary.previousTotal === 0 && data.summary.total > 0}
-					<span class="opacity-60">bulan lalu: —</span>
+					<span class="opacity-60">last month: —</span>
 				{/if}
 			</div>
 
 			{#if data.summary.byCategory.length > 0}
 				<div class="divider my-2"></div>
 				<div class="mb-1 text-[10px] font-semibold uppercase tracking-wider opacity-50">
-					Per kategori
+					By category
 				</div>
 				<ul class="space-y-1 text-xs">
 					{#each data.summary.byCategory as row}
@@ -110,7 +110,7 @@
 				id="quick-add-heading"
 				class="mb-2 px-1 text-xs font-semibold uppercase tracking-wider opacity-60"
 			>
-				Tambah cepat
+				Quick add
 			</h2>
 			<form
 				id="spend-form"
@@ -119,7 +119,7 @@
 				class="card space-y-2 border-l-2 border-l-[--color-accent] bg-base-200 p-3 sm:p-4"
 			>
 				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Jumlah (Rp)</span></div>
+					<div class="label py-1"><span class="label-text text-xs">Amount (Rp)</span></div>
 					<input
 						class="input input-bordered w-full"
 						name="amount"
@@ -131,7 +131,7 @@
 				</label>
 
 				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Tanggal</span></div>
+					<div class="label py-1"><span class="label-text text-xs">Date</span></div>
 					<input
 						class="input input-bordered w-full"
 						name="occurred_at"
@@ -142,28 +142,28 @@
 				</label>
 
 				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Kategori</span></div>
+					<div class="label py-1"><span class="label-text text-xs">Category</span></div>
 					<input
 						class="input input-bordered w-full"
 						name="category"
-						placeholder="makan, transport, dsb."
+						placeholder="food, transport, etc."
 						list="spend-categories"
 						autocomplete="off"
 					/>
 				</label>
 
 				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Merchant (opsional)</span></div>
+					<div class="label py-1"><span class="label-text text-xs">Merchant (optional)</span></div>
 					<input
 						class="input input-bordered w-full"
 						name="merchant"
-						placeholder="Kantin, GoRide, dsb."
+						placeholder="Canteen, GoRide, etc."
 						autocomplete="off"
 					/>
 				</label>
 
 				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Catatan (opsional)</span></div>
+					<div class="label py-1"><span class="label-text text-xs">Note (optional)</span></div>
 					<input class="input input-bordered w-full" name="note" autocomplete="off" />
 				</label>
 
@@ -173,7 +173,7 @@
 					{/each}
 				</datalist>
 
-				<button class="btn btn-primary w-full" type="submit">Simpan</button>
+				<button class="btn btn-primary w-full" type="submit">Save</button>
 
 				{#if form && 'error' in form && form.error}
 					<div role="alert" class="alert alert-error py-2 text-sm">{form.error}</div>
@@ -185,7 +185,7 @@
 	<!-- Main: daftar -->
 	<section class="order-1 min-w-0 space-y-4 lg:order-2">
 		<header class="px-1">
-			<h1 class="text-lg font-semibold sm:text-xl">Pengeluaran</h1>
+			<h1 class="text-lg font-semibold sm:text-xl">Spending</h1>
 		</header>
 
 		<!-- Tren -->
@@ -194,7 +194,7 @@
 				id="spend-trend-heading"
 				class="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wider opacity-50"
 			>
-				Tren
+				Trends
 			</h2>
 			<div class="grid gap-3 sm:grid-cols-2">
 				<SpendChart data={data.daily} today={data.today} />
@@ -216,11 +216,11 @@
 				<a
 					class="btn btn-ghost btn-sm tap-target"
 					href="/spends?{buildQuery({ month: prevMonthLabel(data.filters.month) })}"
-					aria-label="Bulan sebelumnya"
+					aria-label="Previous month"
 				>
 					←
 				</a>
-				<label for="spend-month" class="sr-only">Pilih bulan</label>
+				<label for="spend-month" class="sr-only">Select month</label>
 				<input
 					id="spend-month"
 					class="input input-bordered input-sm w-[9.5rem]"
@@ -232,29 +232,29 @@
 				<a
 					class="btn btn-ghost btn-sm tap-target"
 					href="/spends?{buildQuery({ month: nextMonthLabel(data.filters.month) })}"
-					aria-label="Bulan berikutnya"
+					aria-label="Next month"
 				>
 					→
 				</a>
 				{#if data.filters.month !== currentMonth}
 					<a class="btn btn-ghost btn-sm" href="/spends?{buildQuery({ month: currentMonth })}">
-						Hari ini
+						Today
 					</a>
 				{/if}
 			</div>
 
 			<div class="flex w-full min-w-0 flex-1 gap-2">
-				<label for="spend-search" class="sr-only">Cari pengeluaran</label>
+				<label for="spend-search" class="sr-only">Search spending</label>
 				<input
 					id="spend-search"
 					class="input input-bordered w-full min-w-0 flex-1"
 					name="q"
 					value={data.filters.q ?? ''}
-					placeholder="Cari merchant, catatan, kategori…"
+					placeholder="Search merchant, note, category…"
 					autocomplete="off"
 					enterkeyhint="search"
 				/>
-				<button class="btn btn-primary" type="submit">Cari</button>
+				<button class="btn btn-primary" type="submit">Search</button>
 				{#if data.filters.q}
 					<a class="btn btn-ghost" href="/spends?{buildQuery({ q: undefined })}"> Reset </a>
 				{/if}
@@ -263,8 +263,8 @@
 
 		{#if data.filters.category}
 			<div class="-mt-2 px-1 text-sm opacity-70">
-				Filter kategori: <span class="badge badge-neutral">{data.filters.category}</span>
-				<a class="link ml-2" href="/spends?{buildQuery({ category: undefined })}">bersihkan</a>
+				Category filter: <span class="badge badge-neutral">{data.filters.category}</span>
+				<a class="link ml-2" href="/spends?{buildQuery({ category: undefined })}">clear</a>
 			</div>
 		{/if}
 
@@ -272,7 +272,7 @@
 			<p
 				class="rounded-box border border-dashed border-base-300 p-6 text-center text-sm opacity-60"
 			>
-				Belum ada pengeluaran{data.filters.q ? ' yang cocok' : ' bulan ini'}.
+				No {data.filters.q ? 'matching spending' : 'spending this month'} yet.
 			</p>
 		{:else}
 			<!-- Mobile: kartu -->
@@ -286,7 +286,7 @@
 							<div class="flex items-start justify-between gap-2">
 								<div class="min-w-0 flex-1">
 									<div class="truncate text-sm font-medium">
-										{s.merchant ?? s.note ?? '(tanpa merchant)'}
+										{s.merchant ?? s.note ?? '(no merchant)'}
 									</div>
 									<div class="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs opacity-70">
 										{#if s.category}
@@ -310,11 +310,11 @@
 				<table class="table table-sm">
 					<thead>
 						<tr class="text-xs uppercase tracking-wider">
-							<th class="w-24">Tanggal</th>
-							<th>Merchant / Catatan</th>
-							<th class="w-32">Kategori</th>
-							<th class="w-24">Metode</th>
-							<th class="w-32 text-right">Jumlah</th>
+							<th class="w-24">Date</th>
+							<th>Merchant / Note</th>
+							<th class="w-32">Category</th>
+							<th class="w-24">Method</th>
+							<th class="w-32 text-right">Amount</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -323,7 +323,7 @@
 								<td class="whitespace-nowrap text-xs opacity-70">{shortDate(s.occurredAt)}</td>
 								<td class="max-w-0">
 									<div class="truncate font-medium">
-										{s.merchant ?? s.note ?? '(tanpa merchant)'}
+										{s.merchant ?? s.note ?? '(no merchant)'}
 									</div>
 									{#if s.merchant && s.note}
 										<div class="truncate text-xs opacity-60">{s.note}</div>
@@ -348,8 +348,8 @@
 <a
 	href="#spend-form"
 	class="btn btn-primary btn-square btn-lg fixed bottom-5 right-5 z-40 lg:hidden"
-	aria-label="Tambah pengeluaran"
-	title="Tambah pengeluaran"
+	aria-label="Add spending"
+	title="Add spending"
 	style="padding-bottom: env(safe-area-inset-bottom);"
 >
 	<span class="text-2xl leading-none">+</span>

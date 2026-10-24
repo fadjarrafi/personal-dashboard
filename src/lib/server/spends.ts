@@ -159,12 +159,12 @@ export function getSummary(
 
 	const byCategory = raw
 		.prepare(
-			`SELECT COALESCE(category, '(tanpa kategori)') AS category,
+			`SELECT COALESCE(category, '(uncategorized)') AS category,
 			        SUM(amount) AS total,
 			        COUNT(*) AS count
 			 FROM spends
 			 WHERE user_id = ? AND occurred_at >= ? AND occurred_at < ?
-			 GROUP BY COALESCE(category, '(tanpa kategori)')
+			 GROUP BY COALESCE(category, '(uncategorized)')
 			 ORDER BY total DESC`
 		)
 		.all(userId, from, to) as Array<{ category: string; total: number; count: number }>;

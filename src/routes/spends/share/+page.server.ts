@@ -26,7 +26,7 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const file = data.get('receipt');
 		if (!(file instanceof File)) {
-			setFlash(cookies, 'error', 'Share tidak menyertakan gambar receipt.');
+			setFlash(cookies, 'error', 'The share did not include a receipt image.');
 			throw redirect(303, '/spends');
 		}
 
@@ -34,7 +34,7 @@ export const actions: Actions = {
 		try {
 			saved = await saveReceiptFile({ userId: user.id, file });
 		} catch (err) {
-			const msg = err instanceof Error ? err.message : 'Gagal menyimpan gambar.';
+			const msg = err instanceof Error ? err.message : 'Failed to save the image.';
 			setFlash(cookies, 'error', msg);
 			throw redirect(303, '/spends');
 		}
@@ -58,7 +58,7 @@ export const actions: Actions = {
 						setFlash(
 							cookies,
 							'info',
-							'Receipt ini sudah pernah dicatat sebelumnya.'
+							'This receipt has already been recorded.'
 						);
 						throw redirect(303, `/spends/${dupe.id}`);
 					}

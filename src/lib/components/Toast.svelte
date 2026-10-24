@@ -46,7 +46,7 @@
 				type="button"
 				class="btn btn-ghost btn-xs rounded-none"
 				onclick={() => (visible = false)}
-				aria-label="Tutup"
+				aria-label="Close"
 			>
 				✕
 			</button>

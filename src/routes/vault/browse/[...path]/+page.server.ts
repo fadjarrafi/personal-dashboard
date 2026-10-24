@@ -11,6 +11,6 @@ export const load: PageServerLoad = async ({ params, url }) => {
 	}
 
 	const dir = listDir(path);
-	if (!dir) throw error(404, 'Folder tidak ditemukan di vault mirror.');
+	if (!dir) throw error(404, 'Folder not found in vault mirror.');
 	return { path, query: '', folders: dir.folders, notes: dir.notes, mode: 'browse' as const };
 };

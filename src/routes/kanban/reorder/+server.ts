@@ -13,10 +13,10 @@ export const PATCH: RequestHandler = async ({ request, locals }) => {
 	const orderedIds = body.orderedIds;
 
 	if (!status || !VALID_STATUS.has(status as TaskStatus) || !Array.isArray(orderedIds)) {
-		throw error(400, 'Payload tidak valid');
+		throw error(400, 'Invalid payload');
 	}
 	if (!orderedIds.every((id) => Number.isInteger(id))) {
-		throw error(400, 'orderedIds harus array integer');
+		throw error(400, 'orderedIds must be an integer array');
 	}
 
 	reorderColumn(user.id, status as TaskStatus, orderedIds);

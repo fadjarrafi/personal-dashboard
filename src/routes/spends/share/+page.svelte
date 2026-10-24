@@ -5,10 +5,10 @@
 </script>
 
 <div class="mx-auto mt-8 max-w-md text-center">
-	<h1 class="text-lg font-semibold">Bagikan struk ke Dashboard</h1>
+	<h1 class="text-lg font-semibold">Share a receipt to the Dashboard</h1>
 	<p class="mt-2 text-sm opacity-70">
-		Buka receipt di aplikasi e-wallet atau mobile banking, tekan tombol <em>Bagikan</em>, lalu
-		pilih <strong>Personal Dashboard</strong>. Setelah itu Anda akan diarahkan ke form preview.
+		Open a receipt in your e-wallet or mobile banking app, tap <em>Share</em>, then
+		choose <strong>Personal Dashboard</strong>. You will then be taken to a preview form.
 	</p>
-	<a class="btn btn-primary mt-6" href="/spends">← Kembali ke Pengeluaran</a>
+	<a class="btn btn-primary mt-6" href="/spends">← Back to Spending</a>
 </div>

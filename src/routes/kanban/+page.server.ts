@@ -19,7 +19,7 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const title = String(data.get('title') ?? '').trim();
 		if (!title) {
-			return fail(400, { error: 'Judul task tidak boleh kosong.' });
+			return fail(400, { error: 'Task title cannot be empty.' });
 		}
 		const statusRaw = String(data.get('status') ?? 'todo');
 		const status: TaskStatus = VALID_STATUS.has(statusRaw as TaskStatus)
@@ -27,7 +27,7 @@ export const actions: Actions = {
 			: 'todo';
 
 		createTask(user.id, { title, status });
-		setFlash(cookies, 'success', 'Task ditambahkan.');
+		setFlash(cookies, 'success', 'Task added.');
 		return { ok: true };
 	}
 };

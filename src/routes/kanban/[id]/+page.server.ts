@@ -19,9 +19,9 @@ const VALID_PRIORITY = new Set<TaskPriority>(['low', 'medium', 'high']);
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const user = locals.user!;
 	const id = Number(params.id);
-	if (!Number.isFinite(id)) throw error(404, 'Tidak ditemukan');
+	if (!Number.isFinite(id)) throw error(404, 'Not found');
 	const task = getTask(user.id, id);
-	if (!task) throw error(404, 'Tidak ditemukan');
+	if (!task) throw error(404, 'Not found');
 
 	const spendOptions = listSpends({ userId: user.id, limit: 100 });
 	if (task.spendId && !spendOptions.some((s) => s.id === task.spendId)) {
@@ -53,7 +53,7 @@ export const actions: Actions = {
 		const data = await request.formData();
 
 		const title = String(data.get('title') ?? '').trim();
-		if (!title) return fail(400, { error: 'Judul tidak boleh kosong.' });
+		if (!title) return fail(400, { error: 'Title cannot be empty.' });
 
 		const priorityRaw = String(data.get('priority') ?? 'medium');
 		const priority: TaskPriority = VALID_PRIORITY.has(priorityRaw as TaskPriority)
@@ -71,7 +71,7 @@ export const actions: Actions = {
 			spendId: spendId && Number.isFinite(spendId) ? spendId : null,
 			tags: parseTags(String(data.get('tags') ?? ''))
 		});
-		setFlash(cookies, 'success', 'Task diperbarui.');
+		setFlash(cookies, 'success', 'Task updated.');
 		return { ok: true };
 	},
 
@@ -80,7 +80,7 @@ export const actions: Actions = {
 		const id = Number(params.id);
 		if (!Number.isFinite(id)) throw error(404);
 		archiveTask(user.id, id);
-		setFlash(cookies, 'success', 'Task diarsipkan.');
+		setFlash(cookies, 'success', 'Task archived.');
 		throw redirect(303, '/kanban');
 	},
 
@@ -89,7 +89,7 @@ export const actions: Actions = {
 		const id = Number(params.id);
 		if (!Number.isFinite(id)) throw error(404);
 		deleteTask(user.id, id);
-		setFlash(cookies, 'success', 'Task dihapus.');
+		setFlash(cookies, 'success', 'Task deleted.');
 		throw redirect(303, '/kanban');
 	},
 
@@ -99,7 +99,7 @@ export const actions: Actions = {
 		if (!Number.isFinite(id)) throw error(404);
 		const data = await request.formData();
 		const content = String(data.get('content') ?? '').trim();
-		if (!content) return fail(400, { error: 'Item checklist tidak boleh kosong.' });
+		if (!content) return fail(400, { error: 'Checklist item cannot be empty.' });
 		addChecklistItem(user.id, id, content);
 		return { ok: true };
 	},

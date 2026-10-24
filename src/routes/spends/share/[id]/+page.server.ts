@@ -25,9 +25,9 @@ function todayLocalISO(): string {
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const user = locals.user!;
 	const receiptId = Number(params.id);
-	if (!Number.isFinite(receiptId)) throw error(404, 'Receipt tidak ditemukan');
+	if (!Number.isFinite(receiptId)) throw error(404, 'Receipt not found');
 	const receipt = getReceipt(user.id, receiptId);
-	if (!receipt) throw error(404, 'Receipt tidak ditemukan');
+	if (!receipt) throw error(404, 'Receipt not found');
 
 	let extracted: ExtractedHint = {};
 	if (receipt.extractedJson) {
@@ -70,14 +70,14 @@ export const actions: Actions = {
 		const receipt = getReceipt(user.id, receiptId);
 		if (!receipt) throw error(404);
 		if (receipt.spendId) {
-			setFlash(cookies, 'info', 'Receipt ini sudah dikaitkan ke pengeluaran.');
+			setFlash(cookies, 'info', 'This receipt is already linked to a spending entry.');
 			throw redirect(303, `/spends/${receipt.spendId}`);
 		}
 
 		const data = await request.formData();
 		const amount = parseRupiah(String(data.get('amount') ?? ''));
 		if (!Number.isFinite(amount) || amount <= 0) {
-			return fail(400, { error: 'Jumlah tidak valid.' });
+			return fail(400, { error: 'Invalid amount.' });
 		}
 		const occurredAt = parseOccurredAt(String(data.get('occurred_at') ?? ''));
 
@@ -92,7 +92,7 @@ export const actions: Actions = {
 		});
 
 		linkReceiptToSpend(user.id, receiptId, spendId);
-		setFlash(cookies, 'success', 'Pengeluaran dari receipt disimpan.');
+		setFlash(cookies, 'success', 'Spending from receipt saved.');
 		throw redirect(303, '/spends');
 	}
 };

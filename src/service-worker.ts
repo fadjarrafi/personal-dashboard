@@ -32,11 +32,11 @@ interface BillPushData {
 self.addEventListener('push', (event: PushEvent) => {
 	const data: BillPushData = event.data?.json() ?? {};
 	event.waitUntil(
-		self.registration.showNotification(data.title ?? 'Tagihan', {
+		self.registration.showNotification(data.title ?? 'Bill', {
 			body: data.body,
 			icon: '/icons/icon.svg',
 			data: { url: data.url ?? '/bills', billId: data.billId },
-			actions: [{ action: 'snooze', title: 'Ingatkan besok' }]
+			actions: [{ action: 'snooze', title: 'Remind me tomorrow' }]
 		})
 	);
 });

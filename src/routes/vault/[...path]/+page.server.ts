@@ -4,6 +4,6 @@ import { readNote } from '$lib/server/vault';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const note = readNote(params.path);
-	if (!note) throw error(404, 'Note tidak ditemukan di vault mirror.');
+	if (!note) throw error(404, 'Note not found in vault mirror.');
 	return { note };
 };

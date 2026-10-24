@@ -38,7 +38,7 @@
 		const buckets = Array.from(byTag.entries())
 			.sort(([a], [b]) => a.localeCompare(b))
 			.map(([tag, tagRows]) => ({ key: tag, label: `#${tag}`, rows: tagRows }));
-		if (untagged.length > 0) buckets.push({ key: '__untagged__', label: 'Tanpa tag', rows: untagged });
+		if (untagged.length > 0) buckets.push({ key: '__untagged__', label: 'Untagged', rows: untagged });
 		return buckets;
 	}
 
@@ -71,9 +71,13 @@
 </script>
 
 <div class="grid gap-4 sm:gap-6 lg:grid-cols-[380px_1fr]">
-	<aside class="order-2 space-y-3 lg:order-1 lg:sticky lg:top-4 lg:self-start">
+	<!-- Desktop: kolom capture setinggi viewport (top-4 + jarak bawah 1rem) supaya
+	     textarea bisa melar; di mobile/PWA tetap tinggi natural. -->
+	<aside
+		class="order-2 space-y-3 lg:order-1 lg:sticky lg:top-4 lg:flex lg:h-[calc(100dvh-2rem)] lg:flex-col lg:self-start"
+	>
 		<div class="flex items-center justify-between px-1">
-			<h2 class="text-xs font-semibold uppercase tracking-wider opacity-60">Tambah baru</h2>
+			<h2 class="text-xs font-semibold uppercase tracking-wider opacity-60">Add new</h2>
 		</div>
 		<CaptureForm tags={data.tags} />
 		{#if form && 'error' in form && form.error}
@@ -106,18 +110,18 @@
 		<form method="get" role="search" class="flex w-full flex-wrap gap-2 sm:flex-nowrap">
 			{#if data.filters.type}<input type="hidden" name="type" value={data.filters.type} />{/if}
 			{#if data.filters.tag}<input type="hidden" name="tag" value={data.filters.tag} />{/if}
-			<label for="global-search" class="sr-only">Cari item</label>
+			<label for="global-search" class="sr-only">Search items</label>
 			<input
 				id="global-search"
 				class="input input-bordered w-full min-w-0 flex-1"
 				name="q"
 				bind:value={q}
-				placeholder="Cari judul, isi, atau URL…"
+				placeholder="Search title, content, or URL…"
 				autocomplete="off"
 				enterkeyhint="search"
 			/>
 			<div class="flex w-full gap-2 sm:w-auto">
-				<button class="btn btn-primary flex-1 sm:flex-none" type="submit">Cari</button>
+				<button class="btn btn-primary flex-1 sm:flex-none" type="submit">Search</button>
 				{#if data.filters.q}
 					<a
 						class="btn btn-ghost flex-1 sm:flex-none"
@@ -131,8 +135,8 @@
 
 		{#if data.filters.tag}
 			<div class="text-sm opacity-70">
-				Filter tag: <span class="badge badge-neutral">#{data.filters.tag}</span>
-				<a class="link ml-2" href="/">bersihkan</a>
+				Tag filter: <span class="badge badge-neutral">#{data.filters.tag}</span>
+				<a class="link ml-2" href="/">clear</a>
 			</div>
 		{/if}
 
@@ -150,7 +154,7 @@
 						</a>
 					{:else}
 						<label class="flex cursor-pointer items-center gap-2 text-xs opacity-70">
-							<span>Kelompokkan per tag</span>
+							<span>Group by tag</span>
 							<input type="checkbox" class="toggle toggle-xs" bind:checked={groupByTag} />
 						</label>
 					{/if}
@@ -169,7 +173,7 @@
 					<ItemTable
 						items={section.rows}
 						onRowClick={selectItem}
-						emptyText="Belum ada {section.label.toLowerCase()}."
+						emptyText="No {section.label.toLowerCase()}s yet."
 						limit={data.filters.type ? undefined : SECTION_CAP}
 						moreHref="/?type={section.key}"
 					/>
@@ -184,8 +188,8 @@
 <a
 	href="#capture-form"
 	class="btn btn-primary btn-square btn-lg fixed bottom-5 right-5 z-40 lg:hidden"
-	aria-label="Tambah baru"
-	title="Tambah baru"
+	aria-label="Add new"
+	title="Add new"
 	style="padding-bottom: env(safe-area-inset-bottom);"
 >
 	<span class="text-2xl leading-none">+</span>

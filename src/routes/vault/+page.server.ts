@@ -16,18 +16,18 @@ export const actions: Actions = {
 	toggleTask: async ({ request, cookies }) => {
 		const data = await request.formData();
 		const id = Number(data.get('id'));
-		if (!Number.isFinite(id)) return fail(400, { error: 'ID tidak valid.' });
+		if (!Number.isFinite(id)) return fail(400, { error: 'Invalid ID.' });
 		toggleTask(id);
-		setFlash(cookies, 'success', 'Tugas diperbarui.');
+		setFlash(cookies, 'success', 'Task updated.');
 		return { ok: true };
 	},
 
 	addTask: async ({ request, cookies }) => {
 		const data = await request.formData();
 		const text = String(data.get('text') ?? '').trim();
-		if (!text) return fail(400, { error: 'Tugas tidak boleh kosong.' });
+		if (!text) return fail(400, { error: 'Task cannot be empty.' });
 		addTask(text);
-		setFlash(cookies, 'success', 'Tugas ditambahkan.');
+		setFlash(cookies, 'success', 'Task added.');
 		return { ok: true };
 	}
 };

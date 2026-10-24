@@ -48,10 +48,10 @@ export interface SavedReceipt {
 export async function saveReceiptFile(input: SaveReceiptInput): Promise<SavedReceipt> {
 	const { userId, file } = input;
 
-	if (!file || file.size === 0) throw new Error('File kosong.');
-	if (file.size > MAX_SIZE) throw new Error(`Ukuran melebihi ${MAX_SIZE / (1024 * 1024)} MB.`);
+	if (!file || file.size === 0) throw new Error('File is empty.');
+	if (file.size > MAX_SIZE) throw new Error(`File exceeds ${MAX_SIZE / (1024 * 1024)} MB.`);
 	const mime = (file.type || '').toLowerCase();
-	if (!ALLOWED_MIME.has(mime)) throw new Error(`Tipe file tidak didukung: ${mime || '(unknown)'}`);
+	if (!ALLOWED_MIME.has(mime)) throw new Error(`Unsupported file type: ${mime || '(unknown)'}`);
 
 	ensureDir();
 	const rawName = (file.name || 'receipt').toLowerCase();

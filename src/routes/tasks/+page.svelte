@@ -4,9 +4,9 @@
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
 	const priorityLabels: Record<string, string> = {
-		low: 'Rendah',
+		low: 'Low',
 		normal: 'Normal',
-		high: 'Tinggi'
+		high: 'High'
 	};
 	const priorityBadgeClass: Record<string, string> = {
 		low: 'badge-ghost',
@@ -14,11 +14,11 @@
 		high: 'badge-error'
 	};
 	const statusLabels: Record<string, string> = {
-		done: 'Selesai',
-		overdue: 'Lewat jatuh tempo',
-		due_soon: 'Segera jatuh tempo',
-		upcoming: 'Akan datang',
-		no_due_date: 'Tanpa tanggal'
+		done: 'Done',
+		overdue: 'Overdue',
+		due_soon: 'Due soon',
+		upcoming: 'Upcoming',
+		no_due_date: 'No due date'
 	};
 	const statusBadgeClass: Record<string, string> = {
 		done: 'badge-success',
@@ -29,7 +29,7 @@
 	};
 
 	function shortDate(iso: string): string {
-		return new Date(iso).toLocaleDateString('id-ID', {
+		return new Date(iso).toLocaleDateString('en-GB', {
 			day: '2-digit',
 			month: 'short',
 			year: 'numeric'
@@ -37,9 +37,9 @@
 	}
 
 	function dueLabel(days: number): string {
-		if (days < 0) return `Telat ${Math.abs(days)} hari`;
-		if (days === 0) return 'Jatuh tempo hari ini';
-		return `${days} hari lagi`;
+		if (days < 0) return `${Math.abs(days)} day(s) overdue`;
+		if (days === 0) return 'Due today';
+		return `In ${days} day(s)`;
 	}
 </script>
 
@@ -50,7 +50,7 @@
 				id="task-add-heading"
 				class="mb-2 px-1 text-xs font-semibold uppercase tracking-wider opacity-60"
 			>
-				Tambah tugas
+				Add task
 			</h2>
 			<form
 				method="post"
@@ -58,28 +58,28 @@
 				class="card space-y-2 border-l-2 border-l-[--color-accent] bg-base-200 p-3 sm:p-4"
 			>
 				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Judul</span></div>
+					<div class="label py-1"><span class="label-text text-xs">Title</span></div>
 					<input
 						class="input input-bordered w-full"
 						name="title"
-						placeholder="Apa yang perlu dikerjakan?"
+						placeholder="What needs to be done?"
 						required
 						autocomplete="off"
 					/>
 				</label>
 
 				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Catatan</span></div>
+					<div class="label py-1"><span class="label-text text-xs">Notes</span></div>
 					<textarea class="textarea textarea-bordered w-full" name="notes" rows="2"></textarea>
 				</label>
 
 				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Jatuh tempo (opsional)</span></div>
+					<div class="label py-1"><span class="label-text text-xs">Due date (optional)</span></div>
 					<input class="input input-bordered w-full" name="due_at" type="date" />
 				</label>
 
 				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Prioritas</span></div>
+					<div class="label py-1"><span class="label-text text-xs">Priority</span></div>
 					<select class="select select-bordered w-full" name="priority">
 						{#each data.priorities as p}
 							<option value={p} selected={p === 'normal'}>{priorityLabels[p]}</option>
@@ -88,7 +88,7 @@
 				</label>
 
 				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Tag (pisah dengan koma)</span></div>
+					<div class="label py-1"><span class="label-text text-xs">Tags (comma-separated)</span></div>
 					<input class="input input-bordered w-full" name="tags" list="known-tags" autocomplete="off" />
 					<datalist id="known-tags">
 						{#each data.tags as t}
@@ -99,10 +99,10 @@
 
 				<label class="label cursor-pointer justify-start gap-2">
 					<input type="checkbox" name="pinned" class="checkbox checkbox-primary" />
-					<span class="label-text">Pin ke atas</span>
+					<span class="label-text">Pin to top</span>
 				</label>
 
-				<button class="btn btn-primary w-full" type="submit">Simpan</button>
+				<button class="btn btn-primary w-full" type="submit">Save</button>
 
 				{#if form && 'error' in form && form.error}
 					<div role="alert" class="alert alert-error py-2 text-sm">{form.error}</div>
@@ -113,7 +113,7 @@
 
 	<section class="order-1 min-w-0 space-y-3 lg:order-2">
 		<header class="flex flex-wrap items-center justify-between gap-2 px-1">
-			<h1 class="text-lg font-semibold sm:text-xl">Tugas</h1>
+			<h1 class="text-lg font-semibold sm:text-xl">Tasks</h1>
 			<div class="flex flex-wrap items-center gap-2 text-xs">
 				<a
 					class="btn btn-xs {data.includeDone ? 'btn-primary' : 'btn-ghost'}"
@@ -122,7 +122,7 @@
 						...(data.includeDone ? {} : { done: '1' })
 					}).toString()}"
 				>
-					Tampilkan selesai
+					Show completed
 				</a>
 				{#if data.tags.length > 0}
 					<form method="get" class="inline-flex items-center gap-1">
@@ -132,7 +132,7 @@
 							name="tag"
 							onchange={(e) => e.currentTarget.form?.submit()}
 						>
-							<option value="">Semua tag</option>
+							<option value="">All tags</option>
 							{#each data.tags as t}
 								<option value={t} selected={t === data.tag}>{t}</option>
 							{/each}
@@ -144,7 +144,7 @@
 
 		{#if data.tasks.length === 0}
 			<p class="rounded-box border border-dashed border-base-300 p-6 text-center text-sm opacity-60">
-				Belum ada tugas tercatat.
+				No tasks recorded yet.
 			</p>
 		{:else}
 			<ul class="space-y-2" role="list">
@@ -158,7 +158,7 @@
 									class="tap-target flex h-6 w-6 items-center justify-center border {t.doneAt
 										? 'border-success bg-success text-success-content'
 										: 'border-base-300'}"
-									aria-label={t.doneAt ? 'Tandai belum selesai' : 'Tandai selesai'}
+									aria-label={t.doneAt ? 'Mark as not done' : 'Mark as done'}
 								>
 									{#if t.doneAt}✓{/if}
 								</button>
@@ -187,7 +187,7 @@
 								<button
 									type="submit"
 									class="btn btn-ghost btn-xs {t.pinned ? 'text-warning' : 'opacity-40'}"
-									aria-label={t.pinned ? 'Lepas pin' : 'Pin ke atas'}
+									aria-label={t.pinned ? 'Unpin' : 'Pin to top'}
 								>
 									★
 								</button>

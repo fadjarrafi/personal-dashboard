@@ -32,6 +32,7 @@ export const LANGUAGES = [
 	'makefile',
 	'markdown',
 	'matlab',
+	'mermaid',
 	'nginx',
 	'nix',
 	'objective-c',
@@ -77,7 +78,8 @@ const HLJS_ALIAS: Record<string, string> = {
 	svelte: 'xml',
 	vue: 'xml',
 	tsx: 'typescript',
-	jsx: 'javascript'
+	jsx: 'javascript',
+	mermaid: 'plaintext'
 };
 
 export function toHljsLang(lang: string | null | undefined): string {
