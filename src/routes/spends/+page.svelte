@@ -116,7 +116,7 @@
 				id="spend-form"
 				method="post"
 				action="?/create"
-				class="card space-y-2 border-l-2 border-l-[--color-accent] bg-base-200 p-3 sm:p-4"
+				class="card space-y-2 border-l-2 border-l-primary bg-base-200 p-3 sm:p-4"
 			>
 				<label class="form-control w-full">
 					<div class="label py-1"><span class="label-text text-xs">Amount (Rp)</span></div>

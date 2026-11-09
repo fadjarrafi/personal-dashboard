@@ -1,10 +1,156 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import '@fontsource-variable/jetbrains-mono';
 @import './lib/tokens.css';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* daisyUI 5 — transitional only (docs/design.md §Stack). Pages not yet moved to
+   shadcn-svelte keep working through this theme, re-pointed at the same tokens.
+   Colour names that daisyUI shares with shadcn-svelte (primary, secondary,
+   accent) are given identical values so the two never disagree. */
+@plugin 'daisyui' {
+	themes: false;
+	logs: false;
+}
+
+@plugin 'daisyui/theme' {
+	name: 'dashboard';
+	default: true;
+	prefersdark: true;
+	color-scheme: dark;
+	--color-base-100: #12141d;
+	--color-base-200: #1b1f2c;
+	--color-base-300: #282e42;
+	--color-base-content: oklch(94% 0.01 265);
+	--color-primary: oklch(72% 0.15 227);
+	--color-primary-content: #12141d;
+	--color-secondary: #1f2433;
+	--color-secondary-content: oklch(94% 0.01 265);
+	--color-accent: #1f2433;
+	--color-accent-content: oklch(94% 0.01 265);
+	--color-neutral: #24293b;
+	--color-neutral-content: oklch(94% 0.01 265);
+	--color-info: oklch(72% 0.15 227);
+	--color-info-content: #12141d;
+	--color-success: oklch(74% 0.15 152);
+	--color-success-content: #12141d;
+	--color-warning: oklch(80% 0.15 80);
+	--color-warning-content: #12141d;
+	--color-error: oklch(68% 0.18 25);
+	--color-error-content: #12141d;
+	--radius-selector: 0.375rem;
+	--radius-field: 0.5rem;
+	--radius-box: 0.625rem;
+	--size-selector: 0.25rem;
+	--size-field: 0.25rem;
+	--border: 1px;
+	--depth: 0;
+	--noise: 0;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+/* shadcn-svelte variables → design tokens (docs/design.md §shadcn-svelte variable
+   mapping). Dark-only app: same values on :root and .dark. */
+:root,
+.dark {
+	--radius: var(--pd-radius-box);
+	--background: var(--pd-paper);
+	--foreground: var(--pd-ink);
+	--card: var(--pd-paper-2);
+	--card-foreground: var(--pd-ink);
+	--popover: var(--pd-paper-3);
+	--popover-foreground: var(--pd-ink);
+	--primary: var(--pd-accent);
+	--primary-foreground: var(--pd-accent-ink);
+	--secondary: var(--pd-paper-3);
+	--secondary-foreground: var(--pd-ink);
+	--muted: var(--pd-paper-3);
+	--muted-foreground: var(--pd-muted);
+	--accent: var(--pd-paper-3);
+	--accent-foreground: var(--pd-ink);
+	--destructive: var(--pd-danger);
+	--border: var(--pd-rule);
+	--input: var(--pd-rule);
+	--ring: var(--pd-focus);
+	--chart-1: var(--pd-accent);
+	--chart-2: var(--pd-cat-bookmark);
+	--chart-3: var(--pd-cat-note);
+	--chart-4: var(--pd-cat-snippet);
+	--chart-5: var(--pd-warning);
+	--sidebar: var(--pd-chrome);
+	--sidebar-foreground: var(--pd-ink);
+	--sidebar-primary: var(--pd-accent);
+	--sidebar-primary-foreground: var(--pd-accent-ink);
+	--sidebar-accent: var(--pd-paper-3);
+	--sidebar-accent-foreground: var(--pd-ink);
+	--sidebar-border: var(--pd-rule);
+	--sidebar-ring: var(--pd-focus);
+}
+
+@theme inline {
+	--font-sans: var(--pd-font);
+	--font-mono: var(--pd-font);
+
+	--radius-sm: var(--pd-radius-badge);
+	--radius-md: var(--pd-radius-btn);
+	--radius-lg: var(--pd-radius-box);
+	--radius-xl: calc(var(--pd-radius-box) + 4px);
+
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--color-chart-1: var(--chart-1);
+	--color-chart-2: var(--chart-2);
+	--color-chart-3: var(--chart-3);
+	--color-chart-4: var(--chart-4);
+	--color-chart-5: var(--chart-5);
+	--color-sidebar: var(--sidebar);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-sidebar-primary: var(--sidebar-primary);
+	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+	--color-sidebar-accent: var(--sidebar-accent);
+	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+	--color-sidebar-border: var(--sidebar-border);
+	--color-sidebar-ring: var(--sidebar-ring);
+
+	/* Extra design tokens exposed as utilities (bg-well, text-ink-2, …). */
+	--color-chrome: var(--pd-chrome);
+	--color-well: var(--pd-well);
+	--color-overlay: var(--pd-overlay);
+	--color-chart-well: var(--pd-chart-well);
+	--color-ink-2: var(--pd-ink-2);
+	--color-success: var(--pd-success);
+	--color-warning: var(--pd-warning);
+	--color-danger: var(--pd-danger);
+	--color-cat-bookmark: var(--pd-cat-bookmark);
+	--color-cat-note: var(--pd-cat-note);
+	--color-cat-snippet: var(--pd-cat-snippet);
+
+	--ease-out: var(--pd-ease-out);
+	--ease-in: var(--pd-ease-in);
+	--ease-in-out: var(--pd-ease-in-out);
+}
 
 @layer base {
+	* {
+		@apply border-border outline-ring/50;
+	}
+
 	html,
 	body {
 		height: 100%;
@@ -15,8 +161,11 @@
 	}
 
 	body {
-		font-family: var(--font-body);
+		@apply bg-background text-foreground;
+		font-family: var(--pd-font);
 		font-feature-settings: 'tnum' 1;
+		/* Ligatures off in UI chrome; CodeBlock turns them back on. */
+		font-variant-ligatures: none;
 	}
 
 	h1,
@@ -24,8 +173,13 @@
 	h3,
 	h4,
 	.font-display {
-		font-family: var(--font-display);
-		letter-spacing: -0.01em;
+		letter-spacing: -0.02em;
+	}
+
+	pre,
+	code,
+	.hljs {
+		font-variant-ligatures: normal;
 	}
 
 	/* Cegah iOS Safari zoom saat fokus ke input (harus >= 16px). */
@@ -39,9 +193,8 @@
 
 	/* Fokus-visible yang konsisten untuk semua elemen interaktif — muncul instan, tidak dianimasikan. */
 	:where(a, button, [role='button'], input, select, textarea, summary):focus-visible {
-		outline: 2px solid var(--color-focus);
+		outline: 2px solid var(--pd-focus);
 		outline-offset: 2px;
-		border-radius: 0;
 		transition: none;
 	}
 
@@ -57,75 +210,78 @@
 	}
 }
 
-@layer components {
-	/* Chip/tag — border 1px, tanpa radius, mono uppercase (§12.5). */
-	.chip {
-		@apply inline-flex items-center gap-1 border border-base-300 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-base-content/70;
-	}
-	.chip.chip-active {
-		@apply border-base-content bg-base-content text-base-100;
-	}
+/* ---- Shared helpers (used by both migrated and legacy pages) ---- */
 
-	/* Skip link untuk pengguna keyboard/screen reader. */
-	.skip-link {
-		@apply sr-only fixed left-2 top-2 z-[100] bg-primary px-3 py-2 text-sm font-semibold text-primary-content;
-	}
-	.skip-link:focus,
-	.skip-link:focus-visible {
-		@apply not-sr-only;
-	}
-
-	/* Target sentuh minimum 44x44 (WCAG 2.5.5). */
-	.tap-target {
-		min-height: 44px;
-		min-width: 44px;
-	}
-
-	/* Penanda kategori/status kecil — satu-satunya elemen yang boleh rounded-full (§12.4). */
-	.cat-dot {
-		display: inline-block;
-		width: 0.4rem;
-		height: 0.4rem;
-		border-radius: 999px;
-		background: currentColor;
-		flex-shrink: 0;
-	}
-
-	/* Label mono uppercase — heading section, meta, badge status (§12.3). */
-	.label-mono {
-		@apply font-mono text-[10px] uppercase tracking-widest text-base-content/60;
-	}
-
-	/* Kartu "blackboard" — permukaan matte + border zinc (§12.5). */
-	.blackboard {
-		@apply border border-base-300 bg-base-200 p-6;
-	}
-
-	/* Blok header halaman: H1 + subtitle mono di kiri, aksi di kanan, garis di bawah (§12.4). */
-	.page-header {
-		@apply flex flex-wrap items-end justify-between gap-3 border-b border-base-300 pb-4;
-	}
-
-	/* Tombol primer brutalist: bg putih, teks hitam, mono uppercase (§12.5). */
-	.btn-brutal {
-		@apply btn btn-primary rounded-none border-none font-mono text-xs uppercase tracking-widest hover:bg-base-content/80;
-	}
-
-	/* Tombol sekunder/ikon brutalist: transparan + border zinc (§12.5). */
-	.btn-brutal-ghost {
-		@apply btn btn-ghost rounded-none border border-base-300 font-mono text-xs uppercase tracking-widest hover:border-base-content/40 hover:bg-base-300;
+@utility chip {
+	@apply border-border text-ink-2 inline-flex items-center gap-1 rounded-sm border px-2 py-0.5 text-xs;
+	&.chip-active {
+		@apply border-primary bg-primary text-primary-foreground;
 	}
 }
 
-/* Syntax highlighting monokrom (§12.5) — hierarki lewat weight/italic/opacity,
-   bukan hue. Menggantikan tema highlight.js berwarna (github-dark). */
+@utility skip-link {
+	@apply bg-primary text-primary-foreground sr-only fixed top-2 left-2 z-100 rounded-md px-3 py-2 text-sm font-semibold;
+	&:focus,
+	&:focus-visible {
+		@apply not-sr-only;
+	}
+}
+
+/* Target sentuh minimum 44x44 (WCAG 2.5.5). */
+@utility tap-target {
+	min-height: 44px;
+	min-width: 44px;
+}
+
+/* Penanda kategori/status kecil. */
+@utility cat-dot {
+	display: inline-block;
+	width: 0.4rem;
+	height: 0.4rem;
+	border-radius: 999px;
+	background: currentColor;
+	flex-shrink: 0;
+}
+
+/* Eyebrow label — section headings, meta, status. */
+@utility label-mono {
+	@apply text-muted-foreground text-[11px] font-medium tracking-wider uppercase;
+}
+
+/* Panel surface (legacy name kept so unmigrated pages pick up the new look). */
+@utility blackboard {
+	@apply border-border bg-card rounded-lg border p-6;
+}
+
+@utility page-header {
+	@apply border-border flex flex-wrap items-end justify-between gap-3 border-b pb-4;
+}
+
+/* Legacy button helpers — restyled to the new CTA voice (no uppercase). */
+@utility btn-brutal {
+	@apply btn btn-primary text-sm font-medium;
+}
+
+@utility btn-brutal-ghost {
+	@apply btn btn-ghost border-border border text-sm font-medium;
+}
+
+@utility safe-bottom {
+	padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility safe-top {
+	padding-top: env(safe-area-inset-top);
+}
+
+/* Syntax highlighting — hierarchy via weight/opacity plus the accent for keywords. */
 .hljs-mono .hljs-keyword,
 .hljs-mono .hljs-built_in,
 .hljs-mono .hljs-title,
 .hljs-mono .hljs-title.function_,
 .hljs-mono .hljs-title.class_,
 .hljs-mono .hljs-literal {
-	color: var(--color-ink);
+	color: var(--pd-accent);
 	font-weight: 600;
 }
 .hljs-mono .hljs-string,
@@ -133,52 +289,44 @@
 .hljs-mono .hljs-attribute,
 .hljs-mono .hljs-number,
 .hljs-mono .hljs-symbol {
-	color: var(--color-ink-2);
+	color: var(--pd-ink-2);
 }
 .hljs-mono .hljs-comment,
 .hljs-mono .hljs-quote {
-	color: var(--color-muted);
+	color: var(--pd-muted);
 	font-style: italic;
 }
 .hljs-mono .hljs-tag,
 .hljs-mono .hljs-name,
 .hljs-mono .hljs-selector-tag {
-	color: var(--color-ink);
+	color: var(--pd-ink);
 }
 
-/* Diagram Mermaid (pele) — variabel tema dipetakan ke token Brutalist Dark. */
+/* Diagram Mermaid (pele) — variabel tema dipetakan ke token. */
 .pele {
-	--pele-bg: var(--color-paper-2);
-	--pele-fg: var(--color-ink);
-	--pele-muted: var(--color-ink-2);
-	--pele-line: var(--color-ink-2);
-	--pele-surface: var(--color-paper-3);
-	--pele-surface-alt: var(--color-paper-4);
-	--pele-border: var(--color-rule-2);
-	--pele-accent: var(--color-ink);
-	--pele-critical: var(--color-danger);
-	--pele-error: var(--color-danger);
-	--pele-font: var(--font-body);
-	--pele-font-mono: var(--font-mono);
-	--pele-radius: 0;
+	--pele-bg: var(--pd-paper-2);
+	--pele-fg: var(--pd-ink);
+	--pele-muted: var(--pd-ink-2);
+	--pele-line: var(--pd-ink-2);
+	--pele-surface: var(--pd-paper-3);
+	--pele-surface-alt: var(--pd-paper-4);
+	--pele-border: var(--pd-rule-2);
+	--pele-accent: var(--pd-accent);
+	--pele-critical: var(--pd-danger);
+	--pele-error: var(--pd-danger);
+	--pele-font: var(--pd-font);
+	--pele-font-mono: var(--pd-font);
+	--pele-radius: 6px;
 }
 .mermaid-diagram {
 	overflow: auto;
-	border: 1px solid var(--color-rule);
-	background: var(--color-paper-2);
-	padding: var(--space-xs);
+	border: 1px solid var(--pd-rule);
+	border-radius: var(--pd-radius-box);
+	background: var(--pd-paper-2);
+	padding: var(--pd-space-xs);
 }
 /* Tombol zoom pele default 24px (inline style) — naikkan ke target sentuh 44x44. */
 .mermaid-diagram :is(.pele-zoom-in, .pele-zoom-out, .pele-zoom-reset) {
 	width: 44px !important;
 	height: 44px !important;
-}
-
-@layer utilities {
-	.safe-bottom {
-		padding-bottom: env(safe-area-inset-bottom);
-	}
-	.safe-top {
-		padding-top: env(safe-area-inset-top);
-	}
 }

@@ -66,16 +66,16 @@ tokens, and adapt their content to this app as listed below. Do not re-run
   action expects, error message from `form`). The block is the view only.
 - Strip what does not apply to a single-user app: "Sign up" link, social /
   OAuth login buttons, and "Forgot password" (no reset flow exists).
-- Left column on `--color-paper`; the wordmark (`◆ Dashboard`) replaces the
+- Left column on `--pd-paper`; the wordmark (`◆ Dashboard`) replaces the
   block's placeholder logo.
 - Right cover panel: drop the block's placeholder photo. Use a quiet
-  token-only panel instead — `--color-chrome` fill with a `--color-rule` left
+  token-only panel instead — `--pd-chrome` fill with a `--pd-rule` left
   border and a subtle gradient down the palette (`--ink-black` →
   `--black`); no stock imagery, no illustration, no marketing copy. If an
   image is ever added it must be a self-hosted asset, darkened to sit in the
   palette.
 - Form enters with the `Transition` motion wrapper (fade + 8px slide-y,
-  `--dur-med`); the cover panel does not animate.
+  `--pd-dur-med`); the cover panel does not animate.
 
 ### Admin dashboard — `dashboard-01`
 
@@ -84,7 +84,7 @@ tokens, and adapt their content to this app as listed below. Do not re-run
   content inset. Unauthenticated routes (`/login`) render without the shell.
 - Sidebar nav groups replace the old top-nav links (catalog types, spends,
   bills, tasks / kanban / boards, vault, tools, archive). Lucide icon + label per
-  item, active route highlighted with `--color-accent`. Sidebar footer holds
+  item, active route highlighted with `--pd-accent`. Sidebar footer holds
   the user menu (email + logout). Collapses to icon rail on desktop, `Sheet`
   on mobile — both provided by the block.
 - The `/` overview uses the block's content parts: section cards (stat tiles) →
@@ -132,64 +132,68 @@ shell). No marketing pages, no content pages.
 
 ### Semantic tokens
 
-Pages and components reference these, never the raw palette names.
+Pages and components reference these, never the raw palette names. All
+semantic tokens carry the `--pd-` prefix so they never collide with
+shadcn-svelte's own variables (`--accent`, Tailwind's `--color-*` namespace) or
+daisyUI 5's (`--color-accent`, `--radius-box`). In markup prefer the Tailwind
+utilities generated from the shadcn mapping (`bg-card`, `text-muted-foreground`,
+`border-border`) plus the extra ones exposed in `app.css` (`bg-well`,
+`bg-chrome`, `text-ink-2`, `text-cat-note`, …).
 
 ```css
 :root {
-	--color-paper: var(--ink-black-2); /* app background */
-	--color-paper-2: var(--shadow-grey-2); /* cards, sidebar panels */
-	--color-paper-3: var(--shadow-grey); /* hover surfaces, popovers, dropdowns */
-	--color-paper-4: var(--space-indigo-2); /* modals, dialogs, raised layers */
-	--color-well: var(--ink-black-3); /* inputs, code blocks, inset areas */
-	--color-chrome: var(--ink-black); /* nav bar, footer */
-	--color-overlay: var(--onyx); /* dialog/sheet backdrop, used at ~80% alpha */
-	--color-chart-well: var(--black); /* chart plot background */
-	--color-shadow: var(--black-2); /* shadow colour (sparingly — borders first) */
+	--pd-paper: var(--ink-black-2); /* app background */
+	--pd-paper-2: var(--shadow-grey-2); /* cards, sidebar panels */
+	--pd-paper-3: var(--shadow-grey); /* hover surfaces, popovers, dropdowns */
+	--pd-paper-4: var(--space-indigo-2); /* modals, dialogs, raised layers */
+	--pd-well: var(--ink-black-3); /* inputs, code blocks, inset areas */
+	--pd-chrome: var(--ink-black); /* nav bar, footer */
+	--pd-overlay: var(--onyx); /* dialog/sheet backdrop, used at ~80% alpha */
+	--pd-chart-well: var(--black); /* chart plot background */
+	--pd-shadow: var(--black-2); /* shadow colour (sparingly — borders first) */
 
-	--color-rule: var(--space-indigo); /* borders / dividers */
-	--color-rule-2: var(--space-indigo-2); /* subtler dividers */
+	--pd-rule: var(--space-indigo); /* borders / dividers */
+	--pd-rule-2: var(--space-indigo-2); /* subtler dividers */
 
-	--color-ink: oklch(94% 0.01 265); /* primary text */
-	--color-ink-2: oklch(76% 0.014 265); /* secondary text */
-	--color-muted: oklch(62% 0.016 265); /* de-emphasised text */
+	--pd-ink: oklch(94% 0.01 265); /* primary text */
+	--pd-ink-2: oklch(76% 0.014 265); /* secondary text */
+	--pd-muted: oklch(62% 0.016 265); /* de-emphasised text */
 
-	--color-accent: oklch(72% 0.15 227); /* primary interactive — cool sky-blue, brand-carried */
-	--color-accent-ink: var(--ink-black-2); /* text on accent fill (accent L>50 → dark ink) */
-	--color-focus: oklch(78% 0.19 227);
+	--pd-accent: oklch(72% 0.15 227); /* primary interactive — cool sky-blue, brand-carried */
+	--pd-accent-ink: var(--ink-black-2); /* text on accent fill (accent L>50 → dark ink) */
+	--pd-focus: oklch(78% 0.19 227);
 
 	/* Functional status — not decorative. Kept low-footprint, used only for
 	   state (trend arrows, pins, delete, alerts), never as page-wide fills. */
-	--color-success: oklch(74% 0.15 152);
-	--color-warning: oklch(80% 0.15 80);
-	--color-danger: oklch(68% 0.18 25);
+	--pd-success: oklch(74% 0.15 152);
+	--pd-warning: oklch(80% 0.15 80);
+	--pd-danger: oklch(68% 0.18 25);
 
 	/* Category taxonomy — functional, not decorative. Small dots/badges only. */
-	--color-cat-bookmark: oklch(74% 0.13 152);
-	--color-cat-note: oklch(80% 0.13 80);
-	--color-cat-snippet: oklch(74% 0.12 245);
+	--pd-cat-bookmark: oklch(74% 0.13 152);
+	--pd-cat-note: oklch(80% 0.13 80);
+	--pd-cat-snippet: oklch(74% 0.12 245);
 
-	--font-display: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
-	--font-body: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
-	--font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+	--pd-font: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-	--space-3xs: 0.25rem;
-	--space-2xs: 0.5rem;
-	--space-xs: 0.75rem;
-	--space-sm: 1rem;
-	--space-md: 1.5rem;
-	--space-lg: 2rem;
-	--space-xl: 3rem;
-	--space-2xl: 4.5rem;
+	--pd-space-3xs: 0.25rem;
+	--pd-space-2xs: 0.5rem;
+	--pd-space-xs: 0.75rem;
+	--pd-space-sm: 1rem;
+	--pd-space-md: 1.5rem;
+	--pd-space-lg: 2rem;
+	--pd-space-xl: 3rem;
+	--pd-space-2xl: 4.5rem;
 
-	--ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-	--ease-in: cubic-bezier(0.7, 0, 0.84, 0);
-	--ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-	--dur-short: 160ms;
-	--dur-med: 220ms;
+	--pd-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+	--pd-ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+	--pd-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+	--pd-dur-short: 160ms;
+	--pd-dur-med: 220ms;
 
-	--radius-box: 0.625rem; /* 10px — cards, panels */
-	--radius-btn: 0.5rem; /* 8px — buttons, inputs */
-	--radius-badge: 0.375rem; /* 6px — badges de-pilled, read as data tags not bubbles */
+	--pd-radius-box: 0.625rem; /* 10px — cards, panels */
+	--pd-radius-btn: 0.5rem; /* 8px — buttons, inputs */
+	--pd-radius-badge: 0.375rem; /* 6px — badges de-pilled, read as data tags not bubbles */
 }
 ```
 
@@ -232,7 +236,7 @@ free).
   self-hosted, replaces Geist / Geist Mono. Ligatures off in UI chrome
   (`font-variant-ligatures: none`), on inside code blocks.
 - Display: weight 600–700 (section labels, stat numbers, page titles)
-- Body: weight 400; secondary/meta text 400 in `--color-ink-2`
+- Body: weight 400; secondary/meta text 400 in `--pd-ink-2`
 - Code / numerics: weight 400–500 (snippets, amounts, dates, timestamps)
 - Display tracking: -0.02em on headings, normal on body
 - Monospace runs ~15–20% wider than the old sans: step body down one size
@@ -243,7 +247,7 @@ free).
 ## Spacing
 
 Tailwind's default scale already is a 4pt scale — kept as-is in markup
-(`gap-2`, `p-3`, etc.). Named `--space-*` tokens above exist for portability,
+(`gap-2`, `p-3`, etc.). Named `--pd-space-*` tokens above exist for portability,
 not to force a markup rewrite.
 
 ## Motion
@@ -258,9 +262,9 @@ not to force a markup rewrite.
     list first renders or is re-filtered.
   - `AnimatedNumber` — tween for spend totals and stat numbers when they change.
   - `InView` — allowed only for chart entrance; never for regular content.
-- Easings: `--ease-out` for enter, `--ease-in` for exit, `--ease-in-out` for
-  layout/panel moves. Durations `--dur-short` (hover, press, small) and
-  `--dur-med` (overlays, panels). Nothing over 300ms.
+- Easings: `--pd-ease-out` for enter, `--pd-ease-in` for exit, `--pd-ease-in-out` for
+  layout/panel moves. Durations `--pd-dur-short` (hover, press, small) and
+  `--pd-dur-med` (overlays, panels). Nothing over 300ms.
 - Properties: `opacity` and `transform` only — no animating height/width/colour
   of large surfaces.
 - No bouncy springs, no click-scale on buttons — a press that "boings" reads
@@ -277,7 +281,7 @@ not to force a markup rewrite.
 - Silent success on save (existing flash/Toast pattern kept, rebuilt on
   shadcn-svelte's Sonner toast, restyled to tokens).
 - Copy-to-clipboard on snippets: brief inline confirmation (existing pattern kept).
-- `:focus-visible` uses `--color-focus`, 2px ring, shows instantly, never animated in.
+- `:focus-visible` uses `--pd-focus`, 2px ring, shows instantly, never animated in.
 
 ## Icon / emoji discipline
 
@@ -293,11 +297,11 @@ not to force a markup rewrite.
 
 ## CTA voice
 
-- Primary: shadcn `Button` default variant → filled `--color-accent`,
-  `--radius-btn`, no uppercase transform, no click-scale.
-- Secondary / ghost: `outline` (bordered `--color-rule`) or `ghost` variant,
+- Primary: shadcn `Button` default variant → filled `--pd-accent`,
+  `--pd-radius-btn`, no uppercase transform, no click-scale.
+- Secondary / ghost: `outline` (bordered `--pd-rule`) or `ghost` variant,
   same radius.
-- Destructive (archive delete): `outline` styled with `--color-danger`,
+- Destructive (archive delete): `outline` styled with `--pd-danger`,
   confirmed through a shadcn `AlertDialog` (replaces the native `confirm()`).
 
 ## Nav and footer
@@ -306,14 +310,14 @@ not to force a markup rewrite.
   top nav — the app now has too many destinations for inline links. Wordmark at
   the top of the sidebar; site header holds the page title, `SidebarTrigger`
   and the Ctrl+K command palette trigger. Sidebar and header on
-  `--color-chrome`, hairline `--color-rule` borders, no emoji, no blur.
+  `--pd-chrome`, hairline `--pd-rule` borders, no emoji, no blur.
 - **Footer:** Ft2 inline single line — already the shape in place. Restyled only.
 
 ## Per-page allowances
 
 - All pages are app pages: **no enrichment**, function carries the page.
 - Charts (`SpendChart`, `MonthlySpendChart`) restyled to the token palette
-  (`--chart-*`, plot on `--color-chart-well`) — no change to their data logic.
+  (`--chart-*`, plot on `--pd-chart-well`) — no change to their data logic.
 
 ## What pages MUST share
 

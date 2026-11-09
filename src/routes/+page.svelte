@@ -53,9 +53,9 @@
 		badge: string;
 		rows: ItemRow[];
 	}> = $derived([
-		{ key: 'bookmark', label: 'Bookmark', dot: 'text-[--color-cat-bookmark]', badge: 'badge-outline', rows: bookmarks },
-		{ key: 'note', label: 'Note', dot: 'text-[--color-cat-note]', badge: 'badge-outline', rows: notes },
-		{ key: 'snippet', label: 'Snippet', dot: 'text-[--color-cat-snippet]', badge: 'badge-outline', rows: snippets }
+		{ key: 'bookmark', label: 'Bookmark', dot: 'text-cat-bookmark', badge: 'badge-outline', rows: bookmarks },
+		{ key: 'note', label: 'Note', dot: 'text-cat-note', badge: 'badge-outline', rows: notes },
+		{ key: 'snippet', label: 'Snippet', dot: 'text-cat-snippet', badge: 'badge-outline', rows: snippets }
 	]);
 
 	const shownSections = $derived(
@@ -88,17 +88,17 @@
 			<div class="mb-1 font-semibold opacity-80">Total item</div>
 			<div class="flex justify-between gap-2">
 				<span class="flex items-center gap-1.5"
-					><span class="cat-dot text-[--color-cat-bookmark]" aria-hidden="true"></span>Bookmark</span
+					><span class="cat-dot text-cat-bookmark" aria-hidden="true"></span>Bookmark</span
 				><span class="font-mono tabular-nums">{bookmarks.length}</span>
 			</div>
 			<div class="flex justify-between gap-2">
 				<span class="flex items-center gap-1.5"
-					><span class="cat-dot text-[--color-cat-note]" aria-hidden="true"></span>Note</span
+					><span class="cat-dot text-cat-note" aria-hidden="true"></span>Note</span
 				><span class="font-mono tabular-nums">{notes.length}</span>
 			</div>
 			<div class="flex justify-between gap-2">
 				<span class="flex items-center gap-1.5"
-					><span class="cat-dot text-[--color-cat-snippet]" aria-hidden="true"></span>Snippet</span
+					><span class="cat-dot text-cat-snippet" aria-hidden="true"></span>Snippet</span
 				><span class="font-mono tabular-nums">{snippets.length}</span>
 			</div>
 			<div class="divider my-1"></div>

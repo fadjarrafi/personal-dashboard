@@ -1,9 +1,11 @@
 import { sveltekit } from '@sveltejs/kit/vite';
+import tailwindcss from '@tailwindcss/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [
+		tailwindcss(),
 		sveltekit(),
 		SvelteKitPWA({
 			registerType: 'autoUpdate',
@@ -14,8 +16,8 @@ export default defineConfig({
 				name: 'Personal Dashboard',
 				short_name: 'Dashboard',
 				description: 'Bookmarks, notes, and snippets — capture fast, find fast.',
-				theme_color: '#000000',
-				background_color: '#000000',
+				theme_color: '#12141d',
+				background_color: '#12141d',
 				display: 'standalone',
 				start_url: '/',
 				scope: '/',
