@@ -15,8 +15,8 @@ function loadPele(): Promise<Pele> {
 // images: false so a diagram can't trigger outbound network requests.
 const PELE_OPTIONS: MountOptions = {
 	images: false,
-	fontFamily: "'Geist Variable', ui-sans-serif, system-ui, sans-serif",
-	fontFamilyMono: "'Geist Mono Variable', ui-monospace, monospace",
+	fontFamily: "'JetBrains Mono Variable', ui-monospace, monospace",
+	fontFamilyMono: "'JetBrains Mono Variable', ui-monospace, monospace",
 	zoom: 'auto'
 };
 

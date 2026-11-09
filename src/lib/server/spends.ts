@@ -97,21 +97,15 @@ export function createSpend(userId: number, input: UpsertSpendInput): number {
 	return Number(result.lastInsertRowid);
 }
 
-export function updateSpend(
-	userId: number,
-	id: number,
-	input: Partial<UpsertSpendInput>
-): boolean {
+export function updateSpend(userId: number, id: number, input: Partial<UpsertSpendInput>): boolean {
 	const existing = getSpend(userId, id);
 	if (!existing) return false;
 	db.update(spends)
 		.set({
 			amount: input.amount ?? existing.amount,
 			currency: input.currency ?? existing.currency,
-			category:
-				input.category === undefined ? existing.category : normalizeText(input.category),
-			merchant:
-				input.merchant === undefined ? existing.merchant : normalizeText(input.merchant),
+			category: input.category === undefined ? existing.category : normalizeText(input.category),
+			merchant: input.merchant === undefined ? existing.merchant : normalizeText(input.merchant),
 			note: input.note === undefined ? existing.note : normalizeText(input.note),
 			method: input.method === undefined ? existing.method : normalizeText(input.method),
 			refId: input.refId === undefined ? existing.refId : normalizeText(input.refId),
@@ -124,7 +118,9 @@ export function updateSpend(
 }
 
 export function deleteSpend(userId: number, id: number) {
-	db.delete(spends).where(and(eq(spends.id, id), eq(spends.userId, userId))).run();
+	db.delete(spends)
+		.where(and(eq(spends.id, id), eq(spends.userId, userId)))
+		.run();
 }
 
 export interface SpendSummary {
@@ -209,7 +205,9 @@ export function getDailyTotals(
 	const start = new Date(from);
 	const end = new Date(to);
 	const result: Array<{ date: string; total: number }> = [];
-	const cursor = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
+	const cursor = new Date(
+		Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate())
+	);
 	const stop = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate()));
 	while (cursor < stop) {
 		const key = cursor.toISOString().slice(0, 10);

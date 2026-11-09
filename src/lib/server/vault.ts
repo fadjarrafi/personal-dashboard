@@ -140,12 +140,18 @@ export function searchNotes(query: string, limit = 100): VaultNoteSummary[] {
 
 	function walk(relPath: string): void {
 		const abs = safeResolve(relPath);
-		const entries = readdirSync(abs, { withFileTypes: true }).filter((e) => !isIgnoredEntry(e.name));
+		const entries = readdirSync(abs, { withFileTypes: true }).filter(
+			(e) => !isIgnoredEntry(e.name)
+		);
 		for (const e of entries) {
 			const childRel = relPath ? `${relPath}/${e.name}` : e.name;
 			if (e.isDirectory()) {
 				walk(childRel);
-			} else if (e.isFile() && e.name.toLowerCase().endsWith('.md') && childRel.toLowerCase().includes(q)) {
+			} else if (
+				e.isFile() &&
+				e.name.toLowerCase().endsWith('.md') &&
+				childRel.toLowerCase().includes(q)
+			) {
 				results.push(readNoteSummary(join(abs, e.name), childRel));
 			}
 		}
@@ -211,7 +217,11 @@ export function createNote(input: CreateNoteInput): string {
 		created: new Date().toISOString(),
 		tags: input.tags ?? []
 	};
-	writeFileSync(safeResolve(relPath), matter.stringify(input.body, frontmatter, MATTER_OPTS), 'utf8');
+	writeFileSync(
+		safeResolve(relPath),
+		matter.stringify(input.body, frontmatter, MATTER_OPTS),
+		'utf8'
+	);
 	triggerPush();
 	return relPath;
 }
@@ -257,7 +267,9 @@ export function syncTasksFromFile(): void {
 				.where(eq(vaultTasks.id, existing.id))
 				.run();
 		} else {
-			db.insert(vaultTasks).values({ text, done: done ? 1 : 0, position, createdAt: now, updatedAt: now }).run();
+			db.insert(vaultTasks)
+				.values({ text, done: done ? 1 : 0, position, createdAt: now, updatedAt: now })
+				.run();
 		}
 		position += 1;
 	}
@@ -273,9 +285,12 @@ function writeTasksFile(): void {
 	const rows = listTasks();
 	const abs = tasksFileAbsPath();
 	mkdirSync(dirname(abs), { recursive: true });
-	const body = ['# Dashboard Tasks', '', ...rows.map((r) => `- [${r.done ? 'x' : ' '}] ${r.text}`), ''].join(
-		'\n'
-	);
+	const body = [
+		'# Dashboard Tasks',
+		'',
+		...rows.map((r) => `- [${r.done ? 'x' : ' '}] ${r.text}`),
+		''
+	].join('\n');
 	writeFileSync(abs, body, 'utf8');
 	triggerPush();
 }
@@ -293,7 +308,11 @@ export function toggleTask(id: number): void {
 export function addTask(text: string): void {
 	const trimmed = text.trim();
 	if (!trimmed) return;
-	const maxPosition = db.select().from(vaultTasks).all().reduce((m, r) => Math.max(m, r.position), -1);
+	const maxPosition = db
+		.select()
+		.from(vaultTasks)
+		.all()
+		.reduce((m, r) => Math.max(m, r.position), -1);
 	const now = new Date().toISOString();
 	db.insert(vaultTasks)
 		.values({ text: trimmed, done: 0, position: maxPosition + 1, createdAt: now, updatedAt: now })

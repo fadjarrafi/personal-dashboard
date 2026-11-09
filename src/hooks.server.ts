@@ -38,7 +38,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 		}
 	}
 
-	const isPublic = PUBLIC_PATHS.has(path) || path.startsWith('/manifest') || path.startsWith('/icons');
+	const isPublic =
+		PUBLIC_PATHS.has(path) || path.startsWith('/manifest') || path.startsWith('/icons');
 
 	if (!user && !isPublic) {
 		throw redirect(303, `/login?next=${encodeURIComponent(path)}`);

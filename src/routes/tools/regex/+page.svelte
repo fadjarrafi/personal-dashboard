@@ -1,5 +1,10 @@
 <script lang="ts">
 	import ToolHeader from '$lib/components/tools/ToolHeader.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import { Toggle } from '$lib/components/ui/toggle/index.js';
 
 	const FLAGS = [
 		['g', 'global'],
@@ -58,51 +63,58 @@
 
 <div class="space-y-4">
 	<div class="flex flex-wrap items-end gap-3">
-		<label class="form-control min-w-0 flex-1">
-			<div class="label py-1"><span class="label-mono">Pattern</span></div>
-			<div class="flex items-center border border-base-300 bg-base-100 font-mono">
-				<span class="px-2 opacity-50">/</span>
+		<div class="grid min-w-0 flex-1 gap-1.5">
+			<Label for="regex-pattern" class="label-mono">Pattern</Label>
+			<div
+				class="border-input bg-well focus-within:border-ring focus-within:ring-ring/50 flex h-9 items-center rounded-md border font-mono focus-within:ring-3"
+			>
+				<span class="text-muted-foreground px-2">/</span>
 				<input
-					class="input input-ghost min-w-0 flex-1 rounded-none px-0 font-mono focus:outline-none"
+					id="regex-pattern"
+					class="min-w-0 flex-1 bg-transparent text-sm outline-none focus-visible:outline-none"
 					bind:value={pattern}
 					spellcheck="false"
 					aria-label="Regex pattern"
 				/>
-				<span class="px-2 opacity-50">/{flags}</span>
+				<span class="text-muted-foreground px-2">/{flags}</span>
 			</div>
-		</label>
-		<div class="join" role="group" aria-label="Flag">
-			{#each FLAGS as [f, title]}
-				<button
-					type="button"
-					class="btn join-item btn-sm rounded-none font-mono {flags.includes(f) ? 'btn-active' : ''}"
-					aria-pressed={flags.includes(f)}
+		</div>
+		<div class="flex gap-1" role="group" aria-label="Flag">
+			{#each FLAGS as [f, title] (f)}
+				<Toggle
+					variant="outline"
+					size="sm"
+					class="font-mono"
+					pressed={flags.includes(f)}
+					onPressedChange={() => toggleFlag(f)}
 					{title}
-					onclick={() => toggleFlag(f)}>{f}</button
+					aria-label={title}>{f}</Toggle
 				>
 			{/each}
 		</div>
 	</div>
 
 	{#if 'error' in result}
-		<div role="alert" class="alert alert-error rounded-none text-sm">{result.error}</div>
+		<p role="alert" class="border-destructive/40 text-destructive rounded-md border p-3 text-sm">
+			{result.error}
+		</p>
 	{/if}
 
 	<div class="grid gap-4 lg:grid-cols-2">
 		<section class="space-y-2">
 			<span class="label-mono">Test text</span>
-			<textarea
-				class="textarea textarea-bordered h-56 w-full font-mono text-xs"
+			<Textarea
+				class="bg-well h-56 font-mono text-xs"
 				bind:value={text}
 				spellcheck="false"
 				aria-label="Test text"
-			></textarea>
+			/>
 			<div
-				class="max-h-56 overflow-auto whitespace-pre-wrap break-all border border-base-300 bg-black p-3 font-mono text-xs"
+				class="bg-well max-h-56 overflow-auto rounded-md border p-3 font-mono text-xs break-all whitespace-pre-wrap"
 				aria-label="Highlighted result"
 			>
-				{#each segments as seg}{#if seg.hit}<mark class="bg-primary/40 text-base-content"
-							>{seg.text}</mark
+				{#each segments as seg, i (i)}{#if seg.hit}<mark
+							class="bg-primary/35 text-foreground rounded-xs">{seg.text}</mark
 						>{:else}{seg.text}{/if}{/each}
 			</div>
 		</section>
@@ -113,20 +125,20 @@
 			</span>
 			{#if 'matches' in result}
 				<ol class="max-h-[30rem] space-y-2 overflow-auto" role="list">
-					{#each result.matches as m, i}
-						<li class="border border-base-300 p-2 text-xs">
+					{#each result.matches as m, i (i)}
+						<li class="bg-card rounded-md border p-2 text-xs">
 							<div class="flex justify-between gap-2">
-								<code class="break-all font-mono">{m[0] || '(empty)'}</code>
-								<span class="shrink-0 opacity-50">#{i + 1} @ {m.index}</span>
+								<code class="font-mono break-all">{m[0] || '(empty)'}</code>
+								<span class="text-muted-foreground shrink-0">#{i + 1} @ {m.index}</span>
 							</div>
 							{#if m.length > 1 || m.groups}
-								<dl class="mt-1 grid grid-cols-[auto_1fr] gap-x-3 font-mono opacity-80">
-									{#each m.slice(1) as g, gi}
-										<dt class="opacity-60">${gi + 1}</dt>
+								<dl class="mt-1 grid grid-cols-[auto_1fr] gap-x-3 font-mono">
+									{#each m.slice(1) as g, gi (gi)}
+										<dt class="text-muted-foreground">${gi + 1}</dt>
 										<dd class="break-all">{g ?? 'undefined'}</dd>
 									{/each}
-									{#each Object.entries(m.groups ?? {}) as [name, g]}
-										<dt class="opacity-60">&lt;{name}&gt;</dt>
+									{#each Object.entries(m.groups ?? {}) as [name, g] (name)}
+										<dt class="text-muted-foreground">&lt;{name}&gt;</dt>
 										<dd class="break-all">{g ?? 'undefined'}</dd>
 									{/each}
 								</dl>

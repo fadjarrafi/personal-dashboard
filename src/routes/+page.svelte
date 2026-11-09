@@ -3,6 +3,15 @@
 	import CaptureForm from '$lib/components/CaptureForm.svelte';
 	import ItemTable from '$lib/components/ItemTable.svelte';
 	import ItemDetailModal from '$lib/components/ItemDetailModal.svelte';
+	import SectionCards from '$lib/components/section-cards.svelte';
+	import ChartAreaInteractive from '$lib/components/chart-area-interactive.svelte';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import { Switch } from '$lib/components/ui/switch/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import Plus from '@lucide/svelte/icons/plus';
+	import Search from '@lucide/svelte/icons/search';
 	import type { ItemRow, ItemType } from '$lib/server/items';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -38,7 +47,8 @@
 		const buckets = Array.from(byTag.entries())
 			.sort(([a], [b]) => a.localeCompare(b))
 			.map(([tag, tagRows]) => ({ key: tag, label: `#${tag}`, rows: tagRows }));
-		if (untagged.length > 0) buckets.push({ key: '__untagged__', label: 'Untagged', rows: untagged });
+		if (untagged.length > 0)
+			buckets.push({ key: '__untagged__', label: 'Untagged', rows: untagged });
 		return buckets;
 	}
 
@@ -50,12 +60,11 @@
 		key: ItemType;
 		label: string;
 		dot: string;
-		badge: string;
 		rows: ItemRow[];
 	}> = $derived([
-		{ key: 'bookmark', label: 'Bookmark', dot: 'text-[--color-cat-bookmark]', badge: 'badge-outline', rows: bookmarks },
-		{ key: 'note', label: 'Note', dot: 'text-[--color-cat-note]', badge: 'badge-outline', rows: notes },
-		{ key: 'snippet', label: 'Snippet', dot: 'text-[--color-cat-snippet]', badge: 'badge-outline', rows: snippets }
+		{ key: 'bookmark', label: 'Bookmark', dot: 'text-cat-bookmark', rows: bookmarks },
+		{ key: 'note', label: 'Note', dot: 'text-cat-note', rows: notes },
+		{ key: 'snippet', label: 'Snippet', dot: 'text-cat-snippet', rows: snippets }
 	]);
 
 	const shownSections = $derived(
@@ -70,40 +79,30 @@
 	}
 </script>
 
+{#if data.overview}
+	<!-- Overview — dashboard-01 block parts (docs/design.md §Blocks → Admin dashboard). -->
+	<div class="mb-6 space-y-4 lg:mb-8">
+		<SectionCards
+			spend={data.overview.spend}
+			items={{ bookmark: bookmarks.length, note: notes.length, snippet: snippets.length }}
+			bills={data.overview.bills}
+			tasks={data.overview.tasks}
+		/>
+		<ChartAreaInteractive daily={data.overview.daily} />
+	</div>
+{/if}
+
 <div class="grid gap-4 sm:gap-6 lg:grid-cols-[380px_1fr]">
-	<!-- Desktop: kolom capture setinggi viewport (top-4 + jarak bawah 1rem) supaya
+	<!-- Desktop: kolom capture setinggi viewport dikurangi header sticky, supaya
 	     textarea bisa melar; di mobile/PWA tetap tinggi natural. -->
 	<aside
-		class="order-2 space-y-3 lg:order-1 lg:sticky lg:top-4 lg:flex lg:h-[calc(100dvh-2rem)] lg:flex-col lg:self-start"
+		class="order-2 space-y-3 lg:sticky lg:top-[calc(var(--header-height)+1rem)] lg:order-1 lg:flex lg:h-[calc(100dvh-var(--header-height)-2rem)] lg:flex-col lg:self-start"
 	>
-		<div class="flex items-center justify-between px-1">
-			<h2 class="text-xs font-semibold uppercase tracking-wider opacity-60">Add new</h2>
-		</div>
+		<h2 class="label-mono px-1">Add new</h2>
 		<CaptureForm tags={data.tags} />
 		{#if form && 'error' in form && form.error}
-			<div role="alert" class="alert alert-error py-2 text-sm">{form.error}</div>
+			<p role="alert" class="text-destructive text-sm">{form.error}</p>
 		{/if}
-
-		<div class="rounded-box border border-base-300 bg-base-200/40 p-3 text-xs opacity-70">
-			<div class="mb-1 font-semibold opacity-80">Total item</div>
-			<div class="flex justify-between gap-2">
-				<span class="flex items-center gap-1.5"
-					><span class="cat-dot text-[--color-cat-bookmark]" aria-hidden="true"></span>Bookmark</span
-				><span class="font-mono tabular-nums">{bookmarks.length}</span>
-			</div>
-			<div class="flex justify-between gap-2">
-				<span class="flex items-center gap-1.5"
-					><span class="cat-dot text-[--color-cat-note]" aria-hidden="true"></span>Note</span
-				><span class="font-mono tabular-nums">{notes.length}</span>
-			</div>
-			<div class="flex justify-between gap-2">
-				<span class="flex items-center gap-1.5"
-					><span class="cat-dot text-[--color-cat-snippet]" aria-hidden="true"></span>Snippet</span
-				><span class="font-mono tabular-nums">{snippets.length}</span>
-			</div>
-			<div class="divider my-1"></div>
-			<a class="link link-hover" href="/export">Export JSON →</a>
-		</div>
 	</aside>
 
 	<section class="order-1 min-w-0 space-y-4 sm:space-y-6 lg:order-2">
@@ -111,9 +110,9 @@
 			{#if data.filters.type}<input type="hidden" name="type" value={data.filters.type} />{/if}
 			{#if data.filters.tag}<input type="hidden" name="tag" value={data.filters.tag} />{/if}
 			<label for="global-search" class="sr-only">Search items</label>
-			<input
+			<Input
 				id="global-search"
-				class="input input-bordered w-full min-w-0 flex-1"
+				class="min-w-0 flex-1"
 				name="q"
 				bind:value={q}
 				placeholder="Search title, content, or URL…"
@@ -121,50 +120,56 @@
 				enterkeyhint="search"
 			/>
 			<div class="flex w-full gap-2 sm:w-auto">
-				<button class="btn btn-primary flex-1 sm:flex-none" type="submit">Search</button>
+				<Button class="flex-1 sm:flex-none" type="submit"><Search />Search</Button>
 				{#if data.filters.q}
-					<a
-						class="btn btn-ghost flex-1 sm:flex-none"
+					<Button
+						variant="ghost"
+						class="flex-1 sm:flex-none"
 						href="/?{data.filters.type ? `type=${data.filters.type}` : ''}"
 					>
 						Reset
-					</a>
+					</Button>
 				{/if}
 			</div>
 		</form>
 
 		{#if data.filters.tag}
-			<div class="text-sm opacity-70">
-				Tag filter: <span class="badge badge-neutral">#{data.filters.tag}</span>
-				<a class="link ml-2" href="/">clear</a>
+			<div class="text-muted-foreground flex items-center gap-2 text-sm">
+				Tag filter: <Badge variant="secondary">#{data.filters.tag}</Badge>
+				<a class="text-primary underline-offset-4 hover:underline" href="/">clear</a>
 			</div>
 		{/if}
 
 		{#each shownSections as section (section.key)}
 			<div>
 				<header class="mb-2 flex items-center justify-between px-1">
-					<h3 class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider">
+					<h3 class="flex items-center gap-2 text-sm font-semibold">
 						<span class="cat-dot {section.dot}" aria-hidden="true"></span>
 						<span>{section.label}</span>
-						<span class="badge {section.badge} badge-sm">{section.rows.length}</span>
+						<Badge variant="outline" class="tabular-nums">{section.rows.length}</Badge>
 					</h3>
 					{#if !data.filters.type}
-						<a class="link link-hover text-xs opacity-60" href="/?type={section.key}">
+						<a
+							class="text-muted-foreground hover:text-foreground text-xs"
+							href="/?type={section.key}"
+						>
 							Filter →
 						</a>
 					{:else}
-						<label class="flex cursor-pointer items-center gap-2 text-xs opacity-70">
-							<span>Group by tag</span>
-							<input type="checkbox" class="toggle toggle-xs" bind:checked={groupByTag} />
-						</label>
+						<div class="flex items-center gap-2">
+							<Label for="group-by-tag" class="text-muted-foreground text-xs font-normal">
+								Group by tag
+							</Label>
+							<Switch id="group-by-tag" bind:checked={groupByTag} />
+						</div>
 					{/if}
 				</header>
 
 				{#if data.filters.type && groupByTag}
 					{#each bucketByTag(section.rows) as bucket (bucket.key)}
 						<div class="mb-3">
-							<h4 class="mb-1.5 px-1 text-xs font-semibold opacity-70">
-								{bucket.label} <span class="opacity-50">({bucket.rows.length})</span>
+							<h4 class="text-muted-foreground mb-1.5 px-1 text-xs font-semibold">
+								{bucket.label} <span class="opacity-60">({bucket.rows.length})</span>
 							</h4>
 							<ItemTable items={bucket.rows} onRowClick={selectItem} />
 						</div>
@@ -185,12 +190,12 @@
 
 <ItemDetailModal item={selected} tags={data.tags} onClose={closeModal} />
 
-<a
+<Button
 	href="#capture-form"
-	class="btn btn-primary btn-square btn-lg fixed bottom-5 right-5 z-40 lg:hidden"
+	size="icon-lg"
+	class="fixed right-5 bottom-[calc(1.25rem+env(safe-area-inset-bottom))] z-40 size-14 rounded-full shadow-lg lg:hidden"
 	aria-label="Add new"
 	title="Add new"
-	style="padding-bottom: env(safe-area-inset-bottom);"
 >
-	<span class="text-2xl leading-none">+</span>
-</a>
+	<Plus class="size-6" />
+</Button>

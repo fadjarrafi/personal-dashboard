@@ -1,5 +1,14 @@
 <script lang="ts">
 	import type { ItemRow } from '$lib/server/items';
+	import Star from '@lucide/svelte/icons/star';
+	import Pin from '@lucide/svelte/icons/pin';
+	import PinOff from '@lucide/svelte/icons/pin-off';
+	import Copy from '@lucide/svelte/icons/copy';
+	import Check from '@lucide/svelte/icons/check';
+	import ExternalLink from '@lucide/svelte/icons/external-link';
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { AnimatedGroup } from '$lib/components/motion';
 
 	let {
 		items,
@@ -52,16 +61,16 @@
 </script>
 
 {#if items.length === 0}
-	<p class="rounded-box border border-dashed border-base-300 p-4 text-center text-xs opacity-60">
+	<p class="text-muted-foreground rounded-lg border border-dashed p-4 text-center text-xs">
 		{emptyText}
 	</p>
 {:else}
-	<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+	<AnimatedGroup class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
 		{#each shown as item (item.id)}
 			<div
 				role="button"
 				tabindex="0"
-				class="flex flex-col rounded-box border border-base-300 bg-base-200/40 p-3 text-left transition hover:bg-base-300/40 active:bg-base-300"
+				class="bg-card hover:bg-accent/60 hover:border-ring/40 flex flex-col rounded-lg border p-3 text-left transition-colors duration-150"
 				onclick={() => onRowClick(item)}
 				onkeydown={(e) => onCardKeydown(e, item)}
 				aria-label={item.title ?? item.url ?? 'Item'}
@@ -71,7 +80,7 @@
 						src={item.previewImageUrl}
 						alt=""
 						loading="lazy"
-						class="mb-2 h-28 w-full rounded-box object-cover"
+						class="mb-2 h-28 w-full rounded-md object-cover"
 						onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
 					/>
 				{/if}
@@ -90,16 +99,16 @@
 						{#if item.title}
 							<div class="truncate text-sm font-medium">{item.title}</div>
 						{:else if item.url}
-							<div class="truncate text-sm text-primary">{item.url}</div>
+							<div class="text-primary truncate text-sm">{item.url}</div>
 						{/if}
 					</div>
 					{#if item.pinned}
-						<span class="shrink-0 text-base-content" aria-label="Pinned" title="Pinned">★</span>
+						<Star class="text-primary size-4 shrink-0 fill-current" aria-label="Pinned" />
 					{/if}
 				</div>
 
 				{#if item.body}
-					<p class="mb-2 line-clamp-3 flex-1 text-xs opacity-70 {item.type === 'snippet' ? 'font-mono' : ''}">
+					<p class="text-muted-foreground mb-2 line-clamp-3 flex-1 text-xs">
 						{preview(item)}
 					</p>
 				{:else}
@@ -108,56 +117,62 @@
 
 				{#if item.tags.length > 0}
 					<div class="mb-2 flex flex-wrap gap-1">
-						{#each item.tags.slice(0, 3) as tag}
-							<a
-								class="badge badge-outline badge-sm"
+						{#each item.tags.slice(0, 3) as tag (tag)}
+							<Badge
+								variant="outline"
 								href="/?tag={encodeURIComponent(tag)}"
-								onclick={(e) => e.stopPropagation()}
+								onclick={(e: MouseEvent) => e.stopPropagation()}
 							>
 								#{tag}
-							</a>
+							</Badge>
 						{/each}
 						{#if item.tags.length > 3}
-							<span class="badge badge-ghost badge-sm">+{item.tags.length - 3}</span>
+							<Badge variant="secondary">+{item.tags.length - 3}</Badge>
 						{/if}
 					</div>
 				{/if}
 
-				<div class="mt-auto flex items-center justify-between gap-2 border-t border-base-300 pt-2">
-					<time class="font-mono text-[10px] opacity-50">{shortDate(item.updatedAt)}</time>
+				<div class="mt-auto flex items-center justify-between gap-2 border-t pt-2">
+					<time class="text-muted-foreground text-[11px]">{shortDate(item.updatedAt)}</time>
 					<div class="flex flex-wrap justify-end gap-1">
 						{#if item.type === 'snippet' && item.body}
-							<button
-								type="button"
-								class="btn btn-ghost btn-xs tap-target"
-								onclick={(e) => copy(e, item)}
+							<Button
+								variant="ghost"
+								size="sm"
+								class="tap-target"
+								onclick={(e: MouseEvent) => copy(e, item)}
 								aria-label="Copy snippet"
 							>
-								{copiedId === item.id ? '✓ Copied' : 'Copy'}
-							</button>
+								{#if copiedId === item.id}<Check />Copied{:else}<Copy />Copy{/if}
+							</Button>
 						{/if}
 						{#if item.type === 'bookmark' && item.url}
-							<a
-								class="btn btn-ghost btn-xs tap-target"
+							<Button
+								variant="ghost"
+								size="sm"
+								class="tap-target"
 								href={item.url}
 								target="_blank"
 								rel="noopener noreferrer"
 								aria-label="Open in new tab"
-								onclick={(e) => e.stopPropagation()}
+								onclick={(e: MouseEvent) => e.stopPropagation()}
 							>
-								Open ↗
-							</a>
+								<ExternalLink />Open
+							</Button>
 						{/if}
 						<form method="post" action="/?/togglePin">
 							<input type="hidden" name="id" value={item.id} />
-							<button
-								class="btn btn-ghost btn-xs tap-target"
+							<Button
+								variant="ghost"
+								size="icon-sm"
+								class="tap-target"
 								type="submit"
 								aria-label={item.pinned ? 'Unpin' : 'Pin'}
-								onclick={(e) => e.stopPropagation()}
+								title={item.pinned ? 'Unpin' : 'Pin'}
+								onclick={(e: MouseEvent) => e.stopPropagation()}
 							>
-								{item.pinned ? '☆' : '★'}
-							</button>
+								{#if item.pinned}<PinOff />{:else}<Pin />{/if}
+							</Button>
 						</form>
 					</div>
 				</div>
@@ -167,11 +182,11 @@
 		{#if hiddenCount > 0 && moreHref}
 			<a
 				href={moreHref}
-				class="flex min-h-[8rem] flex-col items-center justify-center gap-1 rounded-box border border-dashed border-base-300 p-3 text-center text-sm opacity-70 transition hover:bg-base-300/40 hover:opacity-100"
+				class="text-muted-foreground hover:bg-accent/60 hover:text-foreground flex min-h-[8rem] flex-col items-center justify-center gap-1 rounded-lg border border-dashed p-3 text-center text-sm transition-colors"
 			>
-				<span class="font-mono text-lg tabular-nums">+{hiddenCount}</span>
+				<span class="text-lg tabular-nums">+{hiddenCount}</span>
 				<span>View all →</span>
 			</a>
 		{/if}
-	</div>
+	</AnimatedGroup>
 {/if}

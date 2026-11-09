@@ -1,5 +1,9 @@
 <script lang="ts">
 	import { dndzone } from 'svelte-dnd-action';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import Plus from '@lucide/svelte/icons/plus';
 	import { invalidateAll } from '$app/navigation';
 	import type { ActionData, PageData } from './$types';
 	import KanbanCard from '$lib/components/KanbanCard.svelte';
@@ -60,22 +64,16 @@
 </script>
 
 <div class="space-y-4">
-	<header class="flex items-center justify-between px-1">
-		<h1 class="text-lg font-semibold sm:text-xl">Kanban Board</h1>
-	</header>
-
 	{#if form && 'error' in form && form.error}
-		<div role="alert" class="alert alert-error py-2 text-sm">{form.error}</div>
+		<p role="alert" class="text-destructive text-sm">{form.error}</p>
 	{/if}
 
 	<div class="grid gap-3 sm:gap-4 md:grid-cols-3">
 		{#each COLUMNS as col (col.status)}
-			<section class="flex min-w-0 flex-col rounded-box border border-base-300 bg-base-200/40 p-2 sm:p-3">
+			<section class="bg-well flex min-w-0 flex-col rounded-lg border p-2 sm:p-3">
 				<div class="mb-2 flex items-center justify-between px-1">
-					<h2 class="text-xs font-semibold uppercase tracking-wider opacity-70">
-						{col.label}
-					</h2>
-					<span class="badge badge-ghost badge-sm">{listFor(col.status).length}</span>
+					<h2 class="label-mono">{col.label}</h2>
+					<Badge variant="secondary" class="tabular-nums">{listFor(col.status).length}</Badge>
 				</div>
 
 				<ul
@@ -93,14 +91,16 @@
 
 				<form method="post" action="?/create" class="mt-2 flex gap-1">
 					<input type="hidden" name="status" value={col.status} />
-					<input
-						class="input input-sm input-bordered w-full"
+					<Input
+						class="h-8"
 						name="title"
-						placeholder="+ Add task"
+						placeholder="Add task"
+						aria-label="New task in {col.label}"
 						autocomplete="off"
 						required
 					/>
-					<button class="btn btn-sm btn-primary" type="submit">+</button>
+					<Button size="icon-sm" type="submit" aria-label="Add task to {col.label}"><Plus /></Button
+					>
 				</form>
 			</section>
 		{/each}

@@ -1,5 +1,14 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { NativeSelect } from '$lib/components/ui/native-select/index.js';
+	import { Spinner } from '$lib/components/ui/spinner/index.js';
+	import Download from '@lucide/svelte/icons/download';
+	import X from '@lucide/svelte/icons/x';
+	import ImageUp from '@lucide/svelte/icons/image-up';
+	import RefreshCw from '@lucide/svelte/icons/refresh-cw';
 	import ToolHeader from '$lib/components/tools/ToolHeader.svelte';
 
 	type OutFormat = 'same' | 'png' | 'jpeg' | 'webp';
@@ -168,59 +177,62 @@
 
 <div class="space-y-4">
 	<div class="flex flex-wrap items-end gap-4">
-		<label class="form-control">
-			<div class="label py-1"><span class="label-text text-xs">Format output</span></div>
-			<select class="select select-bordered select-sm" bind:value={format}>
+		<div class="grid gap-1.5">
+			<Label for="img-format" class="text-xs">Format output</Label>
+			<NativeSelect id="img-format" size="sm" bind:value={format}>
 				<option value="same">Same as original</option>
 				<option value="png">PNG (quantized)</option>
 				<option value="jpeg">JPEG</option>
 				<option value="webp">WebP</option>
-			</select>
-		</label>
+			</NativeSelect>
+		</div>
 		{#if format !== 'jpeg' && format !== 'webp'}
-			<label class="form-control w-48">
-				<div class="label py-1">
-					<span class="label-text text-xs">PNG colors: {colors === 0 ? 'lossless' : colors}</span>
-				</div>
-				<select class="select select-bordered select-sm" bind:value={colors}>
+			<div class="grid w-48 gap-1.5">
+				<Label for="img-colors" class="text-xs"
+					>PNG colors: {colors === 0 ? 'lossless' : colors}</Label
+				>
+				<NativeSelect id="img-colors" size="sm" class="w-full" bind:value={colors}>
 					<option value={256}>256 (recommended)</option>
 					<option value={128}>128</option>
 					<option value={64}>64</option>
 					<option value={32}>32</option>
 					<option value={0}>Lossless (re-deflate only)</option>
-				</select>
-			</label>
+				</NativeSelect>
+			</div>
 		{/if}
 		{#if format !== 'png'}
-			<label class="form-control w-48">
-				<div class="label py-1">
-					<span class="label-text text-xs">JPEG/WebP quality: {quality}</span>
-				</div>
-				<input type="range" min="30" max="100" class="range range-sm" bind:value={quality} />
-			</label>
+			<div class="grid w-48 gap-1.5">
+				<Label for="img-quality" class="text-xs">JPEG/WebP quality: {quality}</Label>
+				<input
+					id="img-quality"
+					type="range"
+					min="30"
+					max="100"
+					class="accent-primary h-8 w-full cursor-pointer"
+					bind:value={quality}
+				/>
+			</div>
 		{/if}
-		<label class="form-control w-36">
-			<div class="label py-1"><span class="label-text text-xs">Max width (px)</span></div>
-			<input
-				class="input input-bordered input-sm"
+		<div class="grid w-36 gap-1.5">
+			<Label for="img-width" class="text-xs">Max width (px)</Label>
+			<Input
+				id="img-width"
+				class="h-8"
 				type="number"
 				min="1"
 				placeholder="Original"
 				bind:value={maxWidth}
 			/>
-		</label>
-		<button
-			type="button"
-			class="btn-brutal-ghost btn-sm"
-			onclick={recompressAll}
-			disabled={!jobs.length}>Re-apply</button
-		>
+		</div>
+		<Button variant="outline" size="sm" onclick={recompressAll} disabled={!jobs.length}>
+			<RefreshCw />Re-apply
+		</Button>
 	</div>
 
 	<label
-		class="flex min-h-36 cursor-pointer flex-col items-center justify-center gap-1 border border-dashed p-6 text-center text-sm {dragging
+		class="flex min-h-36 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed p-6 text-center text-sm transition-colors {dragging
 			? 'border-primary bg-primary/10'
-			: 'border-base-300'}"
+			: 'hover:border-ring/50'}"
 		ondragover={(e) => {
 			e.preventDefault();
 			dragging = true;
@@ -228,8 +240,11 @@
 		ondragleave={() => (dragging = false)}
 		ondrop={onDrop}
 	>
+		<ImageUp class="text-muted-foreground mb-1 size-6" aria-hidden="true" />
 		<span>Drag images here, click to choose, or paste (Ctrl+V)</span>
-		<span class="text-xs opacity-60">Processed in the browser — images are not uploaded to the server.</span>
+		<span class="text-muted-foreground text-xs">
+			Processed in the browser — images are not uploaded to the server.
+		</span>
 		<input
 			type="file"
 			accept="image/png,image/jpeg,image/webp"
@@ -251,22 +266,22 @@
 					({totals.before ? Math.round((1 - totals.after / totals.before) * 100) : 0}% saved)
 				</strong>
 			</span>
-			<button type="button" class="btn-brutal btn-sm" onclick={downloadAll}>Download all</button>
+			<Button size="sm" onclick={downloadAll}><Download />Download all</Button>
 		</div>
 	{/if}
 
 	<ul class="space-y-2" role="list">
 		{#each jobs as job (job.id)}
 			{@const saved = job.out ? 1 - job.out.size / job.file.size : 0}
-			<li class="flex flex-wrap items-center gap-3 border border-base-300 p-2">
+			<li class="bg-card flex flex-wrap items-center gap-3 rounded-lg border p-2">
 				<img
 					src={job.outUrl ?? job.srcUrl}
 					alt=""
-					class="h-16 w-16 shrink-0 border border-base-300 bg-[repeating-conic-gradient(#333_0_25%,#222_0_50%)] bg-[length:12px_12px] object-contain"
+					class="h-16 w-16 shrink-0 rounded-sm border bg-[repeating-conic-gradient(#333_0_25%,#222_0_50%)] bg-[length:12px_12px] object-contain"
 				/>
 				<div class="min-w-0 flex-1 text-sm">
 					<div class="truncate font-medium" title={job.file.name}>{job.file.name}</div>
-					<div class="text-xs opacity-70">
+					<div class="text-muted-foreground text-xs">
 						{fmtSize(job.file.size)}
 						{#if job.status === 'done' && job.out}
 							→ {fmtSize(job.out.size)}
@@ -275,29 +290,31 @@
 							</span>
 							· {job.width}×{job.height}
 						{:else if job.status === 'working' || job.status === 'pending'}
-							<span class="loading loading-dots loading-xs align-middle"></span>
+							<Spinner class="inline-block size-3 align-middle" />
 						{:else if job.status === 'error'}
-							<span class="text-error">{job.error}</span>
+							<span class="text-destructive">{job.error}</span>
 						{/if}
 					</div>
 					{#if job.status === 'done' && saved <= 0}
-						<div class="text-xs text-warning">Result is not smaller — keep the original file.</div>
+						<div class="text-warning text-xs">Result is not smaller — keep the original file.</div>
 					{/if}
 				</div>
 				<div class="flex gap-1">
 					{#if job.outUrl}
-						<a
-							class="btn-brutal-ghost btn-sm"
+						<Button
+							variant="outline"
+							size="sm"
 							href={job.outUrl}
 							download={job.outName}
-							aria-label="Download {job.outName}">Download</a
+							aria-label="Download {job.outName}"><Download />Download</Button
 						>
 					{/if}
-					<button
-						type="button"
-						class="btn btn-ghost btn-sm tap-target rounded-none"
+					<Button
+						variant="ghost"
+						size="icon-sm"
+						class="tap-target"
 						onclick={() => remove(job)}
-						aria-label="Remove {job.file.name}">✕</button
+						aria-label="Remove {job.file.name}"><X /></Button
 					>
 				</div>
 			</li>

@@ -49,10 +49,10 @@
 	}
 </script>
 
-<figure class="border border-base-300 bg-base-200 p-3" aria-label="Daily spending chart">
+<figure class="bg-card rounded-lg border p-3" aria-label="Daily spending chart">
 	<figcaption class="mb-2 flex items-baseline justify-between gap-2 text-xs">
-		<span class="font-semibold uppercase tracking-wider opacity-60">Daily spending</span>
-		<span class="opacity-70">
+		<span class="label-mono">Daily spending</span>
+		<span class="text-muted-foreground">
 			{#if active}
 				<span class="tabular-nums">{formatRupiah(active.total)}</span>
 				<span class="ml-1 opacity-50">· {labelDate(active.date)}</span>
@@ -98,12 +98,12 @@
 				height={h}
 				fill="currentColor"
 				class={isToday
-					? 'text-base-content'
+					? 'text-primary'
 					: isActive
-						? 'text-base-content/70'
+						? 'text-primary/70'
 						: isEmpty
-							? 'text-base-content/10'
-							: 'text-base-content/40'}
+							? 'text-foreground/10'
+							: 'text-foreground/35'}
 			/>
 			<!-- Tap-friendly hitbox penuh tinggi -->
 			<rect
@@ -125,7 +125,13 @@
 		{#each data as d, i (d.date + '-today')}
 			{#if d.date === today}
 				{@const x = PAD_X + i * barW + barW / 2}
-				<circle cx={x} cy={H - PAD_BOTTOM + 0.9} r="0.55" fill="currentColor" class="text-primary" />
+				<circle
+					cx={x}
+					cy={H - PAD_BOTTOM + 0.9}
+					r="0.55"
+					fill="currentColor"
+					class="text-primary"
+				/>
 			{/if}
 		{/each}
 
@@ -149,6 +155,6 @@
 	</svg>
 
 	{#if avg === 0}
-		<div class="mt-2 text-center text-xs opacity-60">No spending this month yet.</div>
+		<div class="text-muted-foreground mt-2 text-center text-xs">No spending this month yet.</div>
 	{/if}
 </figure>

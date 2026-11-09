@@ -1,6 +1,13 @@
 <script lang="ts">
 	import type { ActionData, PageData } from './$types';
 	import { formatRupiah } from '$lib/format';
+	import ConfirmAction from '$lib/components/ConfirmAction.svelte';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
+	import Trash2 from '@lucide/svelte/icons/trash-2';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	const spend = $derived(data.spend);
@@ -9,99 +16,79 @@
 	const createdLabel = $derived(new Date(spend.createdAt).toLocaleString('en-GB'));
 </script>
 
-<div class="mx-auto max-w-2xl">
-	<div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+<div class="mx-auto max-w-2xl space-y-4">
+	<div class="flex flex-wrap items-center justify-between gap-2">
 		<h1 class="text-lg font-semibold sm:text-xl">Edit spending</h1>
-		<a class="btn btn-ghost btn-sm tap-target" href="/spends">← Back</a>
+		<Button variant="ghost" size="sm" class="tap-target" href="/spends"><ArrowLeft />Back</Button>
 	</div>
 
-	<div class="mb-4 rounded-box border border-base-300 bg-base-200/40 p-3 text-sm">
-		<div class="text-xs opacity-60">Current amount</div>
-		<div class="font-display text-2xl font-semibold tabular-nums">{formatRupiah(spend.amount)}</div>
-		<div class="mt-1 text-xs opacity-50">Created: {createdLabel}</div>
-	</div>
+	<Card.Root class="gap-1 py-4">
+		<Card.Content class="px-4">
+			<div class="label-mono">Current amount</div>
+			<div class="text-2xl font-semibold tabular-nums">{formatRupiah(spend.amount)}</div>
+			<div class="text-muted-foreground mt-1 text-xs">Created: {createdLabel}</div>
+		</Card.Content>
+	</Card.Root>
 
-	<form method="post" action="?/update" class="space-y-3">
-		<label class="form-control w-full">
-			<div class="label"><span class="label-text">Amount (Rp)</span></div>
-			<input
-				class="input input-bordered w-full"
-				name="amount"
-				inputmode="numeric"
-				value={spend.amount}
-				required
-			/>
-		</label>
+	<form method="post" action="?/update" id="spend-edit" class="space-y-4">
+		<div class="grid gap-1.5">
+			<Label for="amount">Amount (Rp)</Label>
+			<Input id="amount" name="amount" inputmode="numeric" value={spend.amount} required />
+		</div>
 
-		<label class="form-control w-full">
-			<div class="label"><span class="label-text">Date</span></div>
-			<input
-				class="input input-bordered w-full"
-				name="occurred_at"
-				type="date"
-				value={occurredDate}
-				required
-			/>
-		</label>
+		<div class="grid gap-1.5">
+			<Label for="occurred_at">Date</Label>
+			<Input id="occurred_at" name="occurred_at" type="date" value={occurredDate} required />
+		</div>
 
-		<label class="form-control w-full">
-			<div class="label"><span class="label-text">Category</span></div>
-			<input
-				class="input input-bordered w-full"
-				name="category"
-				value={spend.category ?? ''}
-				list="edit-categories"
-			/>
+		<div class="grid gap-1.5">
+			<Label for="category">Category</Label>
+			<Input id="category" name="category" value={spend.category ?? ''} list="edit-categories" />
 			<datalist id="edit-categories">
-				{#each data.categories as c}
+				{#each data.categories as c (c)}
 					<option value={c}></option>
 				{/each}
 			</datalist>
-		</label>
+		</div>
 
-		<label class="form-control w-full">
-			<div class="label"><span class="label-text">Merchant</span></div>
-			<input
-				class="input input-bordered w-full"
-				name="merchant"
-				value={spend.merchant ?? ''}
-			/>
-		</label>
+		<div class="grid gap-1.5">
+			<Label for="merchant">Merchant</Label>
+			<Input id="merchant" name="merchant" value={spend.merchant ?? ''} />
+		</div>
 
-		<label class="form-control w-full">
-			<div class="label"><span class="label-text">Note</span></div>
-			<input class="input input-bordered w-full" name="note" value={spend.note ?? ''} />
-		</label>
+		<div class="grid gap-1.5">
+			<Label for="note">Note</Label>
+			<Input id="note" name="note" value={spend.note ?? ''} />
+		</div>
 
-		<label class="form-control w-full">
-			<div class="label"><span class="label-text">Method</span></div>
-			<input
-				class="input input-bordered w-full"
+		<div class="grid gap-1.5">
+			<Label for="method">Method</Label>
+			<Input
+				id="method"
 				name="method"
 				value={spend.method ?? ''}
 				placeholder="gopay, blu, cash, etc."
 			/>
-		</label>
+		</div>
 
 		{#if form?.error}
-			<div role="alert" class="alert alert-error py-2 text-sm">{form.error}</div>
+			<p role="alert" class="text-destructive text-sm">{form.error}</p>
 		{/if}
-
-		<div class="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-between">
-			<button
-				formaction="?/delete"
-				formmethod="post"
-				class="btn btn-error btn-outline"
-				onclick={(e) => {
-					if (!confirm('Permanently delete this spending entry?')) e.preventDefault();
-				}}
-			>
-				Delete
-			</button>
-			<div class="flex gap-2 sm:justify-end">
-				<a class="btn btn-ghost flex-1 sm:flex-none" href="/spends">Cancel</a>
-				<button class="btn btn-primary flex-1 sm:flex-none" type="submit">Save</button>
-			</div>
-		</div>
 	</form>
+
+	<div class="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-between">
+		<ConfirmAction
+			action="?/delete"
+			title="Delete this spending entry?"
+			description="This permanently removes the entry. It cannot be undone."
+			confirmLabel="Delete"
+			destructive
+		>
+			<Trash2 />Delete
+		</ConfirmAction>
+		<div class="flex gap-2 sm:justify-end">
+			<Button variant="ghost" class="flex-1 sm:flex-none" href="/spends">Cancel</Button>
+			<Button class="flex-1 sm:flex-none" type="submit" form="spend-edit">Save</Button>
+		</div>
+	</div>
 </div>

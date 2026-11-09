@@ -1,5 +1,11 @@
 <script lang="ts">
 	import CopyButton from '$lib/components/CopyButton.svelte';
+	import Segmented from '$lib/components/tools/Segmented.svelte';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
+	import RefreshCw from '@lucide/svelte/icons/refresh-cw';
 	import ToolHeader from '$lib/components/tools/ToolHeader.svelte';
 
 	const VERSIONS = ['v4', 'v7'] as const;
@@ -41,32 +47,23 @@
 
 <div class="space-y-3">
 	<div class="flex flex-wrap items-end gap-3">
-		<div class="join" role="group" aria-label="UUID version">
-			{#each VERSIONS as v}
-				<button
-					type="button"
-					class="btn join-item btn-sm rounded-none {version === v ? 'btn-active' : ''}"
-					aria-pressed={version === v}
-					onclick={() => (version = v)}>{v}</button
-				>
-			{/each}
+		<Segmented bind:value={version} options={VERSIONS} ariaLabel="UUID version" />
+		<div class="grid w-24 gap-1.5">
+			<Label for="uuid-count" class="text-xs">Count</Label>
+			<Input id="uuid-count" class="h-8" type="number" min="1" max="500" bind:value={count} />
 		</div>
-		<label class="form-control w-24">
-			<div class="label py-1"><span class="label-text text-xs">Count</span></div>
-			<input class="input input-bordered input-sm" type="number" min="1" max="500" bind:value={count} />
-		</label>
-		<label class="label cursor-pointer gap-2">
-			<input type="checkbox" class="checkbox checkbox-sm" bind:checked={uppercase} />
-			<span class="label-text text-xs">Uppercase</span>
-		</label>
-		<button type="button" class="btn-brutal btn-sm" onclick={generate}>Regenerate</button>
-		<CopyButton text={joined} label="Copy all" class="btn-brutal-ghost btn-sm" />
+		<div class="flex h-8 items-center gap-2">
+			<Checkbox id="uuid-upper" bind:checked={uppercase} />
+			<Label for="uuid-upper" class="text-xs font-normal">Uppercase</Label>
+		</div>
+		<Button size="sm" onclick={generate}><RefreshCw />Regenerate</Button>
+		<CopyButton text={joined} label="Copy all" variant="outline" size="sm" />
 	</div>
 
-	<ul class="divide-y divide-base-300 border border-base-300" role="list">
+	<ul class="bg-card divide-y rounded-lg border" role="list">
 		{#each ids as id, i (i + id)}
 			<li class="flex items-center justify-between gap-2 px-3 py-1">
-				<code class="break-all font-mono text-xs sm:text-sm">{id}</code>
+				<code class="font-mono text-xs break-all sm:text-sm">{id}</code>
 				<CopyButton text={id} />
 			</li>
 		{/each}

@@ -4,6 +4,21 @@
 	import { LANGUAGES } from '$lib/languages';
 	import CodeBlock from './CodeBlock.svelte';
 	import MermaidDiagram from './MermaidDiagram.svelte';
+	import ConfirmAction from './ConfirmAction.svelte';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
+	import { NativeSelect } from '$lib/components/ui/native-select/index.js';
+	import Star from '@lucide/svelte/icons/star';
+	import Copy from '@lucide/svelte/icons/copy';
+	import Check from '@lucide/svelte/icons/check';
+	import ExternalLink from '@lucide/svelte/icons/external-link';
+	import Archive from '@lucide/svelte/icons/archive';
+	import Pencil from '@lucide/svelte/icons/pencil';
 
 	let {
 		item,
@@ -11,19 +26,11 @@
 		onClose
 	}: { item: ItemRow | null; tags?: string[]; onClose: () => void } = $props();
 
-	let dialog: HTMLDialogElement | undefined;
 	let copied = $state(false);
 	let editing = $state(false);
 	let saving = $state(false);
 
-	$effect(() => {
-		if (!dialog) return;
-		if (item) {
-			if (!dialog.open) dialog.showModal();
-		} else if (dialog.open) {
-			dialog.close();
-		}
-	});
+	const open = $derived(item !== null);
 
 	// Reset ke mode lihat setiap kali item berganti / modal ditutup, supaya
 	// modal tidak "nyangkut" di mode edit saat dibuka lagi untuk item lain.
@@ -48,136 +55,139 @@
 		}
 	}
 
-	const badgeClass = {
-		bookmark: 'badge-outline',
-		note: 'badge-outline',
-		snippet: 'badge-outline'
+	const dotClass = {
+		bookmark: 'text-cat-bookmark',
+		note: 'text-cat-note',
+		snippet: 'text-cat-snippet'
 	} as const;
 </script>
 
-<dialog bind:this={dialog} class="modal modal-bottom sm:modal-middle" onclose={handleClose}>
-	<div
-		class="modal-box max-h-[92vh] w-full max-w-3xl"
+<Dialog.Root
+	{open}
+	onOpenChange={(v) => {
+		if (!v) handleClose();
+	}}
+>
+	<Dialog.Content
+		class="max-h-[92vh] w-full overflow-y-auto sm:max-w-3xl"
 		style="padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));"
 	>
 		{#if item}
-			<header class="mb-4 flex items-start justify-between gap-2">
-				<div class="min-w-0">
-					<div class="mb-1 flex items-center gap-2">
-						<span class="badge {badgeClass[item.type]} badge-sm font-mono uppercase tracking-wide"
-							>{item.type}</span
-						>
-						{#if item.pinned}<span class="text-base-content">★</span>{/if}
-					</div>
-					{#if item.title}
-						<h3 class="text-lg font-semibold break-words">{item.title}</h3>
-					{/if}
-					{#if item.url}
-						<a
-							href={item.url}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="link link-primary break-all text-sm"
-						>
-							{#if item.type === 'bookmark' && item.faviconUrl}
-								<img
-									src={item.faviconUrl}
-									alt=""
-									class="inline-block h-4 w-4 align-text-bottom"
-									onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
-								/>
-							{/if}
-							{item.url}
-						</a>
-					{/if}
+			<Dialog.Header class="min-w-0 pr-8 text-left">
+				<div class="flex items-center gap-2">
+					<Badge variant="outline" class="capitalize">
+						<span class="cat-dot {dotClass[item.type]}" aria-hidden="true"></span>{item.type}
+					</Badge>
+					{#if item.pinned}<Star
+							class="text-primary size-4 fill-current"
+							aria-label="Pinned"
+						/>{/if}
 				</div>
-				<form method="dialog">
-					<button class="btn btn-ghost btn-sm btn-square" aria-label="Close">✕</button>
-				</form>
-			</header>
+				{#if item.title}
+					<Dialog.Title class="text-lg break-words">{item.title}</Dialog.Title>
+				{:else}
+					<Dialog.Title class="sr-only">Item detail</Dialog.Title>
+				{/if}
+				{#if item.url}
+					<a
+						href={item.url}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="text-primary text-sm break-all underline-offset-4 hover:underline"
+					>
+						{#if item.type === 'bookmark' && item.faviconUrl}
+							<img
+								src={item.faviconUrl}
+								alt=""
+								class="inline-block h-4 w-4 align-text-bottom"
+								onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
+							/>
+						{/if}
+						{item.url}
+					</a>
+				{/if}
+			</Dialog.Header>
 
 			{#if !editing}
-				{#if item.type === 'bookmark' && item.previewImageUrl}
-					<img
-						src={item.previewImageUrl}
-						alt=""
-						class="mb-4 max-h-56 w-full rounded-box object-cover"
-						onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
-					/>
-				{/if}
+				<div class="min-w-0 space-y-4">
+					{#if item.type === 'bookmark' && item.previewImageUrl}
+						<img
+							src={item.previewImageUrl}
+							alt=""
+							class="max-h-56 w-full rounded-md object-cover"
+							onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
+						/>
+					{/if}
 
-				{#if item.body}
-					<div class="mb-4">
+					{#if item.body}
 						{#if item.type === 'snippet' && item.language === 'mermaid'}
 							<MermaidDiagram code={item.body} maxHeight="24rem" />
 						{:else if item.type === 'snippet'}
 							<CodeBlock code={item.body} lang={item.language} maxHeight="24rem" />
 						{:else}
-							<div class="border border-base-300 bg-base-200 p-4 text-sm">
-								<p class="whitespace-pre-wrap break-words">{item.body}</p>
+							<div class="bg-well rounded-md border p-4 text-sm">
+								<p class="break-words whitespace-pre-wrap">{item.body}</p>
 							</div>
 						{/if}
-					</div>
-				{/if}
+					{/if}
 
-				{#if item.language}
-					<div class="mb-3 text-xs opacity-70">
-						Language: <span class="font-mono">{item.language}</span>
-					</div>
-				{/if}
+					{#if item.language}
+						<div class="text-muted-foreground text-xs">
+							Language: <span class="text-foreground">{item.language}</span>
+						</div>
+					{/if}
 
-				{#if item.tags.length > 0}
-					<div class="mb-4 flex flex-wrap gap-1">
-						{#each item.tags as tag}
-							<a
-								class="badge badge-outline hover:badge-neutral"
-								href="/?tag={encodeURIComponent(tag)}"
-							>
-								#{tag}
-							</a>
-						{/each}
-					</div>
-				{/if}
+					{#if item.tags.length > 0}
+						<div class="flex flex-wrap gap-1">
+							{#each item.tags as tag (tag)}
+								<Badge variant="outline" href="/?tag={encodeURIComponent(tag)}">#{tag}</Badge>
+							{/each}
+						</div>
+					{/if}
 
-				<div class="mb-4 flex flex-wrap gap-x-6 gap-y-1 text-xs opacity-60">
-					<span>Created: {item.createdAt.slice(0, 16).replace('T', ' ')}</span>
-					<span>Updated: {item.updatedAt.slice(0, 16).replace('T', ' ')}</span>
+					<div class="text-muted-foreground flex flex-wrap gap-x-6 gap-y-1 text-xs">
+						<span>Created: {item.createdAt.slice(0, 16).replace('T', ' ')}</span>
+						<span>Updated: {item.updatedAt.slice(0, 16).replace('T', ' ')}</span>
+					</div>
 				</div>
 
-				<div
-					class="modal-action flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between"
+				<Dialog.Footer
+					class="flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between"
 				>
 					<div class="flex flex-wrap gap-2">
 						{#if item.body}
-							<button type="button" class="btn btn-sm" onclick={copyBody}>
-								{copied ? '✓ Copied' : 'Copy content'}
-							</button>
+							<Button variant="outline" size="sm" onclick={copyBody}>
+								{#if copied}<Check />Copied{:else}<Copy />Copy content{/if}
+							</Button>
 						{/if}
 						{#if item.type === 'bookmark' && item.url}
-							<a class="btn btn-sm" href={item.url} target="_blank" rel="noopener noreferrer">
-								Open ↗
-							</a>
+							<Button
+								variant="outline"
+								size="sm"
+								href={item.url}
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<ExternalLink />Open
+							</Button>
 						{/if}
 					</div>
 
 					<div class="flex flex-wrap gap-2">
-						<form method="post" action="/?/archive">
-							<input type="hidden" name="id" value={item.id} />
-							<button
-								class="btn btn-sm btn-ghost"
-								type="submit"
-								onclick={(e) => {
-									if (!confirm('Archive this item?')) e.preventDefault();
-								}}
-							>
-								Archive
-							</button>
-						</form>
-						<button type="button" class="btn btn-sm btn-primary" onclick={() => (editing = true)}>
-							Edit
-						</button>
+						<ConfirmAction
+							action="/?/archive"
+							fields={{ id: item.id }}
+							title="Archive this item?"
+							description="It moves to Archive, where you can restore or delete it."
+							confirmLabel="Archive"
+							variant="ghost"
+							size="sm"
+						>
+							<Archive />Archive
+						</ConfirmAction>
+						<Button size="sm" onclick={() => (editing = true)}><Pencil />Edit</Button>
 					</div>
-				</div>
+				</Dialog.Footer>
 			{:else}
 				<!-- Edit di tempat, tanpa pindah halaman - form POST ke action route
 				     "/" (dashboard) via use:enhance, jadi tidak reload penuh dan
@@ -185,7 +195,7 @@
 				<form
 					method="post"
 					action="/?/update"
-					class="space-y-3"
+					class="min-w-0 space-y-4"
 					use:enhance={() => {
 						saving = true;
 						return async ({ update, result }) => {
@@ -197,93 +207,74 @@
 				>
 					<input type="hidden" name="id" value={item.id} />
 
-					<label class="form-control w-full">
-						<div class="label py-1"><span class="label-text text-xs">Title</span></div>
-						<input class="input input-bordered w-full" name="title" value={item.title ?? ''} />
-					</label>
+					<div class="grid gap-1.5">
+						<Label for="edit-title">Title</Label>
+						<Input id="edit-title" name="title" value={item.title ?? ''} />
+					</div>
 
 					{#if item.type === 'bookmark'}
-						<label class="form-control w-full">
-							<div class="label py-1"><span class="label-text text-xs">URL</span></div>
-							<input
-								class="input input-bordered w-full"
-								type="url"
-								name="url"
-								value={item.url ?? ''}
-							/>
-						</label>
+						<div class="grid gap-1.5">
+							<Label for="edit-url">URL</Label>
+							<Input id="edit-url" type="url" name="url" value={item.url ?? ''} />
+						</div>
 					{/if}
 
 					{#if item.type === 'snippet'}
-						<label class="form-control w-full">
-							<div class="label py-1"><span class="label-text text-xs">Language</span></div>
-							<select
-								class="select select-bordered w-full"
+						<div class="grid gap-1.5">
+							<Label for="edit-language">Language</Label>
+							<NativeSelect
+								id="edit-language"
+								class="w-full"
 								name="language"
 								value={item.language ?? ''}
 							>
 								<option value="">— choose language (optional) —</option>
-								{#each LANGUAGES as lang}
+								{#each LANGUAGES as lang (lang)}
 									<option value={lang}>{lang}</option>
 								{/each}
-							</select>
-						</label>
+							</NativeSelect>
+						</div>
 					{/if}
 
-					<label class="form-control w-full">
-						<div class="label py-1"><span class="label-text text-xs">Content</span></div>
-						<textarea
-							class="textarea textarea-bordered w-full {item.type === 'snippet'
-								? 'font-mono'
-								: ''}"
+					<div class="grid gap-1.5">
+						<Label for="edit-body">Content</Label>
+						<Textarea
+							id="edit-body"
+							class={item.type === 'snippet' ? 'bg-well font-mono' : ''}
 							name="body"
-							rows="8">{item.body ?? ''}</textarea
-						>
-					</label>
+							rows={8}
+							value={item.body ?? ''}
+						/>
+					</div>
 
-					<label class="form-control w-full">
-						<div class="label py-1"><span class="label-text text-xs">Tags (comma-separated)</span></div>
-						<input
-							class="input input-bordered w-full"
+					<div class="grid gap-1.5">
+						<Label for="edit-tags">Tags (comma-separated)</Label>
+						<Input
+							id="edit-tags"
 							name="tags"
 							value={item.tags.join(', ')}
 							list="modal-known-tags"
 						/>
 						<datalist id="modal-known-tags">
-							{#each tags as t}
+							{#each tags as t (t)}
 								<option value={t}></option>
 							{/each}
 						</datalist>
-					</label>
-
-					<label class="label cursor-pointer justify-start gap-2 py-1">
-						<input
-							type="checkbox"
-							name="pinned"
-							class="checkbox checkbox-primary checkbox-sm"
-							checked={!!item.pinned}
-						/>
-						<span class="label-text text-xs">Pin to top</span>
-					</label>
-
-					<div class="modal-action flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-						<button
-							type="button"
-							class="btn btn-ghost"
-							disabled={saving}
-							onclick={() => (editing = false)}
-						>
-							Cancel
-						</button>
-						<button class="btn btn-primary" type="submit" disabled={saving}>
-							{saving ? 'Saving…' : 'Save'}
-						</button>
 					</div>
+
+					<div class="flex items-center gap-2">
+						<Checkbox id="edit-pinned" name="pinned" checked={!!item.pinned} />
+						<Label for="edit-pinned" class="text-sm font-normal">Pin to top</Label>
+					</div>
+
+					<Dialog.Footer class="flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+						<Button variant="ghost" disabled={saving} onclick={() => (editing = false)}>
+							Cancel
+						</Button>
+						<Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
+					</Dialog.Footer>
 				</form>
 			{/if}
 		{/if}
-	</div>
-	<form method="dialog" class="modal-backdrop">
-		<button aria-label="Close">close</button>
-	</form>
-</dialog>
+	</Dialog.Content>
+</Dialog.Root>

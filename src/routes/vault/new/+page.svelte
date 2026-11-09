@@ -1,5 +1,10 @@
 <script lang="ts">
 	import type { ActionData } from './$types';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 
 	let { form }: { form: ActionData } = $props();
 </script>
@@ -8,38 +13,34 @@
 	<title>New note · Vault</title>
 </svelte:head>
 
-<div class="mx-auto max-w-xl">
-	<a class="btn btn-ghost btn-sm mb-3" href="/vault">← Vault</a>
-	<h1 class="mb-3 font-display text-xl font-semibold">New note</h1>
+<div class="mx-auto max-w-xl space-y-4">
+	<div class="space-y-1">
+		<Button variant="ghost" size="sm" class="-ms-2" href="/vault"><ArrowLeft />Vault</Button>
+		<h1 class="text-xl font-semibold">New note</h1>
+	</div>
 
 	{#if form && 'error' in form && form.error}
-		<div role="alert" class="alert alert-error mb-3 text-sm">{form.error}</div>
+		<p role="alert" class="text-destructive text-sm">{form.error}</p>
 	{/if}
 
-	<form method="post" class="space-y-3">
-		<div>
-			<label class="label" for="title"><span class="label-text">Title</span></label>
-			<input
-				id="title"
-				name="title"
-				type="text"
-				class="input input-bordered w-full"
-				required
-				autofocus
-			/>
+	<form method="post" class="space-y-4">
+		<div class="grid gap-1.5">
+			<Label for="title">Title</Label>
+			<!-- svelte-ignore a11y_autofocus -->
+			<Input id="title" name="title" type="text" required autofocus />
 		</div>
-		<div>
-			<label class="label" for="body"><span class="label-text">Content</span></label>
-			<textarea id="body" name="body" rows="8" class="textarea textarea-bordered w-full"></textarea>
+		<div class="grid gap-1.5">
+			<Label for="body">Content</Label>
+			<Textarea id="body" name="body" rows={8} />
 		</div>
-		<div>
-			<label class="label" for="tags"><span class="label-text">Tags (comma-separated)</span></label>
-			<input id="tags" name="tags" type="text" class="input input-bordered w-full" />
+		<div class="grid gap-1.5">
+			<Label for="tags">Tags (comma-separated)</Label>
+			<Input id="tags" name="tags" type="text" />
 		</div>
-		<button class="btn btn-primary" type="submit">Save to vault</button>
+		<Button type="submit">Save to vault</Button>
 	</form>
-	<p class="mt-3 text-xs opacity-50">
-		Written to <code>Dashboard Sync/</code> then pushed to Google Drive - it will appear in Obsidian
-		after the next sync.
+	<p class="text-muted-foreground text-xs">
+		Written to <code class="text-foreground">Dashboard Sync/</code> then pushed to Google Drive - it will
+		appear in Obsidian after the next sync.
 	</p>
 </div>

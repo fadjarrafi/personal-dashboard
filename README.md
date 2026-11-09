@@ -1,6 +1,6 @@
 # Personal Dashboard
 
-Aplikasi personal untuk *capture cepat* bookmark, fleeting note, dan cheat code/snippet.
+Aplikasi personal untuk _capture cepat_ bookmark, fleeting note, dan cheat code/snippet.
 Lihat [docs/PRD.md](./docs/PRD.md) untuk detail keputusan produk & arsitektur.
 
 ## Tech stack
@@ -120,9 +120,9 @@ terpisah. Kalau perlu dukung browser yang menolak SVG, tambahkan raster
 Semua layar dirancang mobile-first dan sudah dikonfirmasi lewat `svelte-check`:
 
 - **Layout** — di `<lg` navbar berubah jadi tombol hamburger yang membuka **drawer geser dari kiri** (overlay klik-untuk-tutup, `Esc` untuk tutup, auto-close saat pindah route). Berisi bagian Katalog (Semua/Bookmark/Note/Snippet) · Keuangan (Pengeluaran) · Lainnya (Arsip, Export JSON) + Keluar di footer. Di `≥lg` nav inline lengkap dengan separator.
-- **Dashboard** — di mobile, daftar item tampil lebih dulu; form *Tambah baru* pindah ke bawah (masih bisa dijangkau via FAB `+`). Search bar tidak lagi memakai `join` yang overflow.
+- **Dashboard** — di mobile, daftar item tampil lebih dulu; form _Tambah baru_ pindah ke bawah (masih bisa dijangkau via FAB `+`). Search bar tidak lagi memakai `join` yang overflow.
 - **ItemTable & Arsip** — tabel disembunyikan di `<md` dan diganti list kartu yang tap-friendly (keyboard: Enter/Space untuk buka detail).
-- **ItemDetailModal** — jadi *bottom sheet* di HP (`modal-bottom sm:modal-middle`), `max-h: 92vh`, tombol aksi stacking, padding bawah tetap ada + safe-area untuk device dengan home indicator.
+- **ItemDetailModal** — jadi _bottom sheet_ di HP (`modal-bottom sm:modal-middle`), `max-h: 92vh`, tombol aksi stacking, padding bawah tetap ada + safe-area untuk device dengan home indicator.
 - **Form login & edit** — tombol full-width dan stacking di mobile; margin atas login dikurangi.
 
 **Aksesibilitas** yang dijamin global lewat [`src/app.css`](./src/app.css):
@@ -149,7 +149,7 @@ otomatis kalau belum ada transaksi.
 
 ### Share receipt dari HP (Android)
 
-Setelah PWA di-*install* di Android (Chrome → "Install app"), Dashboard akan
+Setelah PWA di-_install_ di Android (Chrome → "Install app"), Dashboard akan
 muncul di share sheet Android. Alur:
 
 1. Selesaikan transaksi di GoPay / blu / Jago / Livin' / e-wallet lain.

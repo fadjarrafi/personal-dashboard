@@ -79,7 +79,12 @@ for (const fixture of FIXTURES) {
 	const e = fixture.expected;
 
 	const checks: Array<{ field: string; pass: boolean; expected: unknown; actual: unknown }> = [
-		{ field: 'amount', pass: result.amount === e.amount, expected: e.amount, actual: result.amount },
+		{
+			field: 'amount',
+			pass: result.amount === e.amount,
+			expected: e.amount,
+			actual: result.amount
+		},
 		{
 			field: 'merchant',
 			pass:
@@ -114,10 +119,14 @@ for (const fixture of FIXTURES) {
 		if (c.pass) {
 			console.log(`${badge} ${c.field.padEnd(10)} ${ANSI.dim(String(c.actual))}`);
 		} else {
-			console.log(`${badge} ${c.field.padEnd(10)} expected ${JSON.stringify(c.expected)}, got ${JSON.stringify(c.actual)}`);
+			console.log(
+				`${badge} ${c.field.padEnd(10)} expected ${JSON.stringify(c.expected)}, got ${JSON.stringify(c.actual)}`
+			);
 		}
 	}
 }
 
-console.log(`\n${ANSI.bold('Ringkasan')}: ${passed}/${total} field cocok (${skipped} fixture dilewati).`);
+console.log(
+	`\n${ANSI.bold('Ringkasan')}: ${passed}/${total} field cocok (${skipped} fixture dilewati).`
+);
 process.exit(passed === total ? 0 : 1);

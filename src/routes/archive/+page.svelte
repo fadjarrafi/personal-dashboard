@@ -1,5 +1,11 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import ConfirmAction from '$lib/components/ConfirmAction.svelte';
+	import * as Table from '$lib/components/ui/table/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
+	import Trash2 from '@lucide/svelte/icons/trash-2';
 
 	let { data }: { data: PageData } = $props();
 
@@ -9,130 +15,112 @@
 	}
 </script>
 
-<div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-	<div class="min-w-0">
-		<h1 class="text-lg font-semibold sm:text-xl">Archive</h1>
-		<p class="text-sm opacity-60">
-			{data.items.length} archived item(s). Permanent deletion is only possible from here.
-		</p>
-	</div>
-	<a class="btn btn-ghost btn-sm tap-target" href="/">← Back</a>
+{#snippet actions(id: number, compact: boolean)}
+	<form method="post" action="?/unarchive">
+		<input type="hidden" name="id" value={id} />
+		<Button
+			variant="ghost"
+			size="sm"
+			class={compact ? '' : 'tap-target'}
+			type="submit"
+			title="Restore"
+		>
+			<RotateCcw />Restore
+		</Button>
+	</form>
+	<ConfirmAction
+		action="?/delete"
+		fields={{ id }}
+		title="Delete permanently?"
+		description="This item is removed for good. It cannot be undone."
+		confirmLabel="Delete"
+		destructive
+		size="sm"
+		class={compact ? '' : 'tap-target'}
+		ariaLabel="Delete permanently"
+	>
+		<Trash2 />Delete
+	</ConfirmAction>
+{/snippet}
+
+<div class="mb-4 px-1">
+	<p class="text-muted-foreground text-sm">
+		{data.items.length} archived item(s). Permanent deletion is only possible from here.
+	</p>
 </div>
 
 {#if data.items.length === 0}
-	<p class="rounded-box border border-dashed border-base-300 p-6 text-center text-sm opacity-60">
+	<p class="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
 		Archive is empty.
 	</p>
 {:else}
 	<!-- Mobile: kartu -->
 	<ul class="space-y-2 md:hidden" role="list">
 		{#each data.items as item (item.id)}
-			<li class="rounded-box border border-base-300 bg-base-200/40 p-3">
+			<li class="bg-card rounded-lg border p-3">
 				<div class="mb-1 flex items-center justify-between gap-2">
-					<span class="badge badge-ghost badge-sm font-mono">{item.type}</span>
-					<time class="text-[10px] opacity-50">
+					<Badge variant="secondary" class="capitalize">{item.type}</Badge>
+					<time class="text-muted-foreground text-[11px]">
 						{(item.archivedAt ?? '').slice(0, 10)}
 					</time>
 				</div>
 				{#if item.title}
 					<div class="truncate text-sm font-medium">{item.title}</div>
 				{:else if item.url}
-					<div class="truncate text-sm text-primary">{item.url}</div>
+					<div class="text-primary truncate text-sm">{item.url}</div>
 				{/if}
 				{#if item.body}
-					<div class="mt-1 line-clamp-2 text-xs opacity-70 {item.type === 'snippet' ? 'font-mono' : ''}">
+					<div class="text-muted-foreground mt-1 line-clamp-2 text-xs">
 						{preview(item.body, item.url)}
 					</div>
 				{/if}
 				<div class="mt-2 flex flex-wrap justify-end gap-1">
-					<form method="post" action="?/unarchive">
-						<input type="hidden" name="id" value={item.id} />
-						<button class="btn btn-ghost btn-xs tap-target" type="submit" aria-label="Restore">
-							↺ Restore
-						</button>
-					</form>
-					<form method="post" action="?/delete">
-						<input type="hidden" name="id" value={item.id} />
-						<button
-							class="btn btn-error btn-outline btn-xs tap-target"
-							type="submit"
-							onclick={(e) => {
-								if (!confirm('Delete permanently? This cannot be undone.')) {
-									e.preventDefault();
-								}
-							}}
-							aria-label="Delete permanently"
-						>
-							Delete
-						</button>
-					</form>
+					{@render actions(item.id, false)}
 				</div>
 			</li>
 		{/each}
 	</ul>
 
 	<!-- Desktop: tabel -->
-	<div class="hidden overflow-x-auto rounded-box border border-base-300 md:block">
-		<table class="table table-sm">
-			<thead>
-				<tr class="text-xs uppercase tracking-wider">
-					<th class="w-24">Type</th>
-					<th>Title / Content</th>
-					<th class="w-40">Archived</th>
-					<th class="w-48 text-right">Actions</th>
-				</tr>
-			</thead>
-			<tbody>
+	<div class="bg-card hidden overflow-hidden rounded-lg border md:block">
+		<Table.Root>
+			<Table.Header>
+				<Table.Row>
+					<Table.Head class="w-24">Type</Table.Head>
+					<Table.Head>Title / Content</Table.Head>
+					<Table.Head class="w-40">Archived</Table.Head>
+					<Table.Head class="w-56 text-right">Actions</Table.Head>
+				</Table.Row>
+			</Table.Header>
+			<Table.Body>
 				{#each data.items as item (item.id)}
-					<tr class="hover">
-						<td>
-							<span class="badge badge-ghost badge-sm font-mono">{item.type}</span>
-						</td>
-						<td class="max-w-0">
+					<Table.Row>
+						<Table.Cell>
+							<Badge variant="secondary" class="capitalize">{item.type}</Badge>
+						</Table.Cell>
+						<Table.Cell class="max-w-0">
 							{#if item.title}
 								<div class="truncate font-medium">{item.title}</div>
 							{:else if item.url}
-								<div class="truncate text-primary">{item.url}</div>
+								<div class="text-primary truncate">{item.url}</div>
 							{/if}
 							{#if item.body}
-								<div
-									class="truncate text-xs opacity-60 {item.type === 'snippet' ? 'font-mono' : ''}"
-								>
+								<div class="text-muted-foreground truncate text-xs">
 									{preview(item.body, item.url)}
 								</div>
 							{/if}
-						</td>
-						<td class="whitespace-nowrap text-xs opacity-60">
+						</Table.Cell>
+						<Table.Cell class="text-muted-foreground text-xs whitespace-nowrap">
 							{(item.archivedAt ?? '').slice(0, 16).replace('T', ' ')}
-						</td>
-						<td>
+						</Table.Cell>
+						<Table.Cell>
 							<div class="flex justify-end gap-1">
-								<form method="post" action="?/unarchive" style="display:inline">
-									<input type="hidden" name="id" value={item.id} />
-									<button class="btn btn-ghost btn-xs" type="submit" title="Restore">
-										↺ Restore
-									</button>
-								</form>
-								<form method="post" action="?/delete" style="display:inline">
-									<input type="hidden" name="id" value={item.id} />
-									<button
-										class="btn btn-error btn-outline btn-xs"
-										type="submit"
-										onclick={(e) => {
-											if (!confirm('Delete permanently? This cannot be undone.')) {
-												e.preventDefault();
-											}
-										}}
-										title="Delete permanently"
-									>
-										Delete
-									</button>
-								</form>
+								{@render actions(item.id, true)}
 							</div>
-						</td>
-					</tr>
+						</Table.Cell>
+					</Table.Row>
 				{/each}
-			</tbody>
-		</table>
+			</Table.Body>
+		</Table.Root>
 	</div>
 {/if}

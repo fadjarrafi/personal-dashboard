@@ -1,8 +1,18 @@
 <script lang="ts">
 	import type { ActionData, PageData } from './$types';
+	import ConfirmAction from '$lib/components/ConfirmAction.svelte';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { NativeSelect } from '$lib/components/ui/native-select/index.js';
+	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
+	import Check from '@lucide/svelte/icons/check';
+	import AlarmClock from '@lucide/svelte/icons/alarm-clock';
+	import Trash2 from '@lucide/svelte/icons/trash-2';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
+	// svelte-ignore state_referenced_locally
 	let recurrence = $state(data.bill.recurrence);
 
 	const categoryLabels: Record<string, string> = {
@@ -22,93 +32,92 @@
 </script>
 
 <div class="mx-auto max-w-lg space-y-4">
-	<header class="px-1">
-		<a href="/bills" class="link text-sm opacity-70">← Back to Bills</a>
-		<h1 class="mt-1 text-lg font-semibold sm:text-xl">{data.bill.title}</h1>
+	<header class="space-y-1 px-1">
+		<Button variant="ghost" size="sm" class="-ms-2" href="/bills"><ArrowLeft />Back to Bills</Button
+		>
+		<h1 class="text-lg font-semibold sm:text-xl">{data.bill.title}</h1>
 	</header>
 
-	<form method="post" action="?/update" class="card space-y-3 border border-base-300 bg-base-200/40 p-4">
-		<label class="form-control w-full">
-			<div class="label py-1"><span class="label-text text-xs">Bill name</span></div>
-			<input class="input input-bordered w-full" name="title" value={data.bill.title} required />
-		</label>
+	<form method="post" action="?/update" class="bg-card space-y-4 rounded-lg border p-4">
+		<div class="grid gap-1.5">
+			<Label for="title">Bill name</Label>
+			<Input id="title" name="title" value={data.bill.title} required />
+		</div>
 
-		<label class="form-control w-full">
-			<div class="label py-1"><span class="label-text text-xs">Amount (Rp)</span></div>
-			<input
-				class="input input-bordered w-full"
-				name="amount"
-				inputmode="numeric"
-				value={data.bill.amount}
-				required
-			/>
-		</label>
+		<div class="grid gap-1.5">
+			<Label for="amount">Amount (Rp)</Label>
+			<Input id="amount" name="amount" inputmode="numeric" value={data.bill.amount} required />
+		</div>
 
-		<label class="form-control w-full">
-			<div class="label py-1"><span class="label-text text-xs">Due date</span></div>
-			<input
-				class="input input-bordered w-full"
+		<div class="grid gap-1.5">
+			<Label for="next_due_at">Due date</Label>
+			<Input
+				id="next_due_at"
 				name="next_due_at"
 				type="date"
 				value={data.bill.nextDueAt.slice(0, 10)}
 				required
 			/>
-		</label>
+		</div>
 
-		<label class="form-control w-full">
-			<div class="label py-1"><span class="label-text text-xs">Category</span></div>
-			<select class="select select-bordered w-full" name="category" value={data.bill.category}>
-				{#each data.categories as c}
+		<div class="grid gap-1.5">
+			<Label for="category">Category</Label>
+			<NativeSelect id="category" class="w-full" name="category" value={data.bill.category}>
+				{#each data.categories as c (c)}
 					<option value={c}>{categoryLabels[c]}</option>
 				{/each}
-			</select>
-		</label>
+			</NativeSelect>
+		</div>
 
-		<label class="form-control w-full">
-			<div class="label py-1"><span class="label-text text-xs">Recurrence</span></div>
-			<select class="select select-bordered w-full" name="recurrence" bind:value={recurrence}>
-				{#each data.recurrences as r}
+		<div class="grid gap-1.5">
+			<Label for="recurrence">Recurrence</Label>
+			<NativeSelect id="recurrence" class="w-full" name="recurrence" bind:value={recurrence}>
+				{#each data.recurrences as r (r)}
 					<option value={r}>{recurrenceLabels[r]}</option>
 				{/each}
-			</select>
-		</label>
+			</NativeSelect>
+		</div>
 
 		{#if recurrence === 'custom_days'}
-			<label class="form-control w-full">
-				<div class="label py-1"><span class="label-text text-xs">Interval (days)</span></div>
-				<input
-					class="input input-bordered w-full"
+			<div class="grid gap-1.5">
+				<Label for="interval_days">Interval (days)</Label>
+				<Input
+					id="interval_days"
 					name="interval_days"
 					type="number"
 					min="1"
 					value={data.bill.intervalDays ?? ''}
 					required
 				/>
-			</label>
+			</div>
 		{/if}
 
-		<button class="btn btn-primary w-full" type="submit">Save changes</button>
+		<Button class="w-full" type="submit">Save changes</Button>
 
 		{#if form && 'error' in form && form.error}
-			<div role="alert" class="alert alert-error py-2 text-sm">{form.error}</div>
+			<p role="alert" class="text-destructive text-sm">{form.error}</p>
 		{/if}
 	</form>
 
 	<div class="flex flex-wrap gap-2">
 		<form method="post" action="?/markPaid">
-			<button class="btn btn-success btn-sm tap-target" type="submit">Mark as paid</button>
+			<Button size="sm" class="tap-target" type="submit"><Check />Mark as paid</Button>
 		</form>
 		<form method="post" action="?/snooze">
-			<button class="btn btn-outline btn-sm tap-target" type="submit">Remind me tomorrow</button>
+			<Button variant="outline" size="sm" class="tap-target" type="submit">
+				<AlarmClock />Remind me tomorrow
+			</Button>
 		</form>
-		<form
-			method="post"
+		<ConfirmAction
 			action="?/delete"
-			onsubmit={(e) => {
-				if (!confirm('Delete this bill?')) e.preventDefault();
-			}}
+			title="Delete this bill?"
+			description="The bill and its reminders are removed. This cannot be undone."
+			confirmLabel="Delete"
+			destructive
+			size="sm"
+			class="tap-target"
 		>
-			<button class="btn btn-error btn-outline btn-sm tap-target" type="submit">Delete</button>
-		</form>
+			<Trash2 />Delete
+		</ConfirmAction>
 	</div>
 </div>

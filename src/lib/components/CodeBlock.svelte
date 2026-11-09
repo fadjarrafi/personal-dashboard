@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { toHljsLang } from '$lib/languages';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import Copy from '@lucide/svelte/icons/copy';
+	import Check from '@lucide/svelte/icons/check';
 
 	let {
 		code,
@@ -38,10 +41,7 @@
 	});
 
 	function escapeHtml(s: string) {
-		return s
-			.replace(/&/g, '&amp;')
-			.replace(/</g, '&lt;')
-			.replace(/>/g, '&gt;');
+		return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 	}
 
 	async function copyCode() {
@@ -55,15 +55,15 @@
 	}
 </script>
 
-<div class="border border-base-300">
-	<div class="flex items-center justify-between border-b border-base-300 bg-base-200 px-3 py-1.5">
+<div class="overflow-hidden rounded-md border">
+	<div class="bg-card flex items-center justify-between border-b px-3 py-1">
 		<span class="label-mono">{lang ?? 'plaintext'}</span>
-		<button type="button" class="btn btn-ghost btn-xs rounded-none" onclick={copyCode}>
-			{copied ? 'Copied' : 'Copy'}
-		</button>
+		<Button variant="ghost" size="xs" onclick={copyCode} aria-label="Copy code">
+			{#if copied}<Check />Copied{:else}<Copy />Copy{/if}
+		</Button>
 	</div>
 	<pre
-		class="hljs-mono overflow-auto bg-black p-3 text-xs leading-relaxed"
+		class="hljs-mono bg-well overflow-auto p-3 text-xs leading-relaxed"
 		style="max-height: {maxHeight}"><code
 			>{#if ready}<!-- eslint-disable-next-line svelte/no-at-html-tags -->{@html html}{:else}{code}{/if}</code
 		></pre>

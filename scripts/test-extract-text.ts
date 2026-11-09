@@ -106,6 +106,8 @@ if (passed === total) {
 	console.log(ANSI.green('Semua parser lulus.'));
 	process.exit(0);
 } else {
-	console.log(ANSI.yellow('Ada field yang gagal — review regex di src/lib/server/receiptExtract.ts'));
+	console.log(
+		ANSI.yellow('Ada field yang gagal — review regex di src/lib/server/receiptExtract.ts')
+	);
 	process.exit(1);
 }

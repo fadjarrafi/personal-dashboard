@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Spinner } from '$lib/components/ui/spinner/index.js';
+	import Bell from '@lucide/svelte/icons/bell';
+	import BellRing from '@lucide/svelte/icons/bell-ring';
 	let { deviceCount }: { deviceCount: number } = $props();
 
-	let status = $state<'idle' | 'working' | 'enabled' | 'unsupported' | 'denied' | 'error'>(
-		'idle'
-	);
+	let status = $state<'idle' | 'working' | 'enabled' | 'unsupported' | 'denied' | 'error'>('idle');
 	let errorMsg = $state('');
 
 	function urlBase64ToUint8Array(base64: string): Uint8Array {
@@ -50,29 +52,30 @@
 
 <div class="space-y-2">
 	{#if status === 'enabled'}
-		<div class="alert alert-success py-2 text-sm">Notifications are enabled on this device.</div>
+		<p class="text-success flex items-center gap-2 text-sm">
+			<BellRing class="size-4" />Notifications are enabled on this device.
+		</p>
 	{:else}
-		<button
-			type="button"
-			class="btn btn-outline btn-sm tap-target w-full"
+		<Button
+			variant="outline"
+			size="sm"
+			class="tap-target w-full"
 			onclick={enable}
 			disabled={status === 'working'}
 		>
-			{status === 'working' ? 'Enabling…' : 'Enable notifications'}
-		</button>
+			{#if status === 'working'}<Spinner />Enabling…{:else}<Bell />Enable notifications{/if}
+		</Button>
 		{#if status === 'unsupported'}
-			<div class="alert alert-warning py-2 text-xs">This browser does not support Web Push.</div>
+			<p class="text-warning text-xs">This browser does not support Web Push.</p>
 		{:else if status === 'denied'}
-			<div class="alert alert-warning py-2 text-xs">
+			<p class="text-warning text-xs">
 				Notification permission denied. Allow it in your browser settings and try again.
-			</div>
+			</p>
 		{:else if status === 'error'}
-			<div class="alert alert-error py-2 text-xs">{errorMsg}</div>
+			<p role="alert" class="text-destructive text-xs">{errorMsg}</p>
 		{/if}
 	{/if}
-	<p class="px-1 text-xs opacity-60">
-		{deviceCount > 0
-			? `${deviceCount} device(s) receiving reminders.`
-			: 'No active devices yet.'}
+	<p class="text-muted-foreground px-1 text-xs">
+		{deviceCount > 0 ? `${deviceCount} device(s) receiving reminders.` : 'No active devices yet.'}
 	</p>
 </div>

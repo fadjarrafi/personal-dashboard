@@ -11,8 +11,43 @@ import {
 	updateItem,
 	type ItemType
 } from '$lib/server/items';
+import { currentMonthRange, getDailyTotals, getSummary } from '$lib/server/spends';
+import { listBills } from '$lib/server/bills';
+import { listTasks } from '$lib/server/tasks';
 
 const TYPES = new Set<ItemType>(['bookmark', 'note', 'snippet']);
+
+const CHART_DAYS = 90;
+
+function loadOverview(userId: number) {
+	const month = currentMonthRange();
+	const summary = getSummary(userId, month.from, month.to, month.prevFrom, month.prevTo);
+
+	const now = new Date();
+	const to = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
+	const from = new Date(
+		now.getFullYear(),
+		now.getMonth(),
+		now.getDate() - (CHART_DAYS - 1)
+	).toISOString();
+	const daily = getDailyTotals(userId, from, to);
+
+	const bills = listBills(userId);
+	const tasks = listTasks({ userId });
+
+	return {
+		spend: { total: summary.total, previousTotal: summary.previousTotal, count: summary.count },
+		bills: {
+			overdue: bills.filter((b) => b.status === 'overdue').length,
+			dueSoon: bills.filter((b) => b.status === 'due_soon').length
+		},
+		tasks: {
+			open: tasks.length,
+			overdue: tasks.filter((t) => t.status === 'overdue').length
+		},
+		daily
+	};
+}
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const user = locals.user!;
@@ -24,7 +59,16 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const items = listItems({ userId: user.id, type, tag, q });
 	const tags = listAllTags();
 
-	return { items, tags, filters: { type: type ?? null, tag: tag ?? null, q: q ?? null } };
+	// Overview (section cards + spend chart, dashboard-01 block) only on the
+	// unfiltered home view — filtered views are pure catalog.
+	const overview = type || tag || q ? null : loadOverview(user.id);
+
+	return {
+		items,
+		tags,
+		overview,
+		filters: { type: type ?? null, tag: tag ?? null, q: q ?? null }
+	};
 };
 
 function parseTags(raw: string | null): string[] {

@@ -2,7 +2,10 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { raw } from './index';
 
-const MIGRATIONS_DIR = new URL('./migrations', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1');
+const MIGRATIONS_DIR = new URL('./migrations', import.meta.url).pathname.replace(
+	/^\/([A-Z]:)/,
+	'$1'
+);
 
 raw.exec(`CREATE TABLE IF NOT EXISTS _migrations (
 	name TEXT PRIMARY KEY,
@@ -10,7 +13,10 @@ raw.exec(`CREATE TABLE IF NOT EXISTS _migrations (
 );`);
 
 const applied = new Set(
-	raw.prepare('SELECT name FROM _migrations').all().map((r) => (r as { name: string }).name)
+	raw
+		.prepare('SELECT name FROM _migrations')
+		.all()
+		.map((r) => (r as { name: string }).name)
 );
 
 const files = readdirSync(MIGRATIONS_DIR)

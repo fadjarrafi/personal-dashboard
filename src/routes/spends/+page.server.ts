@@ -12,7 +12,13 @@ import {
 	parseRupiah
 } from '$lib/server/spends';
 
-function parsePeriod(url: URL): { from: string; to: string; prevFrom: string; prevTo: string; label: string } {
+function parsePeriod(url: URL): {
+	from: string;
+	to: string;
+	prevFrom: string;
+	prevTo: string;
+	label: string;
+} {
 	const monthParam = url.searchParams.get('month'); // format YYYY-MM
 	if (monthParam && /^\d{4}-\d{2}$/.test(monthParam)) {
 		const [y, m] = monthParam.split('-').map(Number);
@@ -108,4 +114,3 @@ export const actions: Actions = {
 		return { ok: true };
 	}
 };
-

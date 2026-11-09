@@ -1,5 +1,11 @@
 <script lang="ts">
 	import '@excalidraw/excalidraw/index.css';
+	import ConfirmAction from '$lib/components/ConfirmAction.svelte';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
+	import Archive from '@lucide/svelte/icons/archive';
+	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import { onMount, onDestroy } from 'svelte';
 	import type { ActionData, PageData } from './$types';
 
@@ -71,39 +77,48 @@
 <div class="space-y-3">
 	<header class="flex flex-wrap items-center justify-between gap-2 px-1">
 		<div class="flex items-center gap-2">
-			<a href="/boards" class="link text-sm opacity-70">← Boards</a>
+			<Button variant="ghost" size="sm" class="-ms-2" href="/boards"><ArrowLeft />Boards</Button>
 			<form method="post" action="?/rename" class="flex items-center gap-1">
-				<input
-					class="input input-bordered input-sm"
+				<Input
+					class="h-8"
 					name="title"
 					value={data.board.title}
+					aria-label="Board title"
 					autocomplete="off"
 				/>
-				<button class="btn btn-ghost btn-sm" type="submit">Save name</button>
+				<Button variant="ghost" size="sm" type="submit">Save name</Button>
 			</form>
 		</div>
 		<div class="flex items-center gap-2">
-			<span class="text-xs opacity-50">
+			<span class="text-muted-foreground text-xs" aria-live="polite">
 				{saveState === 'saving' ? 'Saving…' : saveState === 'saved' ? 'Saved' : ''}
 			</span>
 			<form method="post" action="?/archive">
-				<button class="btn btn-ghost btn-sm tap-target" type="submit">Archive</button>
+				<Button variant="ghost" size="sm" class="tap-target" type="submit"
+					><Archive />Archive</Button
+				>
 			</form>
-			<form
-				method="post"
+			<ConfirmAction
 				action="?/delete"
-				onsubmit={(e) => {
-					if (!confirm('Delete this board and its contents?')) e.preventDefault();
-				}}
+				title="Delete this board?"
+				description="The board and all its contents are removed. This cannot be undone."
+				confirmLabel="Delete"
+				destructive
+				size="sm"
+				class="tap-target"
 			>
-				<button class="btn btn-error btn-outline btn-sm tap-target" type="submit">Delete</button>
-			</form>
+				<Trash2 />Delete
+			</ConfirmAction>
 		</div>
 	</header>
 
 	{#if form && 'error' in form && form.error}
-		<div role="alert" class="alert alert-error py-2 text-sm">{form.error}</div>
+		<p role="alert" class="text-destructive text-sm">{form.error}</p>
 	{/if}
 
-	<div bind:this={container} class="relative w-full overflow-hidden rounded-box border border-base-300" style="height: 75vh;"></div>
+	<div
+		bind:this={container}
+		class="relative w-full overflow-hidden rounded-lg border"
+		style="height: 75vh;"
+	></div>
 </div>

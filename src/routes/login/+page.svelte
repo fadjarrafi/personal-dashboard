@@ -1,43 +1,31 @@
 <script lang="ts">
+	// login-02 block (docs/design.md §Blocks → Login page).
+	import LoginForm from '$lib/components/login-form.svelte';
+	import { Transition } from '$lib/components/motion';
 	import type { ActionData } from './$types';
 
 	let { form }: { form: ActionData } = $props();
 </script>
 
-<div class="mx-auto mt-8 w-full max-w-sm sm:mt-16">
-	<div class="card border border-base-300 bg-base-200">
-		<div class="card-body">
-			<h1 class="card-title mb-4 font-display">Log in</h1>
-			<form method="post" class="space-y-3">
-				<label class="form-control w-full">
-					<div class="label"><span class="label-text">Email</span></div>
-					<input
-						class="input input-bordered w-full"
-						type="email"
-						name="email"
-						required
-						autocomplete="email"
-						value={form?.email ?? ''}
-					/>
-				</label>
+<svelte:head><title>Log in · Dashboard</title></svelte:head>
 
-				<label class="form-control w-full">
-					<div class="label"><span class="label-text">Password</span></div>
-					<input
-						class="input input-bordered w-full"
-						type="password"
-						name="password"
-						required
-						autocomplete="current-password"
-					/>
-				</label>
-
-				{#if form?.error}
-					<div role="alert" class="alert alert-error py-2 text-sm">{form.error}</div>
-				{/if}
-
-				<button class="btn btn-primary w-full" type="submit">Log in</button>
-			</form>
+<div class="grid min-h-svh lg:grid-cols-2">
+	<div class="bg-background safe-top safe-bottom flex flex-col gap-4 p-6 md:p-10">
+		<div class="flex justify-center gap-2 md:justify-start">
+			<a href="/" class="flex items-center gap-2 font-semibold tracking-tight">
+				<span class="text-primary" aria-hidden="true">◆</span>
+				Dashboard
+			</a>
+		</div>
+		<div class="flex flex-1 items-center justify-center">
+			<Transition class="w-full max-w-xs">
+				<LoginForm email={form?.email ?? ''} error={form?.error ?? null} />
+			</Transition>
 		</div>
 	</div>
+	<!-- Token-only cover panel: no stock imagery, no copy. -->
+	<div
+		class="relative hidden border-l bg-gradient-to-b from-[var(--ink-black)] to-[var(--black)] lg:block"
+		aria-hidden="true"
+	></div>
 </div>
