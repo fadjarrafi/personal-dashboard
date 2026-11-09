@@ -103,7 +103,9 @@ export function unarchiveBoard(userId: number, id: number) {
 export async function deleteBoard(userId: number, id: number) {
 	const existing = getBoard(userId, id);
 	if (!existing) return;
-	db.delete(boards).where(and(eq(boards.id, id), eq(boards.userId, userId))).run();
+	db.delete(boards)
+		.where(and(eq(boards.id, id), eq(boards.userId, userId)))
+		.run();
 	try {
 		await unlink(join(BOARD_DIR, existing.scenePath));
 	} catch {

@@ -71,7 +71,13 @@ function attachTagsAndChecklist(rows: BaseRow[]): TaskRow[] {
 			 WHERE task_id IN (${placeholders})
 			 ORDER BY position ASC, id ASC`
 		)
-		.all(...ids) as Array<{ id: number; taskId: number; content: string; done: number; position: number }>;
+		.all(...ids) as Array<{
+		id: number;
+		taskId: number;
+		content: string;
+		done: number;
+		position: number;
+	}>;
 	const checklistByTask = new Map<number, ChecklistItemRow[]>();
 	for (const { taskId, ...item } of checklistRows) {
 		if (!checklistByTask.has(taskId)) checklistByTask.set(taskId, []);
@@ -138,7 +144,9 @@ function syncTags(taskId: number, names: string[]) {
 	if (names.length === 0) return;
 	const insertTag = raw.prepare('INSERT OR IGNORE INTO tags (name) VALUES (?)');
 	const selectTag = raw.prepare('SELECT id FROM tags WHERE name = ?');
-	const linkTag = raw.prepare('INSERT OR IGNORE INTO kanban_task_tags (task_id, tag_id) VALUES (?, ?)');
+	const linkTag = raw.prepare(
+		'INSERT OR IGNORE INTO kanban_task_tags (task_id, tag_id) VALUES (?, ?)'
+	);
 	for (const name of names) {
 		insertTag.run(name);
 		const row = selectTag.get(name) as { id: number };
@@ -223,7 +231,9 @@ export function archiveTask(userId: number, id: number) {
 }
 
 export function deleteTask(userId: number, id: number) {
-	db.delete(kanbanTasks).where(and(eq(kanbanTasks.id, id), eq(kanbanTasks.userId, userId))).run();
+	db.delete(kanbanTasks)
+		.where(and(eq(kanbanTasks.id, id), eq(kanbanTasks.userId, userId)))
+		.run();
 }
 
 export function addChecklistItem(userId: number, taskId: number, content: string): boolean {
@@ -256,7 +266,9 @@ export function toggleChecklistItem(userId: number, taskId: number, itemId: numb
 export function deleteChecklistItem(userId: number, taskId: number, itemId: number): boolean {
 	const task = getTask(userId, taskId);
 	if (!task) return false;
-	raw.prepare('DELETE FROM kanban_checklist_items WHERE id = ? AND task_id = ?').run(itemId, taskId);
+	raw
+		.prepare('DELETE FROM kanban_checklist_items WHERE id = ? AND task_id = ?')
+		.run(itemId, taskId);
 	touchTask(userId, taskId);
 	return true;
 }

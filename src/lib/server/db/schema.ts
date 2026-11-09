@@ -136,8 +136,12 @@ export const kanbanTasks = sqliteTable('kanban_tasks', {
 		.references(() => users.id),
 	title: text('title').notNull(),
 	description: text('description'),
-	status: text('status', { enum: ['todo', 'in_progress', 'done'] }).notNull().default('todo'),
-	priority: text('priority', { enum: ['low', 'medium', 'high'] }).notNull().default('medium'),
+	status: text('status', { enum: ['todo', 'in_progress', 'done'] })
+		.notNull()
+		.default('todo'),
+	priority: text('priority', { enum: ['low', 'medium', 'high'] })
+		.notNull()
+		.default('medium'),
 	dueDate: text('due_date'),
 	position: integer('position').notNull().default(0),
 	spendId: integer('spend_id').references(() => spends.id, { onDelete: 'set null' }),
@@ -186,7 +190,9 @@ export const tasks = sqliteTable('tasks', {
 	title: text('title').notNull(),
 	notes: text('notes'),
 	dueAt: text('due_at'),
-	priority: text('priority', { enum: ['low', 'normal', 'high'] }).notNull().default('normal'),
+	priority: text('priority', { enum: ['low', 'normal', 'high'] })
+		.notNull()
+		.default('normal'),
 	pinned: integer('pinned').notNull().default(0),
 	doneAt: text('done_at'),
 	archivedAt: text('archived_at'),

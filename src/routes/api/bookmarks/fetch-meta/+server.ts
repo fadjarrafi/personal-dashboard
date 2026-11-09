@@ -18,7 +18,8 @@ function tagAttr(tag: string, attr: string): string | null {
 
 function findOgImage(html: string): string | null {
 	for (const tag of html.match(/<meta\b[^>]*>/gi) ?? []) {
-		if ((tagAttr(tag, 'property') ?? '').toLowerCase() === 'og:image') return tagAttr(tag, 'content');
+		if ((tagAttr(tag, 'property') ?? '').toLowerCase() === 'og:image')
+			return tagAttr(tag, 'content');
 	}
 	return null;
 }

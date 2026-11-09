@@ -55,11 +55,7 @@ export const actions: Actions = {
 				if (extracted.refId) {
 					const dupe = findSpendByRefId(user.id, extracted.refId);
 					if (dupe) {
-						setFlash(
-							cookies,
-							'info',
-							'This receipt has already been recorded.'
-						);
+						setFlash(cookies, 'info', 'This receipt has already been recorded.');
 						throw redirect(303, `/spends/${dupe.id}`);
 					}
 				}

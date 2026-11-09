@@ -49,18 +49,33 @@ export async function runOcr(bytes: Buffer): Promise<string> {
 }
 
 const MONTH_MAP: Record<string, number> = {
-	jan: 0, januari: 0,
-	feb: 1, februari: 1,
-	mar: 2, maret: 2,
-	apr: 3, april: 3,
+	jan: 0,
+	januari: 0,
+	feb: 1,
+	februari: 1,
+	mar: 2,
+	maret: 2,
+	apr: 3,
+	april: 3,
 	mei: 4,
-	jun: 5, juni: 5,
-	jul: 6, juli: 6,
-	agu: 7, ags: 7, agustus: 7,
-	sep: 8, sept: 8, september: 8,
-	okt: 9, oct: 9, oktober: 9,
-	nov: 10, november: 10,
-	des: 11, dec: 11, desember: 11
+	jun: 5,
+	juni: 5,
+	jul: 6,
+	juli: 6,
+	agu: 7,
+	ags: 7,
+	agustus: 7,
+	sep: 8,
+	sept: 8,
+	september: 8,
+	okt: 9,
+	oct: 9,
+	oktober: 9,
+	nov: 10,
+	november: 10,
+	des: 11,
+	dec: 11,
+	desember: 11
 };
 
 function extractAmount(text: string): number | null {
@@ -113,8 +128,7 @@ function extractMerchant(text: string): string | null {
 	// Kalau receipt jelas transfer/pengiriman (bukan pembayaran merchant), tidak
 	// ada merchant → kembalikan null. Sinyal transfer yang kuat: label "Account
 	// Source"/"Sumber Dana" dominan tanpa marker penerima merchant.
-	const isTransferReceipt =
-		/Account\s*Source/i.test(text) && !/Penerima|Merchant/i.test(text);
+	const isTransferReceipt = /Account\s*Source/i.test(text) && !/Penerima|Merchant/i.test(text);
 	if (isTransferReceipt) return null;
 
 	// 1) Label eksplisit.
@@ -132,7 +146,10 @@ function extractMerchant(text: string): string | null {
 		if (val.length > 0 && val.length < 100 && !/^Rp/i.test(val)) return val;
 	}
 	// 2) Baris tepat sebelum marker lokasi.
-	const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+	const lines = text
+		.split(/\r?\n/)
+		.map((l) => l.trim())
+		.filter(Boolean);
 	for (let i = 1; i < lines.length; i++) {
 		if (LOCATION_MARKER.test(lines[i])) {
 			const candidate = lines[i - 1];

@@ -206,5 +206,7 @@ export function unarchiveTask(userId: number, id: number) {
 }
 
 export function deleteTask(userId: number, id: number) {
-	db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId))).run();
+	db.delete(tasks)
+		.where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+		.run();
 }

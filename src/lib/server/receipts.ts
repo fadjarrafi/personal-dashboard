@@ -89,7 +89,10 @@ export function getReceipt(userId: number, id: number) {
 		.get();
 }
 
-export async function readReceiptBytes(userId: number, id: number): Promise<{
+export async function readReceiptBytes(
+	userId: number,
+	id: number
+): Promise<{
 	bytes: Buffer;
 	mime: string;
 } | null> {

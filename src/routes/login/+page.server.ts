@@ -7,7 +7,9 @@ import { users } from '$lib/server/db/schema';
 export const actions: Actions = {
 	default: async ({ request, cookies, url }) => {
 		const data = await request.formData();
-		const email = String(data.get('email') ?? '').trim().toLowerCase();
+		const email = String(data.get('email') ?? '')
+			.trim()
+			.toLowerCase();
 		const password = String(data.get('password') ?? '');
 
 		if (!email || !password) {

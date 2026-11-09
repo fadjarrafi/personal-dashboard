@@ -148,7 +148,10 @@ export interface UpsertInput {
 	tags?: string[];
 }
 
-function deriveNoteTitle(title: string | null | undefined, body: string | null | undefined): string | null {
+function deriveNoteTitle(
+	title: string | null | undefined,
+	body: string | null | undefined
+): string | null {
 	if (title && title.trim().length > 0) return title;
 	if (!body) return null;
 	const firstLine = body.split(/\r?\n/).find((l) => l.trim().length > 0);
@@ -160,11 +163,7 @@ function deriveNoteTitle(title: string | null | undefined, body: string | null |
 function normalizeTags(input: string[] | undefined): string[] {
 	if (!input) return [];
 	return Array.from(
-		new Set(
-			input
-				.map((t) => t.trim().toLowerCase())
-				.filter((t) => t.length > 0 && t.length <= 40)
-		)
+		new Set(input.map((t) => t.trim().toLowerCase()).filter((t) => t.length > 0 && t.length <= 40))
 	);
 }
 
@@ -212,8 +211,7 @@ export function updateItem(userId: number, id: number, input: Partial<UpsertInpu
 
 	const nextBody = input.body ?? existing.body;
 	const rawTitle = input.title ?? existing.title;
-	const nextTitle =
-		existing.type === 'note' ? deriveNoteTitle(rawTitle, nextBody) : rawTitle;
+	const nextTitle = existing.type === 'note' ? deriveNoteTitle(rawTitle, nextBody) : rawTitle;
 
 	// Bila URL bookmark berubah, favicon/preview lama sudah tak relevan (masih
 	// menunjuk situs sebelumnya) - kosongkan daripada dibiarkan salah, karena
@@ -253,7 +251,9 @@ export function unarchiveItem(userId: number, id: number) {
 }
 
 export function deleteItem(userId: number, id: number) {
-	db.delete(items).where(and(eq(items.id, id), eq(items.userId, userId))).run();
+	db.delete(items)
+		.where(and(eq(items.id, id), eq(items.userId, userId)))
+		.run();
 }
 
 export function togglePin(userId: number, id: number) {

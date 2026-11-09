@@ -29,9 +29,7 @@ function expiryDate(days = SESSION_TTL_DAYS) {
 export async function createSession(userId: number, cookies: Cookies) {
 	const id = newSessionId();
 	const expires = expiryDate();
-	db.insert(sessions)
-		.values({ id, userId, expiresAt: expires.toISOString() })
-		.run();
+	db.insert(sessions).values({ id, userId, expiresAt: expires.toISOString() }).run();
 
 	cookies.set(SESSION_COOKIE, id, {
 		path: '/',
