@@ -16,6 +16,15 @@
 	let previewImageInput: HTMLInputElement | undefined = $state();
 	let noteBody = $state('');
 	let draftRestored = $state(false);
+	let noteEl = $state<HTMLTextAreaElement | null>(null);
+
+	// Focus the note field on desktop only. On phones the capture column sits
+	// below the overview and list, so autofocus would scroll past them and pop
+	// the keyboard on every visit.
+	$effect(() => {
+		if (!noteEl || !window.matchMedia('(min-width: 1024px)').matches) return;
+		noteEl.focus({ preventScroll: true });
+	});
 
 	const DRAFT_KEY = 'dashboard:draft:note';
 
@@ -125,15 +134,14 @@
 			required
 		/>
 	{:else}
-		<!-- svelte-ignore a11y_autofocus -->
 		<Textarea
+			bind:ref={noteEl}
 			class="lg:min-h-24 lg:flex-1 lg:resize-none"
 			name="body"
 			rows={3}
 			placeholder="Write a fleeting note… (draft auto-saved)"
 			aria-label="Note"
 			required
-			autofocus
 			bind:value={noteBody}
 		/>
 	{/if}

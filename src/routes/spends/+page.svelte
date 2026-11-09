@@ -225,7 +225,7 @@
 				<label for="spend-month" class="sr-only">Select month</label>
 				<Input
 					id="spend-month"
-					class="h-8 w-[10rem]"
+					class="h-8 w-[11.5rem]"
 					type="month"
 					name="month"
 					value={data.filters.month}

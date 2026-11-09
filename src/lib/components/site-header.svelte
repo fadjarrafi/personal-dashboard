@@ -20,7 +20,7 @@
 </script>
 
 <header
-	class="bg-background/90 safe-top sticky top-0 z-10 flex h-(--header-height) shrink-0 items-center gap-2 rounded-t-[inherit] border-b backdrop-blur-none transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)"
+	class="bg-background safe-top sticky top-0 z-10 flex h-(--header-height) shrink-0 items-center gap-2 rounded-t-[inherit] border-b backdrop-blur-none transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)"
 >
 	<div class="flex w-full items-center gap-1 px-3 lg:gap-2 lg:px-6">
 		<Sidebar.Trigger class="tap-target -ms-1 lg:min-h-0 lg:min-w-0" />
