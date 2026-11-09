@@ -1,5 +1,12 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import FolderOpen from '@lucide/svelte/icons/folder-open';
+	import Plus from '@lucide/svelte/icons/plus';
+	import Check from '@lucide/svelte/icons/check';
 
 	let { data }: { data: PageData } = $props();
 
@@ -16,102 +23,129 @@
 	<title>Vault · Dashboard</title>
 </svelte:head>
 
-<div class="grid gap-4 sm:gap-6 lg:grid-cols-3">
-	<section class="card bg-base-200 lg:col-span-1">
-		<div class="card-body p-3">
-			<div class="flex items-center justify-between">
-				<h2 class="font-display text-sm font-semibold uppercase tracking-wide opacity-70">Tasks</h2>
-				<div class="flex gap-1">
-					<a class="btn btn-ghost btn-xs" href="/vault/browse">Browse vault</a>
-					<a class="btn btn-ghost btn-xs" href="/vault/new">+ New note</a>
-				</div>
-			</div>
+{#snippet noteLink(path: string, title: string)}
+	<a
+		class="hover:text-primary text-sm font-medium underline-offset-4 hover:underline"
+		href={vaultHref(path)}
+	>
+		{title}
+	</a>
+{/snippet}
 
-			<ul class="mt-2 space-y-1">
-				{#each data.tasks as task (task.id)}
-					<li class="flex items-center gap-2">
-						<form method="post" action="?/toggleTask">
-							<input type="hidden" name="id" value={task.id} />
-							<button
-								type="submit"
-								class="btn btn-ghost btn-xs btn-square"
-								aria-label={task.done ? 'Mark as not done' : 'Mark as done'}
-							>
-								{task.done ? '☑' : '☐'}
-							</button>
-						</form>
-						<span class="text-sm {task.done ? 'line-through opacity-50' : ''}">{task.text}</span>
-					</li>
-				{:else}
-					<li class="text-sm opacity-60">No tasks yet.</li>
-				{/each}
-			</ul>
+<div class="space-y-4">
+	<div class="flex flex-wrap justify-end gap-2 px-1">
+		<Button variant="outline" size="sm" href="/vault/browse"><FolderOpen />Browse vault</Button>
+		<Button size="sm" href="/vault/new"><Plus />New note</Button>
+	</div>
 
-			<form method="post" action="?/addTask" class="mt-3 flex gap-2">
-				<input
-					type="text"
-					name="text"
-					placeholder="New task..."
-					class="input input-bordered input-sm flex-1"
-					required
-				/>
-				<button class="btn btn-primary btn-sm" type="submit">Add</button>
-			</form>
-			<p class="mt-2 text-xs opacity-50">
-				Saved to <code>Dashboard Sync/Tasks.md</code> - can also be edited directly in Obsidian.
-			</p>
-		</div>
-	</section>
+	<div class="grid gap-4 sm:gap-6 lg:grid-cols-3">
+		<Card.Root class="gap-3 py-4">
+			<Card.Header class="px-4">
+				<Card.Title class="label-mono">Tasks</Card.Title>
+			</Card.Header>
+			<Card.Content class="space-y-3 px-4">
+				<ul class="space-y-0.5">
+					{#each data.tasks as task (task.id)}
+						<li class="flex items-center gap-1">
+							<form method="post" action="?/toggleTask">
+								<input type="hidden" name="id" value={task.id} />
+								<button
+									type="submit"
+									class="tap-target flex items-center justify-center"
+									aria-label={task.done ? 'Mark as not done' : 'Mark as done'}
+								>
+									<span
+										class="flex size-5 items-center justify-center rounded-sm border transition-colors {task.done
+											? 'border-primary bg-primary text-primary-foreground'
+											: 'border-input hover:border-ring'}"
+									>
+										{#if task.done}<Check class="size-3.5" />{/if}
+									</span>
+								</button>
+							</form>
+							<span class="text-sm {task.done ? 'text-muted-foreground line-through' : ''}">
+								{task.text}
+							</span>
+						</li>
+					{:else}
+						<li class="text-muted-foreground text-sm">No tasks yet.</li>
+					{/each}
+				</ul>
 
-	<section class="card bg-base-200 lg:col-span-1">
-		<div class="card-body p-3">
-			<h2 class="font-display text-sm font-semibold uppercase tracking-wide opacity-70">Journal</h2>
-			<ul class="mt-2 space-y-2">
-				{#each data.journal as note (note.path)}
-					<li>
-						<a class="link link-hover text-sm font-medium" href={vaultHref(note.path)}>{note.title}</a>
-						<div class="text-xs opacity-60">{formatDate(note.updatedAt)}</div>
-					</li>
-				{:else}
-					<li class="text-sm opacity-60">No entries.</li>
-				{/each}
-			</ul>
-		</div>
-	</section>
+				<form method="post" action="?/addTask" class="flex gap-2">
+					<Input
+						type="text"
+						name="text"
+						placeholder="New task…"
+						aria-label="New task"
+						class="h-8 flex-1"
+						required
+					/>
+					<Button size="sm" type="submit">Add</Button>
+				</form>
+				<p class="text-muted-foreground text-xs">
+					Saved to <code class="text-foreground">Dashboard Sync/Tasks.md</code> - can also be edited directly
+					in Obsidian.
+				</p>
+			</Card.Content>
+		</Card.Root>
 
-	<section class="card bg-base-200 lg:col-span-1">
-		<div class="card-body p-3">
-			<h2 class="font-display text-sm font-semibold uppercase tracking-wide opacity-70">Roadmap</h2>
-			<ul class="mt-2 space-y-2">
-				{#each data.roadmap as note (note.path)}
-					<li>
-						<a class="link link-hover text-sm font-medium" href={vaultHref(note.path)}>{note.title}</a>
-						{#if note.frontmatter.status}
-							<span class="badge badge-outline badge-sm ml-2">{note.frontmatter.status}</span>
-						{/if}
-					</li>
-				{:else}
-					<li class="text-sm opacity-60">No items.</li>
-				{/each}
-			</ul>
-		</div>
-	</section>
+		<Card.Root class="gap-3 py-4">
+			<Card.Header class="px-4">
+				<Card.Title class="label-mono">Journal</Card.Title>
+			</Card.Header>
+			<Card.Content class="px-4">
+				<ul class="space-y-2">
+					{#each data.journal as note (note.path)}
+						<li>
+							{@render noteLink(note.path, note.title)}
+							<div class="text-muted-foreground text-xs">{formatDate(note.updatedAt)}</div>
+						</li>
+					{:else}
+						<li class="text-muted-foreground text-sm">No entries.</li>
+					{/each}
+				</ul>
+			</Card.Content>
+		</Card.Root>
 
-	<section class="card bg-base-200 lg:col-span-3">
-		<div class="card-body p-3">
-			<h2 class="font-display text-sm font-semibold uppercase tracking-wide opacity-70">
-				Captures from the dashboard
-			</h2>
-			<ul class="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-				{#each data.captures as note (note.path)}
-					<li class="border border-base-300 bg-base-300/50 p-2">
-						<a class="link link-hover text-sm font-medium" href={vaultHref(note.path)}>{note.title}</a>
-						{#if note.excerpt}<p class="mt-1 truncate text-xs opacity-70">{note.excerpt}</p>{/if}
-					</li>
-				{:else}
-					<li class="text-sm opacity-60">No captures yet.</li>
-				{/each}
-			</ul>
-		</div>
-	</section>
+		<Card.Root class="gap-3 py-4">
+			<Card.Header class="px-4">
+				<Card.Title class="label-mono">Roadmap</Card.Title>
+			</Card.Header>
+			<Card.Content class="px-4">
+				<ul class="space-y-2">
+					{#each data.roadmap as note (note.path)}
+						<li class="flex flex-wrap items-center gap-2">
+							{@render noteLink(note.path, note.title)}
+							{#if note.frontmatter.status}
+								<Badge variant="outline">{note.frontmatter.status}</Badge>
+							{/if}
+						</li>
+					{:else}
+						<li class="text-muted-foreground text-sm">No items.</li>
+					{/each}
+				</ul>
+			</Card.Content>
+		</Card.Root>
+
+		<Card.Root class="gap-3 py-4 lg:col-span-3">
+			<Card.Header class="px-4">
+				<Card.Title class="label-mono">Captures from the dashboard</Card.Title>
+			</Card.Header>
+			<Card.Content class="px-4">
+				<ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+					{#each data.captures as note (note.path)}
+						<li class="bg-well rounded-md border p-2">
+							{@render noteLink(note.path, note.title)}
+							{#if note.excerpt}
+								<p class="text-muted-foreground mt-1 truncate text-xs">{note.excerpt}</p>
+							{/if}
+						</li>
+					{:else}
+						<li class="text-muted-foreground text-sm">No captures yet.</li>
+					{/each}
+				</ul>
+			</Card.Content>
+		</Card.Root>
+	</div>
 </div>

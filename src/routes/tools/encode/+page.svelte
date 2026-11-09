@@ -1,5 +1,11 @@
 <script lang="ts">
 	import CopyButton from '$lib/components/CopyButton.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import Segmented from '$lib/components/tools/Segmented.svelte';
+	import ArrowUp from '@lucide/svelte/icons/arrow-up';
 	import ToolHeader from '$lib/components/tools/ToolHeader.svelte';
 
 	type Codec = 'base64' | 'base64url' | 'url' | 'html';
@@ -88,34 +94,27 @@
 <ToolHeader slug="encode" />
 
 <div class="space-y-3">
-	<div class="join" role="group" aria-label="Encoding type">
-		{#each codecs as [value, label]}
-			<button
-				type="button"
-				class="btn join-item btn-sm rounded-none {codec === value ? 'btn-active' : ''}"
-				aria-pressed={codec === value}
-				onclick={() => (codec = value)}>{label}</button
-			>
-		{/each}
-	</div>
+	<Segmented
+		bind:value={codec}
+		options={codecs.map(([value, label]) => ({ value, label }))}
+		ariaLabel="Encoding type"
+	/>
 
 	<div class="grid gap-4 lg:grid-cols-2">
 		<section class="space-y-2">
 			<span class="label-mono">Input</span>
-			<textarea
-				class="textarea textarea-bordered h-56 w-full font-mono text-xs"
+			<Textarea
+				class="bg-well h-56 font-mono text-xs"
 				bind:value={input}
 				spellcheck="false"
 				aria-label="Input"
-			></textarea>
+			/>
 			<div class="flex flex-wrap gap-2">
-				<button type="button" class="btn-brutal btn-sm" onclick={() => run('encode')}>Encode</button>
-				<button type="button" class="btn-brutal-ghost btn-sm" onclick={() => run('decode')}>
-					Decode
-				</button>
-				<button type="button" class="btn-brutal-ghost btn-sm" onclick={useOutput} disabled={!output}>
-					↑ Use output
-				</button>
+				<Button size="sm" onclick={() => run('encode')}>Encode</Button>
+				<Button variant="outline" size="sm" onclick={() => run('decode')}>Decode</Button>
+				<Button variant="outline" size="sm" onclick={useOutput} disabled={!output}>
+					<ArrowUp />Use output
+				</Button>
 			</div>
 		</section>
 		<section class="space-y-2">
@@ -124,10 +123,15 @@
 				<CopyButton text={output} />
 			</div>
 			{#if error}
-				<div role="alert" class="alert alert-error rounded-none text-sm">{error}</div>
+				<p
+					role="alert"
+					class="border-destructive/40 text-destructive rounded-md border p-3 text-sm"
+				>
+					{error}
+				</p>
 			{:else}
 				<pre
-					class="h-56 overflow-auto whitespace-pre-wrap break-all border border-base-300 bg-black p-3 font-mono text-xs">{output ||
+					class="bg-well h-56 overflow-auto rounded-md border p-3 font-mono text-xs break-all whitespace-pre-wrap">{output ||
 						'—'}</pre>
 			{/if}
 		</section>

@@ -29,6 +29,10 @@
 
 	--pd-rule: var(--space-indigo);
 	--pd-rule-2: var(--space-indigo-2);
+	/* Control boundaries (inputs, checkboxes, switches) need >= 3:1 against
+	   cards (WCAG 1.4.11); the palette's lightest step is too close to the
+	   surfaces, so this one sits outside it. */
+	--pd-rule-strong: oklch(54% 0.03 265);
 
 	/* Text */
 	--pd-ink: oklch(94% 0.01 265);

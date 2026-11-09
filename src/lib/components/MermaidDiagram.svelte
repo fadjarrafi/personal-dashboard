@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { mountMermaid } from '$lib/mermaid';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import CodeBlock from './CodeBlock.svelte';
 
 	let { code, maxHeight = '24rem' }: { code: string; maxHeight?: string } = $props();
@@ -22,18 +23,18 @@
 	});
 </script>
 
-<div class="flex gap-1 pb-1">
-	<button
-		type="button"
-		class="btn btn-ghost btn-xs rounded-none {view === 'diagram' ? 'btn-active' : ''}"
+<div class="flex gap-1 pb-1" role="group" aria-label="View">
+	<Button
+		variant={view === 'diagram' ? 'secondary' : 'ghost'}
+		size="xs"
 		aria-pressed={view === 'diagram'}
-		onclick={() => (view = 'diagram')}>Diagram</button
+		onclick={() => (view = 'diagram')}>Diagram</Button
 	>
-	<button
-		type="button"
-		class="btn btn-ghost btn-xs rounded-none {view === 'source' ? 'btn-active' : ''}"
+	<Button
+		variant={view === 'source' ? 'secondary' : 'ghost'}
+		size="xs"
 		aria-pressed={view === 'source'}
-		onclick={() => (view = 'source')}>Source</button
+		onclick={() => (view = 'source')}>Source</Button
 	>
 </div>
 

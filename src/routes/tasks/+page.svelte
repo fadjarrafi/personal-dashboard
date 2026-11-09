@@ -1,5 +1,15 @@
 <script lang="ts">
 	import type { ActionData, PageData } from './$types';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
+	import { Badge, type BadgeVariant } from '$lib/components/ui/badge/index.js';
+	import { NativeSelect } from '$lib/components/ui/native-select/index.js';
+	import { AnimatedGroup } from '$lib/components/motion';
+	import Check from '@lucide/svelte/icons/check';
+	import Pin from '@lucide/svelte/icons/pin';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -8,10 +18,10 @@
 		normal: 'Normal',
 		high: 'High'
 	};
-	const priorityBadgeClass: Record<string, string> = {
-		low: 'badge-ghost',
-		normal: 'badge-ghost',
-		high: 'badge-error'
+	const priorityBadge: Record<string, BadgeVariant> = {
+		low: 'secondary',
+		normal: 'secondary',
+		high: 'destructive'
 	};
 	const statusLabels: Record<string, string> = {
 		done: 'Done',
@@ -20,12 +30,12 @@
 		upcoming: 'Upcoming',
 		no_due_date: 'No due date'
 	};
-	const statusBadgeClass: Record<string, string> = {
-		done: 'badge-success',
-		overdue: 'badge-error',
-		due_soon: 'badge-warning',
-		upcoming: 'badge-ghost',
-		no_due_date: 'badge-ghost'
+	const statusBadge: Record<string, { variant: BadgeVariant; class?: string }> = {
+		done: { variant: 'outline', class: 'border-success/40 text-success' },
+		overdue: { variant: 'destructive' },
+		due_soon: { variant: 'outline', class: 'border-warning/40 text-warning' },
+		upcoming: { variant: 'secondary' },
+		no_due_date: { variant: 'secondary' }
 	};
 
 	function shortDate(iso: string): string {
@@ -44,158 +54,169 @@
 </script>
 
 <div class="grid gap-4 sm:gap-6 lg:grid-cols-[380px_1fr]">
-	<aside class="order-2 space-y-3 lg:order-1 lg:sticky lg:top-4 lg:self-start">
-		<section aria-labelledby="task-add-heading">
-			<h2
-				id="task-add-heading"
-				class="mb-2 px-1 text-xs font-semibold uppercase tracking-wider opacity-60"
-			>
-				Add task
-			</h2>
-			<form
-				method="post"
-				action="?/create"
-				class="card space-y-2 border-l-2 border-l-primary bg-base-200 p-3 sm:p-4"
-			>
-				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Title</span></div>
-					<input
-						class="input input-bordered w-full"
+	<aside
+		class="order-2 space-y-3 lg:sticky lg:top-[calc(var(--header-height)+1rem)] lg:order-1 lg:self-start"
+	>
+		<section aria-labelledby="task-add-heading" class="space-y-2">
+			<h2 id="task-add-heading" class="label-mono px-1">Add task</h2>
+			<form method="post" action="?/create" class="bg-card space-y-3 rounded-lg border p-3 sm:p-4">
+				<div class="grid gap-1.5">
+					<Label for="task-title">Title</Label>
+					<Input
+						id="task-title"
 						name="title"
 						placeholder="What needs to be done?"
 						required
 						autocomplete="off"
 					/>
-				</label>
+				</div>
 
-				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Notes</span></div>
-					<textarea class="textarea textarea-bordered w-full" name="notes" rows="2"></textarea>
-				</label>
+				<div class="grid gap-1.5">
+					<Label for="task-notes">Notes</Label>
+					<Textarea id="task-notes" name="notes" rows={2} />
+				</div>
 
-				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Due date (optional)</span></div>
-					<input class="input input-bordered w-full" name="due_at" type="date" />
-				</label>
+				<div class="grid gap-1.5">
+					<Label for="task-due">Due date (optional)</Label>
+					<Input id="task-due" name="due_at" type="date" />
+				</div>
 
-				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Priority</span></div>
-					<select class="select select-bordered w-full" name="priority">
-						{#each data.priorities as p}
-							<option value={p} selected={p === 'normal'}>{priorityLabels[p]}</option>
+				<div class="grid gap-1.5">
+					<Label for="task-priority">Priority</Label>
+					<NativeSelect id="task-priority" class="w-full" name="priority" value="normal">
+						{#each data.priorities as p (p)}
+							<option value={p}>{priorityLabels[p]}</option>
 						{/each}
-					</select>
-				</label>
+					</NativeSelect>
+				</div>
 
-				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Tags (comma-separated)</span></div>
-					<input class="input input-bordered w-full" name="tags" list="known-tags" autocomplete="off" />
+				<div class="grid gap-1.5">
+					<Label for="task-tags">Tags (comma-separated)</Label>
+					<Input id="task-tags" name="tags" list="known-tags" autocomplete="off" />
 					<datalist id="known-tags">
-						{#each data.tags as t}
+						{#each data.tags as t (t)}
 							<option value={t}></option>
 						{/each}
 					</datalist>
-				</label>
+				</div>
 
-				<label class="label cursor-pointer justify-start gap-2">
-					<input type="checkbox" name="pinned" class="checkbox checkbox-primary" />
-					<span class="label-text">Pin to top</span>
-				</label>
+				<div class="flex items-center gap-2">
+					<Checkbox id="task-pinned" name="pinned" />
+					<Label for="task-pinned" class="font-normal">Pin to top</Label>
+				</div>
 
-				<button class="btn btn-primary w-full" type="submit">Save</button>
+				<Button class="w-full" type="submit">Save</Button>
 
 				{#if form && 'error' in form && form.error}
-					<div role="alert" class="alert alert-error py-2 text-sm">{form.error}</div>
+					<p role="alert" class="text-destructive text-sm">{form.error}</p>
 				{/if}
 			</form>
 		</section>
 	</aside>
 
 	<section class="order-1 min-w-0 space-y-3 lg:order-2">
-		<header class="flex flex-wrap items-center justify-between gap-2 px-1">
-			<h1 class="text-lg font-semibold sm:text-xl">Tasks</h1>
-			<div class="flex flex-wrap items-center gap-2 text-xs">
-				<a
-					class="btn btn-xs {data.includeDone ? 'btn-primary' : 'btn-ghost'}"
-					href="?{new URLSearchParams({
-						...(data.tag ? { tag: data.tag } : {}),
-						...(data.includeDone ? {} : { done: '1' })
-					}).toString()}"
-				>
-					Show completed
-				</a>
-				{#if data.tags.length > 0}
-					<form method="get" class="inline-flex items-center gap-1">
-						{#if data.includeDone}<input type="hidden" name="done" value="1" />{/if}
-						<select
-							class="select select-bordered select-xs"
-							name="tag"
-							onchange={(e) => e.currentTarget.form?.submit()}
-						>
-							<option value="">All tags</option>
-							{#each data.tags as t}
-								<option value={t} selected={t === data.tag}>{t}</option>
-							{/each}
-						</select>
-					</form>
-				{/if}
-			</div>
+		<header class="flex flex-wrap items-center justify-end gap-2 px-1">
+			<Button
+				variant={data.includeDone ? 'secondary' : 'ghost'}
+				size="sm"
+				aria-pressed={data.includeDone}
+				href="?{new URLSearchParams({
+					...(data.tag ? { tag: data.tag } : {}),
+					...(data.includeDone ? {} : { done: '1' })
+				}).toString()}"
+			>
+				{#if data.includeDone}<Check />{/if}Show completed
+			</Button>
+			{#if data.tags.length > 0}
+				<form method="get" class="inline-flex items-center gap-1">
+					{#if data.includeDone}<input type="hidden" name="done" value="1" />{/if}
+					<NativeSelect
+						size="sm"
+						name="tag"
+						aria-label="Filter by tag"
+						value={data.tag ?? ''}
+						onchange={(e) => (e.currentTarget as HTMLSelectElement).form?.submit()}
+					>
+						<option value="">All tags</option>
+						{#each data.tags as t (t)}
+							<option value={t}>{t}</option>
+						{/each}
+					</NativeSelect>
+				</form>
+			{/if}
 		</header>
 
 		{#if data.tasks.length === 0}
-			<p class="rounded-box border border-dashed border-base-300 p-6 text-center text-sm opacity-60">
+			<p class="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
 				No tasks recorded yet.
 			</p>
 		{:else}
-			<ul class="space-y-2" role="list">
+			<AnimatedGroup class="space-y-2">
 				{#each data.tasks as t (t.id)}
-					<li class="rounded-box border border-base-300 bg-base-200/40 p-3">
+					<div class="bg-card rounded-lg border px-3 py-1">
 						<div class="flex items-start justify-between gap-2">
-							<form method="post" action="?/toggleDone" class="mt-0.5">
+							<form method="post" action="?/toggleDone">
 								<input type="hidden" name="id" value={t.id} />
 								<button
 									type="submit"
-									class="tap-target flex h-6 w-6 items-center justify-center border {t.doneAt
-										? 'border-success bg-success text-success-content'
-										: 'border-base-300'}"
+									class="tap-target flex items-center justify-center"
 									aria-label={t.doneAt ? 'Mark as not done' : 'Mark as done'}
 								>
-									{#if t.doneAt}✓{/if}
+									<span
+										class="flex size-5 items-center justify-center rounded-sm border transition-colors {t.doneAt
+											? 'border-primary bg-primary text-primary-foreground'
+											: 'border-input hover:border-ring'}"
+									>
+										{#if t.doneAt}<Check class="size-3.5" />{/if}
+									</span>
 								</button>
 							</form>
-							<a href="/tasks/{t.id}" class="min-w-0 flex-1">
-								<div class="truncate text-sm font-medium {t.doneAt ? 'opacity-60 line-through' : ''}">
+							<a href="/tasks/{t.id}" class="min-w-0 flex-1 py-2.5">
+								<div
+									class="truncate text-sm font-medium {t.doneAt
+										? 'text-muted-foreground line-through'
+										: ''}"
+								>
 									{t.title}
 								</div>
-								<div class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs opacity-70">
-									<span class="badge {priorityBadgeClass[t.priority]} badge-sm">
-										{priorityLabels[t.priority]}
-									</span>
-									<span class="badge {statusBadgeClass[t.status]} badge-sm">
+								<div
+									class="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs"
+								>
+									<Badge variant={priorityBadge[t.priority]}>{priorityLabels[t.priority]}</Badge>
+									<Badge
+										variant={statusBadge[t.status].variant}
+										class={statusBadge[t.status].class}
+									>
 										{statusLabels[t.status]}
-									</span>
+									</Badge>
 									{#if t.dueAt}
-										<span>{shortDate(t.dueAt)}{#if t.daysUntilDue !== null} · {dueLabel(t.daysUntilDue)}{/if}</span>
+										<span
+											>{shortDate(t.dueAt)}{#if t.daysUntilDue !== null}
+												· {dueLabel(t.daysUntilDue)}{/if}</span
+										>
 									{/if}
-									{#each t.tags as tag}
+									{#each t.tags as tag (tag)}
 										<span class="chip">{tag}</span>
 									{/each}
 								</div>
 							</a>
 							<form method="post" action="?/togglePin">
 								<input type="hidden" name="id" value={t.id} />
-								<button
+								<Button
+									variant="ghost"
+									size="icon-sm"
+									class="tap-target {t.pinned ? 'text-primary' : 'text-muted-foreground'}"
 									type="submit"
-									class="btn btn-ghost btn-xs {t.pinned ? 'text-warning' : 'opacity-40'}"
 									aria-label={t.pinned ? 'Unpin' : 'Pin to top'}
+									aria-pressed={!!t.pinned}
 								>
-									★
-								</button>
+									<Pin class={t.pinned ? 'fill-current' : ''} />
+								</Button>
 							</form>
 						</div>
-					</li>
+					</div>
 				{/each}
-			</ul>
+			</AnimatedGroup>
 		{/if}
 	</section>
 </div>

@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { tools } from '$lib/tools';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 
 	let { slug }: { slug: string } = $props();
 
@@ -8,8 +10,8 @@
 
 <svelte:head><title>{tool?.label ?? 'Dev Tools'} · Dev Tools</title></svelte:head>
 
-<header class="mb-4 border-b border-base-300 pb-3">
-	<a href="/tools" class="label-mono hover:underline">← Dev Tools</a>
-	<h1 class="mt-1 text-lg font-semibold sm:text-xl">{tool?.label}</h1>
-	{#if tool}<p class="text-sm opacity-60">{tool.description}</p>{/if}
+<header class="mb-4 space-y-1 border-b pb-3">
+	<Button variant="ghost" size="sm" class="-ms-2" href="/tools"><ArrowLeft />Dev Tools</Button>
+	<h1 class="text-lg font-semibold sm:text-xl">{tool?.label}</h1>
+	{#if tool}<p class="text-muted-foreground text-sm">{tool.description}</p>{/if}
 </header>

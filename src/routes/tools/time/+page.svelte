@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
 	import CopyButton from '$lib/components/CopyButton.svelte';
 	import ToolHeader from '$lib/components/tools/ToolHeader.svelte';
 
@@ -20,7 +23,10 @@
 		if (/^-?\d+(\.\d+)?$/.test(s)) {
 			const n = Number(s);
 			const isSeconds = Math.abs(n) < 1e11;
-			return { date: new Date(isSeconds ? n * 1000 : n), unit: isSeconds ? 'seconds' : 'milliseconds' };
+			return {
+				date: new Date(isSeconds ? n * 1000 : n),
+				unit: isSeconds ? 'seconds' : 'milliseconds'
+			};
 		}
 		const d = new Date(s);
 		return Number.isNaN(d.getTime()) ? { error: 'Unrecognized format.' } : { date: d, unit: null };
@@ -62,40 +68,44 @@
 <ToolHeader slug="time" />
 
 <div class="space-y-4">
-	<div class="blackboard flex flex-wrap items-center gap-x-6 gap-y-2 !p-4">
+	<div class="bg-card flex flex-wrap items-center gap-x-6 gap-y-2 rounded-lg border p-4">
 		<div>
 			<div class="label-mono">Now (seconds)</div>
-			<div class="font-mono text-lg">{Math.floor(now / 1000)}</div>
+			<div class="font-mono text-lg tabular-nums">{Math.floor(now / 1000)}</div>
 		</div>
 		<div>
 			<div class="label-mono">Now (ms)</div>
-			<div class="font-mono text-lg">{now}</div>
+			<div class="font-mono text-lg tabular-nums">{now}</div>
 		</div>
-		<button type="button" class="btn-brutal-ghost btn-sm" onclick={() => (input = String(now))}>
-			Use now
-		</button>
+		<Button variant="outline" size="sm" onclick={() => (input = String(now))}>Use now</Button>
 	</div>
 
-	<label class="form-control w-full max-w-xl">
-		<div class="label py-1">
-			<span class="label-mono">Epoch or date</span>
+	<div class="grid w-full max-w-xl gap-1.5">
+		<div class="flex items-center justify-between">
+			<Label for="time-input" class="label-mono">Epoch or date</Label>
 			{#if parsed && !('error' in parsed) && parsed.unit}
-				<span class="label-text-alt opacity-60">read as {parsed.unit}</span>
+				<span class="text-muted-foreground text-xs">read as {parsed.unit}</span>
 			{/if}
 		</div>
-		<input
-			class="input input-bordered w-full font-mono"
+		<Input
+			id="time-input"
+			class="font-mono"
 			bind:value={input}
 			placeholder="1735689600 or 2025-01-01T00:00:00Z"
 			spellcheck="false"
 		/>
-	</label>
+	</div>
 
 	{#if parsed && 'error' in parsed}
-		<div role="alert" class="alert alert-error max-w-xl rounded-none text-sm">{parsed.error}</div>
+		<p
+			role="alert"
+			class="border-destructive/40 text-destructive max-w-xl rounded-md border p-3 text-sm"
+		>
+			{parsed.error}
+		</p>
 	{:else if rows.length}
-		<dl class="max-w-xl divide-y divide-base-300 border border-base-300">
-			{#each rows as [label, value]}
+		<dl class="bg-card max-w-xl divide-y rounded-lg border">
+			{#each rows as [label, value] (label)}
 				<div class="flex items-center justify-between gap-3 px-3 py-1.5">
 					<dt class="label-mono shrink-0">{label}</dt>
 					<dd class="flex min-w-0 items-center gap-1">

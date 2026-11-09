@@ -1,5 +1,17 @@
 <script lang="ts">
 	import type { ActionData, PageData } from './$types';
+	import ConfirmAction from '$lib/components/ConfirmAction.svelte';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
+	import { NativeSelect } from '$lib/components/ui/native-select/index.js';
+	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
+	import Check from '@lucide/svelte/icons/check';
+	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
+	import Archive from '@lucide/svelte/icons/archive';
+	import Trash2 from '@lucide/svelte/icons/trash-2';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -11,102 +23,96 @@
 </script>
 
 <div class="mx-auto max-w-lg space-y-4">
-	<header class="px-1">
-		<a href="/tasks" class="link text-sm opacity-70">← Back to Tasks</a>
-		<h1 class="mt-1 text-lg font-semibold sm:text-xl">{data.task.title}</h1>
+	<header class="space-y-1 px-1">
+		<Button variant="ghost" size="sm" class="-ms-2" href="/tasks"><ArrowLeft />Back to Tasks</Button
+		>
+		<h1 class="text-lg font-semibold sm:text-xl">{data.task.title}</h1>
 	</header>
 
-	<form
-		method="post"
-		action="?/update"
-		class="card space-y-3 border border-base-300 bg-base-200/40 p-4"
-	>
-		<label class="form-control w-full">
-			<div class="label py-1"><span class="label-text text-xs">Title</span></div>
-			<input class="input input-bordered w-full" name="title" value={data.task.title} required />
-		</label>
+	<form method="post" action="?/update" class="bg-card space-y-4 rounded-lg border p-4">
+		<div class="grid gap-1.5">
+			<Label for="title">Title</Label>
+			<Input id="title" name="title" value={data.task.title} required />
+		</div>
 
-		<label class="form-control w-full">
-			<div class="label py-1"><span class="label-text text-xs">Notes</span></div>
-			<textarea class="textarea textarea-bordered w-full" name="notes" rows="3"
-				>{data.task.notes ?? ''}</textarea
-			>
-		</label>
+		<div class="grid gap-1.5">
+			<Label for="notes">Notes</Label>
+			<Textarea id="notes" name="notes" rows={3} value={data.task.notes ?? ''} />
+		</div>
 
-		<label class="form-control w-full">
-			<div class="label py-1"><span class="label-text text-xs">Due date (optional)</span></div>
-			<input
-				class="input input-bordered w-full"
+		<div class="grid gap-1.5">
+			<Label for="due_at">Due date (optional)</Label>
+			<Input
+				id="due_at"
 				name="due_at"
 				type="date"
 				value={data.task.dueAt ? data.task.dueAt.slice(0, 10) : ''}
 			/>
-		</label>
+		</div>
 
-		<label class="form-control w-full">
-			<div class="label py-1"><span class="label-text text-xs">Priority</span></div>
-			<select class="select select-bordered w-full" name="priority" value={data.task.priority}>
-				{#each data.priorities as p}
+		<div class="grid gap-1.5">
+			<Label for="priority">Priority</Label>
+			<NativeSelect id="priority" class="w-full" name="priority" value={data.task.priority}>
+				{#each data.priorities as p (p)}
 					<option value={p}>{priorityLabels[p]}</option>
 				{/each}
-			</select>
-		</label>
+			</NativeSelect>
+		</div>
 
-		<label class="form-control w-full">
-			<div class="label py-1"><span class="label-text text-xs">Tags (comma-separated)</span></div>
-			<input
-				class="input input-bordered w-full"
-				name="tags"
-				value={data.task.tags.join(', ')}
-				list="known-tags"
-			/>
+		<div class="grid gap-1.5">
+			<Label for="tags">Tags (comma-separated)</Label>
+			<Input id="tags" name="tags" value={data.task.tags.join(', ')} list="known-tags" />
 			<datalist id="known-tags">
-				{#each data.tags as t}
+				{#each data.tags as t (t)}
 					<option value={t}></option>
 				{/each}
 			</datalist>
-		</label>
+		</div>
 
-		<label class="label cursor-pointer justify-start gap-2">
-			<input
-				type="checkbox"
-				name="pinned"
-				class="checkbox checkbox-primary"
-				checked={!!data.task.pinned}
-			/>
-			<span class="label-text">Pin to top</span>
-		</label>
+		<div class="flex items-center gap-2">
+			<Checkbox id="pinned" name="pinned" checked={!!data.task.pinned} />
+			<Label for="pinned" class="font-normal">Pin to top</Label>
+		</div>
 
-		<button class="btn btn-primary w-full" type="submit">Save changes</button>
+		<Button class="w-full" type="submit">Save changes</Button>
 
 		{#if form && 'error' in form && form.error}
-			<div role="alert" class="alert alert-error py-2 text-sm">{form.error}</div>
+			<p role="alert" class="text-destructive text-sm">{form.error}</p>
 		{/if}
 	</form>
 
 	<div class="flex flex-wrap gap-2">
 		<form method="post" action="?/toggleDone">
-			<button class="btn btn-success btn-sm tap-target" type="submit">
-				{data.task.doneAt ? 'Mark as not done' : 'Mark as done'}
-			</button>
+			<Button
+				size="sm"
+				variant={data.task.doneAt ? 'outline' : 'default'}
+				class="tap-target"
+				type="submit"
+			>
+				{#if data.task.doneAt}<RotateCcw />Mark as not done{:else}<Check />Mark as done{/if}
+			</Button>
 		</form>
-		<form
-			method="post"
+		<ConfirmAction
 			action="?/archive"
-			onsubmit={(e) => {
-				if (!confirm('Archive this task?')) e.preventDefault();
-			}}
+			title="Archive this task?"
+			description="It moves to Archive, where you can restore or delete it."
+			confirmLabel="Archive"
+			variant="ghost"
+			size="sm"
+			class="tap-target"
 		>
-			<button class="btn btn-ghost btn-sm tap-target" type="submit">Archive</button>
-		</form>
-		<form
-			method="post"
+			<Archive />Archive
+		</ConfirmAction>
+		<ConfirmAction
 			action="?/delete"
-			onsubmit={(e) => {
-				if (!confirm('Delete this task?')) e.preventDefault();
-			}}
+			title="Delete this task?"
+			description="This permanently removes the task. It cannot be undone."
+			confirmLabel="Delete"
+			destructive
+			size="sm"
+			class="tap-target"
 		>
-			<button class="btn btn-error btn-outline btn-sm tap-target" type="submit">Delete</button>
-		</form>
+			<Trash2 />Delete
+		</ConfirmAction>
 	</div>
 </div>

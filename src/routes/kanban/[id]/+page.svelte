@@ -1,5 +1,17 @@
 <script lang="ts">
 	import type { ActionData, PageData } from './$types';
+	import ConfirmAction from '$lib/components/ConfirmAction.svelte';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { NativeSelect } from '$lib/components/ui/native-select/index.js';
+	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
+	import Archive from '@lucide/svelte/icons/archive';
+	import Trash2 from '@lucide/svelte/icons/trash-2';
+	import Check from '@lucide/svelte/icons/check';
+	import X from '@lucide/svelte/icons/x';
+	import Plus from '@lucide/svelte/icons/plus';
 	import { formatRupiah } from '$lib/format';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -8,147 +20,144 @@
 </script>
 
 <div class="mx-auto max-w-2xl space-y-4">
-	<div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+	<div class="flex flex-wrap items-center justify-between gap-2">
 		<h1 class="text-lg font-semibold sm:text-xl">Edit task</h1>
-		<a class="btn btn-ghost btn-sm tap-target" href="/kanban">← Back to board</a>
+		<Button variant="ghost" size="sm" class="tap-target" href="/kanban">
+			<ArrowLeft />Back to board
+		</Button>
 	</div>
 
-	<form method="post" action="?/update" class="space-y-3">
-		<label class="form-control w-full">
-			<div class="label"><span class="label-text">Title</span></div>
-			<input class="input input-bordered w-full" name="title" value={task.title} required />
-		</label>
-
-		<label class="form-control w-full">
-			<div class="label"><span class="label-text">Description</span></div>
-			<textarea class="textarea textarea-bordered w-full" name="description" rows="3"
-				>{task.description ?? ''}</textarea
-			>
-		</label>
-
-		<div class="grid grid-cols-2 gap-3">
-			<label class="form-control w-full">
-				<div class="label"><span class="label-text">Priority</span></div>
-				<select class="select select-bordered w-full" name="priority">
-					<option value="low" selected={task.priority === 'low'}>Low</option>
-					<option value="medium" selected={task.priority === 'medium'}>Medium</option>
-					<option value="high" selected={task.priority === 'high'}>High</option>
-				</select>
-			</label>
-
-			<label class="form-control w-full">
-				<div class="label"><span class="label-text">Due date</span></div>
-				<input
-					class="input input-bordered w-full"
-					name="due_date"
-					type="date"
-					value={task.dueDate ?? ''}
-				/>
-			</label>
+	<form method="post" action="?/update" id="kanban-edit" class="space-y-4">
+		<div class="grid gap-1.5">
+			<Label for="title">Title</Label>
+			<Input id="title" name="title" value={task.title} required />
 		</div>
 
-		<label class="form-control w-full">
-			<div class="label"><span class="label-text">Tags (comma-separated)</span></div>
-			<input
-				class="input input-bordered w-full"
-				name="tags"
-				value={tagsValue}
-				list="kanban-tags"
-				autocomplete="off"
-			/>
+		<div class="grid gap-1.5">
+			<Label for="description">Description</Label>
+			<Textarea id="description" name="description" rows={3} value={task.description ?? ''} />
+		</div>
+
+		<div class="grid grid-cols-2 gap-3">
+			<div class="grid gap-1.5">
+				<Label for="priority">Priority</Label>
+				<NativeSelect id="priority" class="w-full" name="priority" value={task.priority}>
+					<option value="low">Low</option>
+					<option value="medium">Medium</option>
+					<option value="high">High</option>
+				</NativeSelect>
+			</div>
+
+			<div class="grid gap-1.5">
+				<Label for="due_date">Due date</Label>
+				<Input id="due_date" name="due_date" type="date" value={task.dueDate ?? ''} />
+			</div>
+		</div>
+
+		<div class="grid gap-1.5">
+			<Label for="tags">Tags (comma-separated)</Label>
+			<Input id="tags" name="tags" value={tagsValue} list="kanban-tags" autocomplete="off" />
 			<datalist id="kanban-tags">
-				{#each data.tagsList as t}
+				{#each data.tagsList as t (t)}
 					<option value={t}></option>
 				{/each}
 			</datalist>
-		</label>
+		</div>
 
-		<label class="form-control w-full">
-			<div class="label"><span class="label-text">Link to a spending entry (optional)</span></div>
-			<select class="select select-bordered w-full" name="spend_id">
+		<div class="grid gap-1.5">
+			<Label for="spend_id">Link to a spending entry (optional)</Label>
+			<NativeSelect id="spend_id" class="w-full" name="spend_id" value={task.spendId ?? ''}>
 				<option value="">— none —</option>
-				{#each data.spendOptions as s}
-					<option value={s.id} selected={task.spendId === s.id}>
+				{#each data.spendOptions as s (s.id)}
+					<option value={s.id}>
 						{formatRupiah(s.amount)} · {s.merchant ?? s.note ?? s.occurredAt.slice(0, 10)}
 					</option>
 				{/each}
-			</select>
-		</label>
+			</NativeSelect>
+		</div>
 
 		{#if form && 'error' in form && form.error}
-			<div role="alert" class="alert alert-error py-2 text-sm">{form.error}</div>
+			<p role="alert" class="text-destructive text-sm">{form.error}</p>
 		{/if}
-
-		<div class="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-between">
-			<div class="flex gap-2">
-				<button
-					formaction="?/archive"
-					formmethod="post"
-					class="btn btn-ghost btn-outline"
-				>
-					Archive
-				</button>
-				<button
-					formaction="?/delete"
-					formmethod="post"
-					class="btn btn-error btn-outline"
-					onclick={(e) => {
-						if (!confirm('Permanently delete this task?')) e.preventDefault();
-					}}
-				>
-					Delete
-				</button>
-			</div>
-			<div class="flex gap-2 sm:justify-end">
-				<a class="btn btn-ghost flex-1 sm:flex-none" href="/kanban">Cancel</a>
-				<button class="btn btn-primary flex-1 sm:flex-none" type="submit">Save</button>
-			</div>
-		</div>
 	</form>
 
-	<section class="rounded-box border border-base-300 bg-base-200/40 p-3">
-		<h2 class="mb-2 text-xs font-semibold uppercase tracking-wider opacity-60">Checklist</h2>
+	<div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
+		<div class="flex gap-2">
+			<form method="post" action="?/archive">
+				<Button variant="outline" type="submit"><Archive />Archive</Button>
+			</form>
+			<ConfirmAction
+				action="?/delete"
+				title="Permanently delete this task?"
+				description="The task and its checklist are removed. This cannot be undone."
+				confirmLabel="Delete"
+				destructive
+			>
+				<Trash2 />Delete
+			</ConfirmAction>
+		</div>
+		<div class="flex gap-2 sm:justify-end">
+			<Button variant="ghost" class="flex-1 sm:flex-none" href="/kanban">Cancel</Button>
+			<Button class="flex-1 sm:flex-none" type="submit" form="kanban-edit">Save</Button>
+		</div>
+	</div>
+
+	<section class="bg-card space-y-2 rounded-lg border p-3">
+		<h2 class="label-mono">Checklist</h2>
 
 		{#if task.checklist.length > 0}
-			<ul class="mb-2 space-y-1">
+			<ul class="space-y-1">
 				{#each task.checklist as item (item.id)}
 					<li class="flex items-center gap-2">
 						<form method="post" action="?/toggleChecklistItem" class="contents">
 							<input type="hidden" name="item_id" value={item.id} />
 							<button
 								type="submit"
-								class="btn btn-square btn-xs {item.done ? 'btn-primary' : 'btn-outline'}"
+								class="tap-target flex items-center justify-center"
 								aria-pressed={!!item.done}
 								aria-label={item.done ? 'Mark as not done' : 'Mark as done'}
 							>
-								{#if item.done}✓{/if}
+								<span
+									class="flex size-5 items-center justify-center rounded-sm border transition-colors {item.done
+										? 'border-primary bg-primary text-primary-foreground'
+										: 'border-input hover:border-ring'}"
+								>
+									{#if item.done}<Check class="size-3.5" />{/if}
+								</span>
 							</button>
 						</form>
-						<span class="flex-1 text-sm {item.done ? 'opacity-50 line-through' : ''}">
+						<span class="flex-1 text-sm {item.done ? 'text-muted-foreground line-through' : ''}">
 							{item.content}
 						</span>
 						<form method="post" action="?/deleteChecklistItem" class="contents">
 							<input type="hidden" name="item_id" value={item.id} />
-							<button type="submit" class="btn btn-ghost btn-xs" aria-label="Delete item">
-								✕
-							</button>
+							<Button
+								variant="ghost"
+								size="icon-sm"
+								class="tap-target text-muted-foreground"
+								type="submit"
+								aria-label="Delete item"
+							>
+								<X />
+							</Button>
 						</form>
 					</li>
 				{/each}
 			</ul>
 		{:else}
-			<p class="mb-2 text-xs opacity-50">No checklist items yet.</p>
+			<p class="text-muted-foreground text-xs">No checklist items yet.</p>
 		{/if}
 
 		<form method="post" action="?/addChecklistItem" class="flex gap-1">
-			<input
-				class="input input-sm input-bordered w-full"
+			<Input
+				class="h-8"
 				name="content"
-				placeholder="+ Add checklist item"
+				placeholder="Add checklist item"
+				aria-label="New checklist item"
 				autocomplete="off"
 				required
 			/>
-			<button class="btn btn-sm btn-primary" type="submit">+</button>
+			<Button size="icon-sm" type="submit" aria-label="Add checklist item"><Plus /></Button>
 		</form>
 	</section>
 </div>

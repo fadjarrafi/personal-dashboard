@@ -1,5 +1,11 @@
 <script lang="ts">
 	import CopyButton from '$lib/components/CopyButton.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { NativeSelect } from '$lib/components/ui/native-select/index.js';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import ToolHeader from '$lib/components/tools/ToolHeader.svelte';
 
 	let input = $state('');
@@ -57,31 +63,27 @@
 	<section class="space-y-2">
 		<div class="flex items-center justify-between">
 			<span class="label-mono">Input</span>
-			<button type="button" class="btn btn-ghost btn-xs rounded-none" onclick={() => (input = '')}>
-				Clear
-			</button>
+			<Button variant="ghost" size="xs" onclick={() => (input = '')}>Clear</Button>
 		</div>
-		<textarea
-			class="textarea textarea-bordered h-80 w-full font-mono text-xs"
+		<Textarea
+			class="bg-well h-80 font-mono text-xs"
 			bind:value={input}
 			spellcheck="false"
 			placeholder={'{"hello": "world"}'}
 			aria-label="JSON input"
-		></textarea>
+		/>
 		<div class="flex flex-wrap items-center gap-2">
-			<button type="button" class="btn-brutal btn-sm" onclick={() => run('format')}>Format</button>
-			<button type="button" class="btn-brutal-ghost btn-sm" onclick={() => run('minify')}>
-				Minify
-			</button>
-			<select class="select select-bordered select-sm" bind:value={indent} aria-label="Indentation">
+			<Button size="sm" onclick={() => run('format')}>Format</Button>
+			<Button variant="outline" size="sm" onclick={() => run('minify')}>Minify</Button>
+			<NativeSelect size="sm" bind:value={indent} aria-label="Indentation">
 				<option value="2">2 spaces</option>
 				<option value="4">4 spaces</option>
 				<option value="tab">Tab</option>
-			</select>
-			<label class="label cursor-pointer gap-2">
-				<input type="checkbox" class="checkbox checkbox-sm" bind:checked={sortKeys} />
-				<span class="label-text text-xs">Sort keys</span>
-			</label>
+			</NativeSelect>
+			<div class="flex items-center gap-2">
+				<Checkbox id="json-sort" bind:checked={sortKeys} />
+				<Label for="json-sort" class="text-xs font-normal">Sort keys</Label>
+			</div>
 		</div>
 	</section>
 
@@ -91,12 +93,15 @@
 			<CopyButton text={output} />
 		</div>
 		{#if error}
-			<div role="alert" class="alert alert-error rounded-none text-sm">{error}</div>
+			<p role="alert" class="border-destructive/40 text-destructive rounded-md border p-3 text-sm">
+				{error}
+			</p>
 		{:else}
-			<pre
-				class="h-80 overflow-auto border border-base-300 bg-black p-3 font-mono text-xs">{output ||
+			<pre class="bg-well h-80 overflow-auto rounded-md border p-3 font-mono text-xs">{output ||
 					'—'}</pre>
-			{#if output}<p class="text-xs opacity-60">JSON valid · {output.length} characters</p>{/if}
+			{#if output}
+				<p class="text-muted-foreground text-xs">JSON valid · {output.length} characters</p>
+			{/if}
 		{/if}
 	</section>
 </div>

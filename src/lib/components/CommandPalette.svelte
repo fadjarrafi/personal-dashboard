@@ -1,5 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { toast } from 'svelte-sonner';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import { Kbd } from '$lib/components/ui/kbd/index.js';
+	import { Spinner } from '$lib/components/ui/spinner/index.js';
+	import SearchIcon from '@lucide/svelte/icons/search';
 	import { navSections } from '$lib/nav';
 	import { tools } from '$lib/tools';
 
@@ -44,14 +49,12 @@
 		}))
 	];
 
-	let dialog: HTMLDialogElement;
 	let input = $state<HTMLInputElement>();
 	let isOpen = $state(false);
 	let query = $state('');
 	let hits = $state<ItemHit[]>([]);
 	let loading = $state(false);
 	let active = $state(0);
-	let toast = $state<string | null>(null);
 	let returnFocus: HTMLElement | null = null;
 
 	export function open() {
@@ -61,18 +64,24 @@
 		hits = [];
 		active = 0;
 		isOpen = true;
-		dialog.showModal();
-		queueMicrotask(() => input?.focus());
 	}
 
 	function close() {
-		dialog.close();
+		isOpen = false;
 	}
 
-	function onClose() {
-		isOpen = false;
-		returnFocus?.focus();
+	function onOpenChange(v: boolean) {
+		if (!v) returnFocus?.focus();
 	}
+
+	// Focus the search field once the portalled dialog content is mounted;
+	// bits-ui's own auto-focus fires before `input` is bound.
+	$effect(() => {
+		if (!isOpen || !input) return;
+		const el = input;
+		const t = setTimeout(() => el.focus(), 0);
+		return () => clearTimeout(t);
+	});
 
 	function go(href: string, hardNav = false) {
 		close();
@@ -83,8 +92,7 @@
 	async function copy(text: string) {
 		try {
 			await navigator.clipboard.writeText(text);
-			toast = 'Snippet copied';
-			setTimeout(() => (toast = null), 1200);
+			toast.success('Snippet copied');
 		} catch {
 			// ignore
 		}
@@ -96,31 +104,29 @@
 	}
 
 	const itemEntries = $derived(
-		hits.map(
-			(h): Entry => ({
-				key: `item:${h.id}`,
-				group: 'Item',
-				label: h.title || h.url || (h.body ?? '').slice(0, 60) || `#${h.id}`,
-				hint:
-					h.type === 'snippet'
-						? `${TYPE_LABEL[h.type]}${h.language ? ` · ${h.language}` : ''} · Shift+Enter copy`
-						: h.type === 'bookmark'
-							? `${TYPE_LABEL[h.type]} · Shift+Enter open link`
-							: TYPE_LABEL[h.type],
-				haystack: '',
-				run: (alt) => {
-					if (alt && h.type === 'snippet' && h.body) {
-						copy(h.body);
-						close();
-					} else if (alt && h.type === 'bookmark' && h.url) {
-						window.open(h.url, '_blank', 'noopener');
-						close();
-					} else {
-						go(`/items/${h.id}`);
-					}
+		hits.map((h): Entry => ({
+			key: `item:${h.id}`,
+			group: 'Item',
+			label: h.title || h.url || (h.body ?? '').slice(0, 60) || `#${h.id}`,
+			hint:
+				h.type === 'snippet'
+					? `${TYPE_LABEL[h.type]}${h.language ? ` · ${h.language}` : ''} · Shift+Enter copy`
+					: h.type === 'bookmark'
+						? `${TYPE_LABEL[h.type]} · Shift+Enter open link`
+						: TYPE_LABEL[h.type],
+			haystack: '',
+			run: (alt) => {
+				if (alt && h.type === 'snippet' && h.body) {
+					copy(h.body);
+					close();
+				} else if (alt && h.type === 'bookmark' && h.url) {
+					window.open(h.url, '_blank', 'noopener');
+					close();
+				} else {
+					go(`/items/${h.id}`);
 				}
-			})
-		)
+			}
+		}))
 	);
 
 	const entries = $derived.by(() => {
@@ -193,20 +199,24 @@
 
 <svelte:window onkeydown={onWindowKeydown} />
 
-<dialog
-	bind:this={dialog}
-	class="modal modal-top sm:modal-middle"
-	onclose={onClose}
-	aria-label="Command palette"
->
-	<div class="modal-box flex max-h-[80vh] max-w-xl flex-col rounded-none border border-base-300 p-0">
-		<div class="flex items-center gap-2 border-b border-base-300 px-3">
-			<span aria-hidden="true" class="opacity-50">⌕</span>
+<Dialog.Root bind:open={isOpen} {onOpenChange}>
+	<Dialog.Content
+		class="top-[12vh] flex max-h-[76vh] translate-y-0 flex-col gap-0 overflow-hidden p-0 sm:max-w-xl"
+		showCloseButton={false}
+		aria-label="Command palette"
+		onOpenAutoFocus={(e) => {
+			e.preventDefault();
+			input?.focus();
+		}}
+	>
+		<Dialog.Title class="sr-only">Command palette</Dialog.Title>
+		<div class="flex items-center gap-2 border-b px-3">
+			<SearchIcon class="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
 			<input
 				bind:this={input}
 				bind:value={query}
 				onkeydown={onInputKeydown}
-				class="input input-ghost w-full rounded-none px-0 focus:outline-none"
+				class="placeholder:text-muted-foreground h-12 w-full bg-transparent text-sm outline-none focus-visible:outline-none"
 				placeholder="Search pages, tools, or items…"
 				role="combobox"
 				aria-expanded="true"
@@ -216,53 +226,51 @@
 				autocomplete="off"
 				spellcheck="false"
 			/>
-			{#if loading}<span class="loading loading-spinner loading-xs"></span>{/if}
-			<kbd class="kbd kbd-xs hidden sm:inline-flex">Esc</kbd>
+			{#if loading}<Spinner class="text-muted-foreground" />{/if}
+			<Kbd class="hidden sm:inline-flex">Esc</Kbd>
 		</div>
 
-		<ul id="cmdk-list" role="listbox" class="flex-1 overflow-y-auto py-1" aria-label="Results">
+		<ul
+			id="cmdk-list"
+			role="listbox"
+			class="flex-1 overflow-x-hidden overflow-y-auto p-1"
+			aria-label="Results"
+		>
 			{#each entries as entry, i (entry.key)}
 				{#if i === 0 || entries[i - 1].group !== entry.group}
-					<li role="presentation" class="label-mono px-3 pb-1 pt-2">{entry.group}</li>
+					<li role="presentation" class="label-mono px-2 pt-2 pb-1">{entry.group}</li>
 				{/if}
 				<li
 					id="cmdk-opt-{i}"
 					role="option"
 					aria-selected={i === active}
-					class="flex cursor-pointer items-baseline justify-between gap-3 px-3 py-2 text-sm {i ===
+					class="flex cursor-pointer items-baseline justify-between gap-3 rounded-md px-2 py-2 text-sm {i ===
 					active
-						? 'bg-base-300'
+						? 'bg-accent text-accent-foreground'
 						: ''}"
 					onmousemove={() => (active = i)}
 					onclick={(e) => entry.run(e.shiftKey)}
 					onkeydown={() => {}}
 				>
 					<span class="truncate">{entry.label}</span>
-					{#if entry.hint}<span class="shrink-0 truncate text-xs opacity-50">{entry.hint}</span>{/if}
+					{#if entry.hint}
+						<span class="text-muted-foreground shrink-0 truncate text-xs">{entry.hint}</span>
+					{/if}
 				</li>
 			{:else}
-				<li class="px-3 py-6 text-center text-sm opacity-60">
+				<li class="text-muted-foreground px-3 py-6 text-center text-sm">
 					{loading ? 'Searching…' : 'No results'}
 				</li>
 			{/each}
 		</ul>
 
 		<div
-			class="hidden gap-3 border-t border-base-300 px-3 py-1.5 text-[11px] opacity-60 sm:flex"
+			class="text-muted-foreground hidden gap-3 border-t px-3 py-2 text-[11px] sm:flex"
 			aria-hidden="true"
 		>
-			<span><kbd class="kbd kbd-xs">↑↓</kbd> select</span>
-			<span><kbd class="kbd kbd-xs">Enter</kbd> open</span>
-			<span><kbd class="kbd kbd-xs">Shift Enter</kbd> copy snippet / open link</span>
+			<span><Kbd>↑↓</Kbd> select</span>
+			<span><Kbd>Enter</Kbd> open</span>
+			<span><Kbd>Shift Enter</Kbd> copy snippet / open link</span>
 		</div>
-	</div>
-	<form method="dialog" class="modal-backdrop">
-		<button aria-label="Close">close</button>
-	</form>
-</dialog>
-
-{#if toast}
-	<div class="toast toast-center z-[60]" role="status">
-		<div class="alert rounded-none py-2 text-sm">{toast}</div>
-	</div>
-{/if}
+	</Dialog.Content>
+</Dialog.Root>

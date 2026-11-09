@@ -2,6 +2,14 @@
 	import type { ActionData, PageData } from './$types';
 	import { formatRupiah } from '$lib/format';
 	import NotificationSetup from '$lib/components/NotificationSetup.svelte';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Badge, type BadgeVariant } from '$lib/components/ui/badge/index.js';
+	import { NativeSelect } from '$lib/components/ui/native-select/index.js';
+	import { AnimatedGroup } from '$lib/components/motion';
+	import Check from '@lucide/svelte/icons/check';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -26,14 +34,18 @@
 		due_soon: 'Due soon',
 		upcoming: 'Upcoming'
 	};
-	const statusBadgeClass: Record<string, string> = {
-		overdue: 'badge-error',
-		due_soon: 'badge-warning',
-		upcoming: 'badge-ghost'
+	const statusBadge: Record<string, { variant: BadgeVariant; class?: string }> = {
+		overdue: { variant: 'destructive' },
+		due_soon: { variant: 'outline', class: 'border-warning/40 text-warning' },
+		upcoming: { variant: 'secondary' }
 	};
 
 	function shortDate(iso: string): string {
-		return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+		return new Date(iso).toLocaleDateString('en-GB', {
+			day: '2-digit',
+			month: 'short',
+			year: 'numeric'
+		});
 	}
 
 	function dueLabel(days: number): string {
@@ -44,137 +56,141 @@
 </script>
 
 <div class="grid gap-4 sm:gap-6 lg:grid-cols-[380px_1fr]">
-	<aside class="order-2 space-y-3 lg:order-1 lg:sticky lg:top-4 lg:self-start">
-		<section
-			class="rounded-box border border-base-300 bg-base-200/60 p-4"
-			aria-label="Bill notifications"
-		>
-			<h2 class="text-[10px] font-semibold uppercase tracking-wider opacity-50">Notifications</h2>
-			<div class="mt-2">
+	<aside
+		class="order-2 space-y-4 lg:sticky lg:top-[calc(var(--header-height)+1rem)] lg:order-1 lg:self-start"
+	>
+		<Card.Root class="gap-3 py-4" aria-label="Bill notifications">
+			<Card.Header class="px-4">
+				<Card.Description class="label-mono">Notifications</Card.Description>
+			</Card.Header>
+			<Card.Content class="px-4">
 				<NotificationSetup deviceCount={data.devices.length} />
-			</div>
-		</section>
+			</Card.Content>
+		</Card.Root>
 
-		<section aria-labelledby="bill-add-heading">
-			<h2
-				id="bill-add-heading"
-				class="mb-2 px-1 text-xs font-semibold uppercase tracking-wider opacity-60"
-			>
-				Add bill
-			</h2>
-			<form
-				method="post"
-				action="?/create"
-				class="card space-y-2 border-l-2 border-l-primary bg-base-200 p-3 sm:p-4"
-			>
-				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Bill name</span></div>
-					<input
-						class="input input-bordered w-full"
+		<section aria-labelledby="bill-add-heading" class="space-y-2">
+			<h2 id="bill-add-heading" class="label-mono px-1">Add bill</h2>
+			<form method="post" action="?/create" class="bg-card space-y-3 rounded-lg border p-3 sm:p-4">
+				<div class="grid gap-1.5">
+					<Label for="bill-title">Bill name</Label>
+					<Input
+						id="bill-title"
 						name="title"
 						placeholder="PLN electricity, Internet, etc."
 						required
 						autocomplete="off"
 					/>
-				</label>
+				</div>
 
-				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Amount (Rp)</span></div>
-					<input
-						class="input input-bordered w-full"
+				<div class="grid gap-1.5">
+					<Label for="bill-amount">Amount (Rp)</Label>
+					<Input
+						id="bill-amount"
 						name="amount"
 						inputmode="numeric"
 						placeholder="350000"
 						required
 						autocomplete="off"
 					/>
-				</label>
+				</div>
 
-				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Due date</span></div>
-					<input class="input input-bordered w-full" name="next_due_at" type="date" required />
-				</label>
+				<div class="grid gap-1.5">
+					<Label for="bill-due">Due date</Label>
+					<Input id="bill-due" name="next_due_at" type="date" required />
+				</div>
 
-				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Category</span></div>
-					<select class="select select-bordered w-full" name="category">
-						{#each data.categories as c}
+				<div class="grid gap-1.5">
+					<Label for="bill-category">Category</Label>
+					<NativeSelect id="bill-category" class="w-full" name="category">
+						{#each data.categories as c (c)}
 							<option value={c}>{categoryLabels[c]}</option>
 						{/each}
-					</select>
-				</label>
+					</NativeSelect>
+				</div>
 
-				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Recurrence</span></div>
-					<select class="select select-bordered w-full" name="recurrence" bind:value={recurrence}>
-						{#each data.recurrences as r}
+				<div class="grid gap-1.5">
+					<Label for="bill-recurrence">Recurrence</Label>
+					<NativeSelect
+						id="bill-recurrence"
+						class="w-full"
+						name="recurrence"
+						bind:value={recurrence}
+					>
+						{#each data.recurrences as r (r)}
 							<option value={r}>{recurrenceLabels[r]}</option>
 						{/each}
-					</select>
-				</label>
+					</NativeSelect>
+				</div>
 
 				{#if recurrence === 'custom_days'}
-					<label class="form-control w-full">
-						<div class="label py-1"><span class="label-text text-xs">Interval (days)</span></div>
-						<input
-							class="input input-bordered w-full"
+					<div class="grid gap-1.5">
+						<Label for="bill-interval">Interval (days)</Label>
+						<Input
+							id="bill-interval"
 							name="interval_days"
 							type="number"
 							min="1"
 							placeholder="14"
 							required
 						/>
-					</label>
+					</div>
 				{/if}
 
-				<button class="btn btn-primary w-full" type="submit">Save</button>
+				<Button class="w-full" type="submit">Save</Button>
 
 				{#if form && 'error' in form && form.error}
-					<div role="alert" class="alert alert-error py-2 text-sm">{form.error}</div>
+					<p role="alert" class="text-destructive text-sm">{form.error}</p>
 				{/if}
 			</form>
 		</section>
 	</aside>
 
 	<section class="order-1 min-w-0 space-y-3 lg:order-2">
-		<header class="px-1">
-			<h1 class="text-lg font-semibold sm:text-xl">Bills</h1>
-		</header>
-
 		{#if data.bills.length === 0}
-			<p class="rounded-box border border-dashed border-base-300 p-6 text-center text-sm opacity-60">
+			<p class="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
 				No bills recorded yet.
 			</p>
 		{:else}
-			<ul class="space-y-2" role="list">
+			<AnimatedGroup class="space-y-2">
 				{#each data.bills as b (b.id)}
-					<li class="rounded-box border border-base-300 bg-base-200/40 p-3">
+					<div
+						class="bg-card rounded-lg border p-3 {b.status === 'overdue'
+							? 'border-l-destructive border-l-2'
+							: b.status === 'due_soon'
+								? 'border-l-warning border-l-2'
+								: ''}"
+					>
 						<div class="flex items-start justify-between gap-2">
 							<a href="/bills/{b.id}" class="min-w-0 flex-1">
 								<div class="truncate text-sm font-medium">{b.title}</div>
-								<div class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs opacity-70">
-									<span class="badge badge-ghost badge-sm">{categoryLabels[b.category]}</span>
-									<span class="badge {statusBadgeClass[b.status]} badge-sm">
+								<div
+									class="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs"
+								>
+									<Badge variant="secondary">{categoryLabels[b.category]}</Badge>
+									<Badge
+										variant={statusBadge[b.status].variant}
+										class={statusBadge[b.status].class}
+									>
 										{statusLabels[b.status]}
-									</span>
+									</Badge>
 									<span>{shortDate(b.nextDueAt)} · {dueLabel(b.daysUntilDue)}</span>
-									<span class="opacity-60">· {recurrenceLabels[b.recurrence]}</span>
+									<span>· {recurrenceLabels[b.recurrence]}</span>
 								</div>
 							</a>
-							<div class="shrink-0 text-right">
-								<div class="font-display text-sm font-semibold tabular-nums">
-									{formatRupiah(b.amount)}
-								</div>
+							<div class="shrink-0 text-right text-sm font-semibold tabular-nums">
+								{formatRupiah(b.amount)}
 							</div>
 						</div>
 						<div class="mt-2 flex justify-end gap-2">
 							<form method="post" action="/bills/{b.id}?/markPaid">
-								<button class="btn btn-success btn-sm tap-target" type="submit">Mark as paid</button>
+								<Button variant="outline" size="sm" class="tap-target" type="submit">
+									<Check />Mark as paid
+								</Button>
 							</form>
 						</div>
-					</li>
+					</div>
 				{/each}
-			</ul>
+			</AnimatedGroup>
 		{/if}
 	</section>
 </div>

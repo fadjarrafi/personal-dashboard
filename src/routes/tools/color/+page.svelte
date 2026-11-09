@@ -1,5 +1,10 @@
 <script lang="ts">
 	import CopyButton from '$lib/components/CopyButton.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import Segmented from '$lib/components/tools/Segmented.svelte';
+	import ArrowLeftRight from '@lucide/svelte/icons/arrow-left-right';
 	import ToolHeader from '$lib/components/tools/ToolHeader.svelte';
 	import {
 		HARMONIES,
@@ -106,35 +111,38 @@
 	<section class="space-y-3" aria-labelledby="shade-heading">
 		<h2 id="shade-heading" class="label-mono">Shade scale</h2>
 		<div class="flex flex-wrap items-end gap-3">
-			<label class="form-control">
-				<div class="label py-1"><span class="label-text text-xs">Base color</span></div>
+			<div class="grid gap-1.5">
+				<Label for="color-hex" class="text-xs">Base color</Label>
 				<div class="flex items-center gap-2">
 					<input
 						type="color"
-						class="h-11 w-11 cursor-pointer border border-base-300 bg-transparent"
+						class="h-9 w-11 cursor-pointer rounded-md border bg-transparent"
 						value={base ? toHex(base) : '#000000'}
 						oninput={(e) => (hexInput = e.currentTarget.value)}
 						aria-label="Pick color"
 					/>
-					<input
-						class="input input-bordered w-32 font-mono {base ? '' : 'input-error'}"
+					<Input
+						id="color-hex"
+						class="w-32 font-mono"
 						bind:value={hexInput}
 						spellcheck="false"
-						aria-label="Hex"
+						aria-invalid={base ? undefined : true}
 					/>
 				</div>
-			</label>
-			<label class="form-control">
-				<div class="label py-1"><span class="label-text text-xs">Token name</span></div>
-				<input class="input input-bordered w-32 font-mono" bind:value={name} spellcheck="false" />
-			</label>
+			</div>
+			<div class="grid gap-1.5">
+				<Label for="color-name" class="text-xs">Token name</Label>
+				<Input id="color-name" class="w-32 font-mono" bind:value={name} spellcheck="false" />
+			</div>
 			{#if base}
-				<code class="pb-3 font-mono text-xs opacity-70">{formatOklch(rgbToOklch(base))}</code>
+				<code class="text-muted-foreground pb-2.5 font-mono text-xs"
+					>{formatOklch(rgbToOklch(base))}</code
+				>
 			{/if}
 		</div>
 
 		{#if shades.length}
-			<div class="grid grid-cols-6 gap-px border border-base-300 sm:grid-cols-11">
+			<div class="grid grid-cols-6 gap-px overflow-hidden rounded-md border sm:grid-cols-11">
 				{#each shades as s (s.step)}
 					{@render swatch(s.rgb, String(s.step))}
 				{/each}
@@ -142,22 +150,19 @@
 
 			<div class="space-y-2">
 				<div class="flex flex-wrap items-center justify-between gap-2">
-					<div class="join" role="group" aria-label="Format export">
-						{#each [['css', 'CSS vars'], ['tailwind', 'Tailwind'], ['hex', 'Hex list']] as [value, label]}
-							<button
-								type="button"
-								class="btn join-item btn-xs rounded-none {exportFormat === value
-									? 'btn-active'
-									: ''}"
-								aria-pressed={exportFormat === value}
-								onclick={() => (exportFormat = value as typeof exportFormat)}>{label}</button
-							>
-						{/each}
-					</div>
+					<Segmented
+						bind:value={exportFormat}
+						options={[
+							{ value: 'css', label: 'CSS vars' },
+							{ value: 'tailwind', label: 'Tailwind' },
+							{ value: 'hex', label: 'Hex list' }
+						]}
+						ariaLabel="Format export"
+					/>
 					<CopyButton text={exportText} />
 				</div>
 				<pre
-					class="max-h-64 overflow-auto border border-base-300 bg-black p-3 font-mono text-xs">{exportText}</pre>
+					class="bg-well max-h-64 overflow-auto rounded-md border p-3 font-mono text-xs">{exportText}</pre>
 			</div>
 		{/if}
 	</section>
@@ -168,10 +173,13 @@
 			<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 				{#each HARMONIES as hm (hm.name)}
 					<div>
-						<div class="mb-1 text-xs opacity-70">{hm.name}</div>
-						<div class="flex gap-px border border-base-300">
-							{#each hm.offsets as off}
-								{@render swatch(rotateHue(base, off), off === 0 ? 'base' : `${off > 0 ? '+' : ''}${off}°`)}
+						<div class="text-muted-foreground mb-1 text-xs">{hm.name}</div>
+						<div class="flex gap-px overflow-hidden rounded-md border">
+							{#each hm.offsets as off (off)}
+								{@render swatch(
+									rotateHue(base, off),
+									off === 0 ? 'base' : `${off > 0 ? '+' : ''}${off}°`
+								)}
 							{/each}
 						</div>
 					</div>
@@ -183,36 +191,39 @@
 	<section class="space-y-3" aria-labelledby="contrast-heading">
 		<h2 id="contrast-heading" class="label-mono">WCAG contrast</h2>
 		<div class="flex flex-wrap items-end gap-3">
-			<label class="form-control">
-				<div class="label py-1"><span class="label-text text-xs">Text</span></div>
-				<input class="input input-bordered w-32 font-mono" bind:value={fg} spellcheck="false" />
-			</label>
-			<label class="form-control">
-				<div class="label py-1"><span class="label-text text-xs">Background</span></div>
-				<input class="input input-bordered w-32 font-mono" bind:value={bg} spellcheck="false" />
-			</label>
-			<button
-				type="button"
-				class="btn-brutal-ghost btn-sm mb-1"
+			<div class="grid gap-1.5">
+				<Label for="color-fg" class="text-xs">Text</Label>
+				<Input id="color-fg" class="w-32 font-mono" bind:value={fg} spellcheck="false" />
+			</div>
+			<div class="grid gap-1.5">
+				<Label for="color-bg" class="text-xs">Background</Label>
+				<Input id="color-bg" class="w-32 font-mono" bind:value={bg} spellcheck="false" />
+			</div>
+			<Button
+				variant="outline"
+				size="icon"
 				onclick={() => ([fg, bg] = [bg, fg])}
-				aria-label="Swap text and background colors">⇄</button
+				aria-label="Swap text and background colors"><ArrowLeftRight /></Button
 			>
 			{#if base}
-				<button type="button" class="btn-brutal-ghost btn-sm mb-1" onclick={() => (bg = toHex(base))}>
-					Background = base color
-				</button>
+				<Button variant="outline" onclick={() => (bg = toHex(base))}>Background = base color</Button
+				>
 			{/if}
 		</div>
 		{#if contrast !== null}
 			<div class="flex flex-wrap items-center gap-4">
-				<div class="border border-base-300 px-4 py-3" style="background: {bg}; color: {fg}">
+				<div class="rounded-md border px-4 py-3" style="background: {bg}; color: {fg}">
 					<div class="text-lg font-semibold">Aa Sample text</div>
 					<div class="text-sm">Normal-size body text.</div>
 				</div>
 				<div>
-					<div class="font-mono text-2xl">{contrast.toFixed(2)}:1</div>
-					<div class="text-sm opacity-70">
-						Normal: {grade(contrast)} · Large: {contrast >= 4.5 ? 'AAA' : contrast >= 3 ? 'AA' : 'Fail'}
+					<div class="font-mono text-2xl tabular-nums">{contrast.toFixed(2)}:1</div>
+					<div class="text-muted-foreground text-sm">
+						Normal: {grade(contrast)} · Large: {contrast >= 4.5
+							? 'AAA'
+							: contrast >= 3
+								? 'AA'
+								: 'Fail'}
 					</div>
 				</div>
 			</div>
@@ -222,31 +233,37 @@
 	<section class="space-y-3" aria-labelledby="extract-heading">
 		<h2 id="extract-heading" class="label-mono">Extract palette from image</h2>
 		<div class="flex flex-wrap items-end gap-3">
-			<input
+			<Input
 				type="file"
 				accept="image/*"
-				class="file-input file-input-bordered w-full max-w-xs"
+				class="w-full max-w-xs"
 				onchange={onImage}
 				aria-label="Choose image"
 			/>
-			<label class="form-control w-40">
-				<div class="label py-1"><span class="label-text text-xs">Colors: {k}</span></div>
-				<input type="range" min="3" max="10" class="range range-sm" bind:value={k} onchange={runExtract} />
-			</label>
+			<div class="grid w-40 gap-1.5">
+				<Label for="color-k" class="text-xs">Colors: {k}</Label>
+				<input
+					id="color-k"
+					type="range"
+					min="3"
+					max="10"
+					class="accent-primary h-8 w-full cursor-pointer"
+					bind:value={k}
+					onchange={runExtract}
+				/>
+			</div>
 		</div>
 		{#if imageUrl}
 			<div class="flex flex-wrap items-start gap-4">
-				<img src={imageUrl} alt="Palette source" class="max-h-48 max-w-full border border-base-300" />
+				<img src={imageUrl} alt="Palette source" class="max-h-48 max-w-full rounded-md border" />
 				<ul class="min-w-0 flex-1 space-y-1" role="list">
-					{#each extracted as e}
+					{#each extracted as e, i (i)}
 						{@const hex = toHex(e.rgb)}
 						<li class="flex items-center gap-2 text-sm">
-							<span class="h-6 w-10 border border-base-300" style="background: {hex}"></span>
+							<span class="h-6 w-10 rounded-sm border" style="background: {hex}"></span>
 							<code class="font-mono">{hex}</code>
-							<span class="opacity-50">{(e.share * 100).toFixed(0)}%</span>
-							<button type="button" class="btn btn-ghost btn-xs rounded-none" onclick={() => pick(e.rgb)}>
-								Use as base
-							</button>
+							<span class="text-muted-foreground">{(e.share * 100).toFixed(0)}%</span>
+							<Button variant="ghost" size="xs" onclick={() => pick(e.rgb)}>Use as base</Button>
 						</li>
 					{/each}
 				</ul>

@@ -3,6 +3,20 @@
 	import { formatRupiah } from '$lib/format';
 	import SpendChart from '$lib/components/SpendChart.svelte';
 	import MonthlySpendChart from '$lib/components/MonthlySpendChart.svelte';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Table from '$lib/components/ui/table/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import { Separator } from '$lib/components/ui/separator/index.js';
+	import { AnimatedNumber } from '$lib/components/motion';
+	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
+	import ChevronRight from '@lucide/svelte/icons/chevron-right';
+	import Search from '@lucide/svelte/icons/search';
+	import Plus from '@lucide/svelte/icons/plus';
+	import TrendingUp from '@lucide/svelte/icons/trending-up';
+	import TrendingDown from '@lucide/svelte/icons/trending-down';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -55,128 +69,119 @@
 
 <div class="grid gap-4 sm:gap-6 lg:grid-cols-[380px_1fr]">
 	<!-- Sidebar / summary + form -->
-	<aside class="order-2 space-y-3 lg:order-1 lg:sticky lg:top-4 lg:self-start">
+	<aside
+		class="order-2 space-y-4 lg:sticky lg:top-[calc(var(--header-height)+1rem)] lg:order-1 lg:self-start"
+	>
 		<!-- Ringkasan -->
-		<section
-			class="rounded-box border border-base-300 bg-base-200/60 p-4"
-			aria-label="Current month summary"
-		>
-			<h2 class="text-[10px] font-semibold uppercase tracking-wider opacity-50">Summary</h2>
-			<div class="mt-0.5 text-sm font-medium opacity-80">{monthLabel}</div>
-			<div class="mt-2 font-display text-3xl font-semibold tabular-nums">
-				{formatRupiah(data.summary.total)}
-			</div>
-			<div class="mt-1 flex flex-wrap gap-x-3 text-xs opacity-70">
-				<span>{data.summary.count} transaction(s)</span>
-				{#if trend !== null}
-					<span class={trend > 0 ? 'text-warning' : 'text-success'}>
-						{trend > 0 ? '↑' : '↓'} {Math.abs(trend)}% vs last month
-					</span>
-				{:else if data.summary.previousTotal === 0 && data.summary.total > 0}
-					<span class="opacity-60">last month: —</span>
-				{/if}
-			</div>
-
-			{#if data.summary.byCategory.length > 0}
-				<div class="divider my-2"></div>
-				<div class="mb-1 text-[10px] font-semibold uppercase tracking-wider opacity-50">
-					By category
+		<Card.Root class="gap-3 py-4" aria-label="Current month summary">
+			<Card.Header class="px-4">
+				<Card.Description class="label-mono">Summary · {monthLabel}</Card.Description>
+				<Card.Title class="text-3xl font-semibold tabular-nums">
+					<AnimatedNumber value={data.summary.total} format={formatRupiah} />
+				</Card.Title>
+			</Card.Header>
+			<Card.Content class="space-y-3 px-4">
+				<div class="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+					<span>{data.summary.count} transaction(s)</span>
+					{#if trend !== null}
+						<span class="flex items-center gap-1 {trend > 0 ? 'text-warning' : 'text-success'}">
+							{#if trend > 0}<TrendingUp class="size-3.5" />{:else}<TrendingDown
+									class="size-3.5"
+								/>{/if}
+							{Math.abs(trend)}% vs last month
+						</span>
+					{:else if data.summary.previousTotal === 0 && data.summary.total > 0}
+						<span>last month: —</span>
+					{/if}
 				</div>
-				<ul class="space-y-1 text-xs">
-					{#each data.summary.byCategory as row}
-						{@const pct = data.summary.total > 0
-							? Math.round((row.total / data.summary.total) * 100)
-							: 0}
-						<li>
-							<a
-								href="/spends?{buildQuery({ category: row.category })}"
-								class="flex items-center justify-between gap-2 rounded px-1 py-0.5 hover:bg-base-300"
-							>
-								<span class="min-w-0 truncate">{row.category}</span>
-								<span class="shrink-0 tabular-nums opacity-80">
-									{formatRupiah(row.total)}
-									<span class="opacity-50">({pct}%)</span>
-								</span>
-							</a>
-						</li>
-					{/each}
-				</ul>
-			{/if}
-		</section>
+
+				{#if data.summary.byCategory.length > 0}
+					<Separator />
+					<div class="label-mono">By category</div>
+					<ul class="space-y-0.5 text-xs">
+						{#each data.summary.byCategory as row (row.category)}
+							{@const pct =
+								data.summary.total > 0 ? Math.round((row.total / data.summary.total) * 100) : 0}
+							<li>
+								<a
+									href="/spends?{buildQuery({ category: row.category })}"
+									class="hover:bg-accent flex items-center justify-between gap-2 rounded-sm px-1.5 py-1"
+								>
+									<span class="min-w-0 truncate">{row.category}</span>
+									<span class="shrink-0 tabular-nums">
+										{formatRupiah(row.total)}
+										<span class="text-muted-foreground">({pct}%)</span>
+									</span>
+								</a>
+							</li>
+						{/each}
+					</ul>
+				{/if}
+			</Card.Content>
+		</Card.Root>
 
 		<!-- Quick add -->
-		<section aria-labelledby="quick-add-heading">
-			<h2
-				id="quick-add-heading"
-				class="mb-2 px-1 text-xs font-semibold uppercase tracking-wider opacity-60"
-			>
-				Quick add
-			</h2>
+		<section aria-labelledby="quick-add-heading" class="space-y-2">
+			<h2 id="quick-add-heading" class="label-mono px-1">Quick add</h2>
 			<form
 				id="spend-form"
 				method="post"
 				action="?/create"
-				class="card space-y-2 border-l-2 border-l-primary bg-base-200 p-3 sm:p-4"
+				class="bg-card space-y-3 rounded-lg border p-3 sm:p-4"
 			>
-				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Amount (Rp)</span></div>
-					<input
-						class="input input-bordered w-full"
+				<div class="grid gap-1.5">
+					<Label for="spend-amount">Amount (Rp)</Label>
+					<Input
+						id="spend-amount"
 						name="amount"
 						inputmode="numeric"
 						placeholder="15000"
 						required
 						autocomplete="off"
 					/>
-				</label>
+				</div>
 
-				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Date</span></div>
-					<input
-						class="input input-bordered w-full"
-						name="occurred_at"
-						type="date"
-						value={data.today}
-						required
-					/>
-				</label>
+				<div class="grid gap-1.5">
+					<Label for="spend-date">Date</Label>
+					<Input id="spend-date" name="occurred_at" type="date" value={data.today} required />
+				</div>
 
-				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Category</span></div>
-					<input
-						class="input input-bordered w-full"
+				<div class="grid gap-1.5">
+					<Label for="spend-category">Category</Label>
+					<Input
+						id="spend-category"
 						name="category"
 						placeholder="food, transport, etc."
 						list="spend-categories"
 						autocomplete="off"
 					/>
-				</label>
+				</div>
 
-				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Merchant (optional)</span></div>
-					<input
-						class="input input-bordered w-full"
+				<div class="grid gap-1.5">
+					<Label for="spend-merchant">Merchant (optional)</Label>
+					<Input
+						id="spend-merchant"
 						name="merchant"
 						placeholder="Canteen, GoRide, etc."
 						autocomplete="off"
 					/>
-				</label>
+				</div>
 
-				<label class="form-control w-full">
-					<div class="label py-1"><span class="label-text text-xs">Note (optional)</span></div>
-					<input class="input input-bordered w-full" name="note" autocomplete="off" />
-				</label>
+				<div class="grid gap-1.5">
+					<Label for="spend-note">Note (optional)</Label>
+					<Input id="spend-note" name="note" autocomplete="off" />
+				</div>
 
 				<datalist id="spend-categories">
-					{#each data.categories as c}
+					{#each data.categories as c (c)}
 						<option value={c}></option>
 					{/each}
 				</datalist>
 
-				<button class="btn btn-primary w-full" type="submit">Save</button>
+				<Button class="w-full" type="submit">Save</Button>
 
 				{#if form && 'error' in form && form.error}
-					<div role="alert" class="alert alert-error py-2 text-sm">{form.error}</div>
+					<p role="alert" class="text-destructive text-sm">{form.error}</p>
 				{/if}
 			</form>
 		</section>
@@ -184,18 +189,9 @@
 
 	<!-- Main: daftar -->
 	<section class="order-1 min-w-0 space-y-4 lg:order-2">
-		<header class="px-1">
-			<h1 class="text-lg font-semibold sm:text-xl">Spending</h1>
-		</header>
-
 		<!-- Tren -->
-		<section aria-labelledby="spend-trend-heading">
-			<h2
-				id="spend-trend-heading"
-				class="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wider opacity-50"
-			>
-				Trends
-			</h2>
+		<section aria-labelledby="spend-trend-heading" class="space-y-2">
+			<h2 id="spend-trend-heading" class="label-mono px-1">Trends</h2>
 			<div class="grid gap-3 sm:grid-cols-2">
 				<SpendChart data={data.daily} today={data.today} />
 				<MonthlySpendChart data={data.monthly} currentMonth={data.filters.month} />
@@ -208,70 +204,79 @@
 		<form
 			method="get"
 			role="search"
-			class="flex flex-col gap-2 rounded-box border border-base-300 bg-base-200/40 p-2 sm:flex-row sm:flex-wrap sm:items-center"
+			class="bg-card flex flex-col gap-2 rounded-lg border p-2 sm:flex-row sm:flex-wrap sm:items-center"
 		>
-			{#if data.filters.category}<input type="hidden" name="category" value={data.filters.category} />{/if}
+			{#if data.filters.category}<input
+					type="hidden"
+					name="category"
+					value={data.filters.category}
+				/>{/if}
 
 			<div class="flex items-center gap-1">
-				<a
-					class="btn btn-ghost btn-sm tap-target"
+				<Button
+					variant="ghost"
+					size="icon-sm"
+					class="tap-target"
 					href="/spends?{buildQuery({ month: prevMonthLabel(data.filters.month) })}"
 					aria-label="Previous month"
 				>
-					←
-				</a>
+					<ChevronLeft />
+				</Button>
 				<label for="spend-month" class="sr-only">Select month</label>
-				<input
+				<Input
 					id="spend-month"
-					class="input input-bordered input-sm w-[9.5rem]"
+					class="h-8 w-[10rem]"
 					type="month"
 					name="month"
 					value={data.filters.month}
-					onchange={(e) => e.currentTarget.form?.requestSubmit()}
+					onchange={(e) => (e.currentTarget as HTMLInputElement).form?.requestSubmit()}
 				/>
-				<a
-					class="btn btn-ghost btn-sm tap-target"
+				<Button
+					variant="ghost"
+					size="icon-sm"
+					class="tap-target"
 					href="/spends?{buildQuery({ month: nextMonthLabel(data.filters.month) })}"
 					aria-label="Next month"
 				>
-					→
-				</a>
+					<ChevronRight />
+				</Button>
 				{#if data.filters.month !== currentMonth}
-					<a class="btn btn-ghost btn-sm" href="/spends?{buildQuery({ month: currentMonth })}">
+					<Button variant="ghost" size="sm" href="/spends?{buildQuery({ month: currentMonth })}">
 						Today
-					</a>
+					</Button>
 				{/if}
 			</div>
 
 			<div class="flex w-full min-w-0 flex-1 gap-2">
 				<label for="spend-search" class="sr-only">Search spending</label>
-				<input
+				<Input
 					id="spend-search"
-					class="input input-bordered w-full min-w-0 flex-1"
+					class="min-w-0 flex-1"
 					name="q"
 					value={data.filters.q ?? ''}
 					placeholder="Search merchant, note, category…"
 					autocomplete="off"
 					enterkeyhint="search"
 				/>
-				<button class="btn btn-primary" type="submit">Search</button>
+				<Button type="submit"><Search />Search</Button>
 				{#if data.filters.q}
-					<a class="btn btn-ghost" href="/spends?{buildQuery({ q: undefined })}"> Reset </a>
+					<Button variant="ghost" href="/spends?{buildQuery({ q: undefined })}">Reset</Button>
 				{/if}
 			</div>
 		</form>
 
 		{#if data.filters.category}
-			<div class="-mt-2 px-1 text-sm opacity-70">
-				Category filter: <span class="badge badge-neutral">{data.filters.category}</span>
-				<a class="link ml-2" href="/spends?{buildQuery({ category: undefined })}">clear</a>
+			<div class="text-muted-foreground -mt-2 flex items-center gap-2 px-1 text-sm">
+				Category filter: <Badge variant="secondary">{data.filters.category}</Badge>
+				<a
+					class="text-primary underline-offset-4 hover:underline"
+					href="/spends?{buildQuery({ category: undefined })}">clear</a
+				>
 			</div>
 		{/if}
 
 		{#if data.spends.length === 0}
-			<p
-				class="rounded-box border border-dashed border-base-300 p-6 text-center text-sm opacity-60"
-			>
+			<p class="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
 				No {data.filters.q ? 'matching spending' : 'spending this month'} yet.
 			</p>
 		{:else}
@@ -281,23 +286,25 @@
 					<li>
 						<a
 							href="/spends/{s.id}"
-							class="block rounded-box border border-base-300 bg-base-200/40 p-3 transition active:bg-base-300"
+							class="bg-card active:bg-accent block rounded-lg border p-3 transition-colors"
 						>
 							<div class="flex items-start justify-between gap-2">
 								<div class="min-w-0 flex-1">
 									<div class="truncate text-sm font-medium">
 										{s.merchant ?? s.note ?? '(no merchant)'}
 									</div>
-									<div class="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs opacity-70">
+									<div
+										class="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs"
+									>
 										{#if s.category}
-											<span class="badge badge-ghost badge-sm">{s.category}</span>
+											<Badge variant="secondary">{s.category}</Badge>
 										{/if}
 										<time>{shortDate(s.occurredAt)}</time>
-										{#if s.method}<span class="opacity-60">· {s.method}</span>{/if}
+										{#if s.method}<span>· {s.method}</span>{/if}
 									</div>
 								</div>
-								<div class="shrink-0 text-right">
-									<div class="font-semibold tabular-nums">{formatRupiah(s.amount)}</div>
+								<div class="shrink-0 text-right font-semibold tabular-nums">
+									{formatRupiah(s.amount)}
 								</div>
 							</div>
 						</a>
@@ -306,51 +313,55 @@
 			</ul>
 
 			<!-- Desktop: tabel -->
-			<div class="hidden overflow-x-auto rounded-box border border-base-300 md:block">
-				<table class="table table-sm">
-					<thead>
-						<tr class="text-xs uppercase tracking-wider">
-							<th class="w-24">Date</th>
-							<th>Merchant / Note</th>
-							<th class="w-32">Category</th>
-							<th class="w-24">Method</th>
-							<th class="w-32 text-right">Amount</th>
-						</tr>
-					</thead>
-					<tbody>
+			<div class="bg-card hidden overflow-hidden rounded-lg border md:block">
+				<Table.Root>
+					<Table.Header>
+						<Table.Row>
+							<Table.Head class="w-24">Date</Table.Head>
+							<Table.Head>Merchant / Note</Table.Head>
+							<Table.Head class="w-32">Category</Table.Head>
+							<Table.Head class="w-24">Method</Table.Head>
+							<Table.Head class="w-32 text-right">Amount</Table.Head>
+						</Table.Row>
+					</Table.Header>
+					<Table.Body>
 						{#each data.spends as s (s.id)}
-							<tr class="cursor-pointer hover" onclick={() => (location.href = `/spends/${s.id}`)}>
-								<td class="whitespace-nowrap text-xs opacity-70">{shortDate(s.occurredAt)}</td>
-								<td class="max-w-0">
-									<div class="truncate font-medium">
+							<Table.Row class="cursor-pointer" onclick={() => (location.href = `/spends/${s.id}`)}>
+								<Table.Cell class="text-muted-foreground text-xs whitespace-nowrap">
+									{shortDate(s.occurredAt)}
+								</Table.Cell>
+								<Table.Cell class="max-w-0">
+									<a href="/spends/{s.id}" class="block truncate font-medium">
 										{s.merchant ?? s.note ?? '(no merchant)'}
-									</div>
+									</a>
 									{#if s.merchant && s.note}
-										<div class="truncate text-xs opacity-60">{s.note}</div>
+										<div class="text-muted-foreground truncate text-xs">{s.note}</div>
 									{/if}
-								</td>
-								<td>
+								</Table.Cell>
+								<Table.Cell>
 									{#if s.category}
-										<span class="badge badge-ghost badge-sm">{s.category}</span>
+										<Badge variant="secondary">{s.category}</Badge>
 									{/if}
-								</td>
-								<td class="text-xs opacity-70">{s.method ?? '—'}</td>
-								<td class="text-right font-semibold tabular-nums">{formatRupiah(s.amount)}</td>
-							</tr>
+								</Table.Cell>
+								<Table.Cell class="text-muted-foreground text-xs">{s.method ?? '—'}</Table.Cell>
+								<Table.Cell class="text-right font-semibold tabular-nums">
+									{formatRupiah(s.amount)}
+								</Table.Cell>
+							</Table.Row>
 						{/each}
-					</tbody>
-				</table>
+					</Table.Body>
+				</Table.Root>
 			</div>
 		{/if}
 	</section>
 </div>
 
-<a
+<Button
 	href="#spend-form"
-	class="btn btn-primary btn-square btn-lg fixed bottom-5 right-5 z-40 lg:hidden"
+	size="icon-lg"
+	class="fixed right-5 bottom-[calc(1.25rem+env(safe-area-inset-bottom))] z-40 size-14 rounded-full shadow-lg lg:hidden"
 	aria-label="Add spending"
 	title="Add spending"
-	style="padding-bottom: env(safe-area-inset-bottom);"
 >
-	<span class="text-2xl leading-none">+</span>
-</a>
+	<Plus class="size-6" />
+</Button>

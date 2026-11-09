@@ -1,91 +1,115 @@
 <script lang="ts">
-	import TrendingDownIcon from '@lucide/svelte/icons/trending-down';
-	import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
+	// Stat tiles — dashboard-01 block "section cards", fed with real data.
+	import TrendingDown from '@lucide/svelte/icons/trending-down';
+	import TrendingUp from '@lucide/svelte/icons/trending-up';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
+	import { AnimatedNumber } from '$lib/components/motion';
+	import { formatRupiah } from '$lib/format';
+
+	interface Props {
+		spend: { total: number; previousTotal: number; count: number };
+		items: { bookmark: number; note: number; snippet: number };
+		bills: { overdue: number; dueSoon: number };
+		tasks: { open: number; overdue: number };
+	}
+
+	let { spend, items, bills, tasks }: Props = $props();
+
+	const spendDelta = $derived(
+		spend.previousTotal > 0
+			? Math.round(((spend.total - spend.previousTotal) / spend.previousTotal) * 100)
+			: null
+	);
+	const itemTotal = $derived(items.bookmark + items.note + items.snippet);
 </script>
 
-<div
-	class="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4"
->
-	<Card.Root class="@container/card">
+<div class="grid grid-cols-1 gap-3 lg:gap-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+	<Card.Root class="@container/card gap-3">
 		<Card.Header>
-			<Card.Description>Total Revenue</Card.Description>
+			<Card.Description>Spending this month</Card.Description>
 			<Card.Title class="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-				$1,250.00
+				<AnimatedNumber value={spend.total} format={formatRupiah} />
 			</Card.Title>
-			<Card.Action>
-				<Badge variant="outline">
-					<TrendingUpIcon />
-					+12.5%
-				</Badge>
-			</Card.Action>
+			{#if spendDelta !== null}
+				<Card.Action>
+					<!-- Spending going up is the "bad" direction. -->
+					<Badge variant="outline" class={spendDelta > 0 ? 'text-warning' : 'text-success'}>
+						{#if spendDelta > 0}<TrendingUp />{:else}<TrendingDown />{/if}
+						{spendDelta > 0 ? '+' : ''}{spendDelta}%
+					</Badge>
+				</Card.Action>
+			{/if}
 		</Card.Header>
-		<Card.Footer class="flex-col items-start gap-1.5 text-sm">
-			<div class="line-clamp-1 flex gap-2 font-medium">
-				Trending up this month <TrendingUpIcon class="size-4" />
+		<Card.Footer class="flex-col items-start gap-1 text-sm">
+			<div class="text-muted-foreground">
+				{spend.count} transaction{spend.count === 1 ? '' : 's'} · vs {formatRupiah(
+					spend.previousTotal
+				)} last month
 			</div>
-			<div class="text-muted-foreground">Visitors for the last 6 months</div>
+			<a href="/spends" class="text-primary text-xs underline-offset-4 hover:underline">
+				Open spending →
+			</a>
 		</Card.Footer>
 	</Card.Root>
-	<Card.Root class="@container/card">
+
+	<Card.Root class="@container/card gap-3">
 		<Card.Header>
-			<Card.Description>New Customers</Card.Description>
+			<Card.Description>Catalog items</Card.Description>
 			<Card.Title class="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-				1,234
+				<AnimatedNumber value={itemTotal} />
 			</Card.Title>
-			<Card.Action>
-				<Badge variant="outline">
-					<TrendingDownIcon />
-					-20%
-				</Badge>
-			</Card.Action>
 		</Card.Header>
-		<Card.Footer class="flex-col items-start gap-1.5 text-sm">
-			<div class="line-clamp-1 flex gap-2 font-medium">
-				Down 20% this period <TrendingDownIcon class="size-4" />
-			</div>
-			<div class="text-muted-foreground">Acquisition needs attention</div>
+		<Card.Footer class="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 text-sm">
+			<span class="flex items-center gap-1.5">
+				<span class="cat-dot text-cat-bookmark" aria-hidden="true"></span>{items.bookmark} bookmark
+			</span>
+			<span class="flex items-center gap-1.5">
+				<span class="cat-dot text-cat-note" aria-hidden="true"></span>{items.note} note
+			</span>
+			<span class="flex items-center gap-1.5">
+				<span class="cat-dot text-cat-snippet" aria-hidden="true"></span>{items.snippet} snippet
+			</span>
 		</Card.Footer>
 	</Card.Root>
-	<Card.Root class="@container/card">
+
+	<Card.Root class="@container/card gap-3">
 		<Card.Header>
-			<Card.Description>Active Accounts</Card.Description>
+			<Card.Description>Bills needing attention</Card.Description>
 			<Card.Title class="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-				45,678
+				<AnimatedNumber value={bills.overdue + bills.dueSoon} />
 			</Card.Title>
-			<Card.Action>
-				<Badge variant="outline">
-					<TrendingUpIcon />
-					+12.5%
-				</Badge>
-			</Card.Action>
+			{#if bills.overdue > 0}
+				<Card.Action>
+					<Badge variant="destructive">{bills.overdue} overdue</Badge>
+				</Card.Action>
+			{/if}
 		</Card.Header>
-		<Card.Footer class="flex-col items-start gap-1.5 text-sm">
-			<div class="line-clamp-1 flex gap-2 font-medium">
-				Strong user retention <TrendingUpIcon class="size-4" />
-			</div>
-			<div class="text-muted-foreground">Engagement exceed targets</div>
+		<Card.Footer class="flex-col items-start gap-1 text-sm">
+			<div class="text-muted-foreground">{bills.dueSoon} due soon</div>
+			<a href="/bills" class="text-primary text-xs underline-offset-4 hover:underline">
+				Open bills →
+			</a>
 		</Card.Footer>
 	</Card.Root>
-	<Card.Root class="@container/card">
+
+	<Card.Root class="@container/card gap-3">
 		<Card.Header>
-			<Card.Description>Growth Rate</Card.Description>
+			<Card.Description>Open tasks</Card.Description>
 			<Card.Title class="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-				4.5%
+				<AnimatedNumber value={tasks.open} />
 			</Card.Title>
-			<Card.Action>
-				<Badge variant="outline">
-					<TrendingUpIcon />
-					+4.5%
-				</Badge>
-			</Card.Action>
+			{#if tasks.overdue > 0}
+				<Card.Action>
+					<Badge variant="destructive">{tasks.overdue} overdue</Badge>
+				</Card.Action>
+			{/if}
 		</Card.Header>
-		<Card.Footer class="flex-col items-start gap-1.5 text-sm">
-			<div class="line-clamp-1 flex gap-2 font-medium">
-				Steady performance increase <TrendingUpIcon class="size-4" />
-			</div>
-			<div class="text-muted-foreground">Meets growth projections</div>
+		<Card.Footer class="flex-col items-start gap-1 text-sm">
+			<div class="text-muted-foreground">Not done, not archived</div>
+			<a href="/tasks" class="text-primary text-xs underline-offset-4 hover:underline">
+				Open tasks →
+			</a>
 		</Card.Footer>
 	</Card.Root>
 </div>

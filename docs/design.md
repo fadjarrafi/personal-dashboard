@@ -34,10 +34,13 @@ sitting on deep indigo-black surfaces.
   patterns (fade/slide transitions, transition panel, animated number, text
   effect, in-view, animated group) are rebuilt as Svelte components/actions in
   `src/lib/components/motion/`, using `animate()` / `inView()` from `motion`.
-- **Replaces:** daisyUI. The `dashboard` daisyUI theme and `btn` / `input` /
-  `badge` / `table` classes are retired as pages migrate to shadcn-svelte
-  components. Until a page is migrated it may still use daisyUI — do not mix
-  both systems inside one component.
+- **Replaces:** daisyUI, which has been removed. Do not reintroduce it or
+  hand-roll `btn` / `input` / `badge` style classes — use the shadcn-svelte
+  component instead.
+- **Variants:** `src/app.css` imports `shadcn-svelte/tailwind.css`, which defines
+  the `data-open:` / `data-checked:` / `data-active:` … custom variants the
+  registry components rely on (they map onto bits-ui's `data-state`). Without
+  that import those components render with no state styling.
 
 ## Blocks (start from these, do not hand-build)
 
@@ -89,9 +92,10 @@ tokens, and adapt their content to this app as listed below. Do not re-run
   on mobile — both provided by the block.
 - The `/` overview uses the block's content parts: section cards (stat tiles) →
   spend totals / counts with `AnimatedNumber`; interactive area chart → spend
-  trend (reuse existing spend data, not the block's sample data); data table →
-  recent items. Delete the block's sample data and any column/feature the app
-  has no data for.
+  trend (reuse existing spend data, not the block's sample data). The block's
+  data table is not used: the catalog below the overview already lists recent
+  items. Overview renders only on the unfiltered home view (no `type`/`tag`/`q`).
+  The block's sample data and unused components were deleted.
 - Inside the content inset, individual pages keep their own layout
   (Workbench `[380px_1fr]` grid where it already exists).
 
@@ -134,8 +138,8 @@ shell). No marketing pages, no content pages.
 
 Pages and components reference these, never the raw palette names. All
 semantic tokens carry the `--pd-` prefix so they never collide with
-shadcn-svelte's own variables (`--accent`, Tailwind's `--color-*` namespace) or
-daisyUI 5's (`--color-accent`, `--radius-box`). In markup prefer the Tailwind
+shadcn-svelte's own variables (`--accent`, Tailwind's `--color-*` namespace).
+In markup prefer the Tailwind
 utilities generated from the shadcn mapping (`bg-card`, `text-muted-foreground`,
 `border-border`) plus the extra ones exposed in `app.css` (`bg-well`,
 `bg-chrome`, `text-ink-2`, `text-cat-note`, …).
@@ -154,6 +158,9 @@ utilities generated from the shadcn mapping (`bg-card`, `text-muted-foreground`,
 
 	--pd-rule: var(--space-indigo); /* borders / dividers */
 	--pd-rule-2: var(--space-indigo-2); /* subtler dividers */
+	--pd-rule-strong: oklch(
+		54% 0.03 265
+	); /* control boundaries — inputs, checkboxes, switches (>= 3:1, WCAG 1.4.11) */
 
 	--pd-ink: oklch(94% 0.01 265); /* primary text */
 	--pd-ink-2: oklch(76% 0.014 265); /* secondary text */
@@ -213,7 +220,7 @@ semantic tokens once (in `src/app.css`) so every component inherits the system:
 | `--accent` / `--accent-foreground`       | `paper-3` / `ink` (hover surface, per shadcn semantics)        |
 | `--destructive`                          | `danger`                                                       |
 | `--border`                               | `rule`                                                         |
-| `--input`                                | `rule`                                                         |
+| `--input`                                | `rule-strong`                                                  |
 | `--ring`                                 | `focus`                                                        |
 | `--radius`                               | `radius-box`                                                   |
 | `--chart-1` … `--chart-5`                | `accent`, `cat-bookmark`, `cat-note`, `cat-snippet`, `warning` |
@@ -346,6 +353,4 @@ not to force a markup rewrite.
 
 The palette + semantic token blocks above are written to `src/lib/tokens.css`
 and imported from `src/app.css`, where the shadcn-svelte variable mapping is
-applied. Migrated pages pick the system up through shadcn-svelte components;
-unmigrated pages keep working through the legacy daisyUI `dashboard` theme
-(re-pointed at the same tokens) until they are moved over.
+applied; every page picks the system up through shadcn-svelte components.
