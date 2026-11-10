@@ -90,7 +90,7 @@ export const navSections: NavSection[] = [
 	{
 		title: 'Productivity',
 		links: [
-			{ href: '/tools', label: 'Dev Tools', icon: Wrench, match: under('/tools') },
+			{ href: '/tools', label: 'Tools', icon: Wrench, match: under('/tools') },
 			{ href: '/tasks', label: 'Tasks', icon: ListChecks, match: under('/tasks') },
 			{ href: '/kanban', label: 'Kanban', icon: Columns3, match: under('/kanban') },
 			{ href: '/boards', label: 'Boards', icon: PenTool, match: under('/boards') }

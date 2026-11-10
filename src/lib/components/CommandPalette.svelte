@@ -41,7 +41,7 @@
 		),
 		...tools.map((t) => ({
 			key: `tool:${t.slug}`,
-			group: 'Dev Tools',
+			group: 'Tools',
 			label: t.label,
 			hint: t.description,
 			haystack: `${t.label} ${t.keywords.join(' ')} tool`.toLowerCase(),

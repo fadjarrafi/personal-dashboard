@@ -262,18 +262,40 @@ lihat `REMINDER_DAYS_BEFORE` di [`src/lib/server/bills.ts`](./src/lib/server/bil
 Menandai lunas **tidak pernah** membuat baris `spends` otomatis — itu tetap
 alur manual terpisah.
 
-## Dev Tools & command palette
+## Tools & command palette
 
-`/tools` berisi utilitas developer yang berjalan **100% di browser** (tidak ada
-data/gambar yang dikirim ke server, tanpa tabel DB): JSON format/minify,
-Base64/URL/HTML encode, JWT decoder (tanpa verifikasi signature), UUID v4/v7,
-epoch ↔ tanggal, regex tester, hash (MD5 via `spark-md5`, SHA-1/256/384/512 via
-WebCrypto), color palette (skala shade OKLCH, harmoni, kontras WCAG, ekstrak
-palet dari gambar — lihat [`src/lib/color.ts`](./src/lib/color.ts)), dan image
-compressor (PNG dikuantisasi ke palet ≤256 warna via `upng-js` ala TinyPNG;
-JPEG/WebP via `canvas.toBlob`). Daftar tool ada di
+`/tools` berisi ±40 utilitas yang berjalan **100% di browser** (tidak ada
+data/gambar yang dikirim ke server, tanpa tabel DB), dikelompokkan dalam 5 tab
+(`?tab=` di URL supaya tombol back kembali ke tab yang sama):
+
+- **Development Tools** — JSON viewer (tree), code playground (JS/HTML/CSS di
+  iframe sandbox + console, JSON, Markdown), regex, JSON → TS/Zod/Go/Rust/
+  Pydantic/PHP, JSON Schema validator (`ajv`), JSON diff, HTML preview, code
+  formatter (Prettier standalone, plugin di-load lazy), semver (`semver`), XML
+  inspector (XPath), Mermaid renderer & DB diagram (DBML → erDiagram + SQL DDL),
+  keduanya via `pele`.
+- **Converters** — Base64 (teks & file), case, number base (BigInt), Markdown,
+  URL encoder/parser, CSV ↔ JSON, config JSON/YAML/TOML/.env (`js-yaml`,
+  `smol-toml`), escape tools, HTML → JSX, SVG → CSS data URI, PHP
+  serialize/array, gzip/deflate (`CompressionStream`), cURL → code, epoch/date.
+- **Media** — color palette (skala OKLCH, harmoni, kontras WCAG — lihat
+  [`src/lib/color.ts`](./src/lib/color.ts)), image converter/compressor (PNG ↔
+  JPG ↔ WebP; PNG dikuantisasi via `upng-js` ala TinyPNG), QR reader (`jsqr`).
+- **Text Tools** — text compare (`diff`), JWT decoder (tanpa verifikasi
+  signature), API response formatter, string inspector (deteksi karakter tak
+  terlihat), line tools.
+- **Generators** — hash (MD5 via `spark-md5`, SHA via WebCrypto), UUID v4/v7,
+  password, lorem ipsum, QR (`qrcode`), bcrypt (`bcryptjs`), random string, key
+  pair RSA/ECDSA/Ed25519 (WebCrypto → PEM/JWK/OpenSSH).
+
+SSR dimatikan untuk `/tools/*` (`src/routes/tools/+layout.ts`) karena tool
+memakai DOMParser/WebCrypto/canvas. HTML milik user (preview, playground,
+Markdown) selalu dirender di `SandboxFrame` — iframe tanpa `allow-same-origin`,
+jadi tidak bisa membaca cookie sesi dashboard. Daftar tool & kategori ada di
 [`src/lib/tools.ts`](./src/lib/tools.ts) — tambah entri di sana dan buat
-`src/routes/tools/<slug>/+page.svelte`.
+`src/routes/tools/<slug>/+page.svelte` (pakai `ToolHeader`, `TextInput`,
+`Output` dari `src/lib/components/tools/`). `/tools/encode` lama di-redirect ke
+`/tools/base64`.
 
 **Ctrl+K / Cmd+K** membuka command palette dari halaman mana pun (juga tombol
 cari di sidebar/header mobile): lompat ke halaman (`src/lib/nav.ts`, sumber yang
