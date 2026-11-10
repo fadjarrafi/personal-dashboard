@@ -7,12 +7,18 @@
 	import { NativeSelect } from '$lib/components/ui/native-select/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import ToolHeader from '$lib/components/tools/ToolHeader.svelte';
+	import Segmented from '$lib/components/tools/Segmented.svelte';
+	import JsonTree from '$lib/components/tools/JsonTree.svelte';
 
 	let input = $state('');
 	let indent = $state<'2' | '4' | 'tab'>('2');
 	let sortKeys = $state(false);
 	let output = $state('');
 	let error = $state<string | null>(null);
+	let view = $state<'text' | 'tree'>('tree');
+	let parsed = $state<{ value: unknown } | null>(null);
+	let treeKey = $state(0);
+	let expandDepth = $state(2);
 
 	function sortDeep(v: unknown): unknown {
 		if (Array.isArray(v)) return v.map(sortDeep);
@@ -43,18 +49,31 @@
 		error = null;
 		if (!input.trim()) {
 			output = '';
+			parsed = null;
 			return;
 		}
 		try {
 			let value = JSON.parse(input);
 			if (sortKeys) value = sortDeep(value);
+			parsed = { value };
+			treeKey++;
 			const space = mode === 'minify' ? undefined : indent === 'tab' ? '\t' : Number(indent);
 			output = JSON.stringify(value, null, space);
 		} catch (e) {
 			output = '';
+			parsed = null;
 			error = describeError(e);
 		}
 	}
+
+	// Viewer: parse ulang otomatis saat input/opsi berubah (debounce).
+	$effect(() => {
+		void input;
+		void sortKeys;
+		void indent;
+		const t = setTimeout(() => run('format'), 250);
+		return () => clearTimeout(t);
+	});
 </script>
 
 <ToolHeader slug="json" />
@@ -87,18 +106,41 @@
 		</div>
 	</section>
 
-	<section class="space-y-2">
-		<div class="flex items-center justify-between">
-			<span class="label-mono">Output</span>
-			<CopyButton text={output} />
+	<section class="min-w-0 space-y-2">
+		<div class="flex items-center justify-between gap-2">
+			<Segmented
+				bind:value={view}
+				options={[
+					{ value: 'tree', label: 'Tree' },
+					{ value: 'text', label: 'Text' }
+				]}
+				ariaLabel="Output view"
+			/>
+			<div class="flex items-center gap-1">
+				{#if view === 'tree' && parsed}
+					<Button variant="ghost" size="xs" onclick={() => ((expandDepth = 99), treeKey++)}
+						>Expand all</Button
+					>
+					<Button variant="ghost" size="xs" onclick={() => ((expandDepth = 1), treeKey++)}
+						>Collapse</Button
+					>
+				{/if}
+				<CopyButton text={output} />
+			</div>
 		</div>
 		{#if error}
 			<p role="alert" class="border-destructive/40 text-destructive rounded-md border p-3 text-sm">
 				{error}
 			</p>
 		{:else}
-			<pre class="bg-well h-80 overflow-auto rounded-md border p-3 font-mono text-xs">{output ||
-					'—'}</pre>
+			{#if view === 'tree' && parsed}
+				<div class="bg-well h-80 overflow-auto rounded-md border p-3 ps-6">
+					{#key treeKey}<JsonTree value={parsed.value} {expandDepth} />{/key}
+				</div>
+			{:else}
+				<pre class="bg-well h-80 overflow-auto rounded-md border p-3 font-mono text-xs">{output ||
+						'—'}</pre>
+			{/if}
 			{#if output}
 				<p class="text-muted-foreground text-xs">JSON valid · {output.length} characters</p>
 			{/if}

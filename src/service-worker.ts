@@ -17,7 +17,9 @@ declare const self: ServiceWorkerGlobalScope;
 // internet", tidak ada offline capture); globPatterns yang ada juga tidak
 // pernah mencakup HTML, jadi fallback semacam itu tidak punya entri precache
 // yang valid untuk dituju. SW ini murni app-shell asset caching + push.
-precacheAndRoute(self.__WB_MANIFEST);
+// Di `vite dev` SvelteKit tetap mendaftarkan SW ini, tapi vite-pwa hanya
+// meng-inject __WB_MANIFEST saat build → fallback [] supaya registrasi tidak gagal.
+precacheAndRoute(self.__WB_MANIFEST ?? []);
 cleanupOutdatedCaches();
 self.skipWaiting();
 clientsClaim();
