@@ -86,7 +86,7 @@
 			spend={data.overview.spend}
 			items={{ bookmark: bookmarks.length, note: notes.length, snippet: snippets.length }}
 			bills={data.overview.bills}
-			tasks={data.overview.tasks}
+			stickies={data.overview.stickies}
 		/>
 		<ChartAreaInteractive daily={data.overview.daily} />
 	</div>

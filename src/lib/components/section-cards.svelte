@@ -11,10 +11,10 @@
 		spend: { total: number; previousTotal: number; count: number };
 		items: { bookmark: number; note: number; snippet: number };
 		bills: { overdue: number; dueSoon: number };
-		tasks: { open: number; overdue: number };
+		stickies: number;
 	}
 
-	let { spend, items, bills, tasks }: Props = $props();
+	let { spend, items, bills, stickies }: Props = $props();
 
 	const spendDelta = $derived(
 		spend.previousTotal > 0
@@ -95,20 +95,15 @@
 
 	<Card.Root class="@container/card gap-3">
 		<Card.Header>
-			<Card.Description>Open tasks</Card.Description>
+			<Card.Description>Stickies</Card.Description>
 			<Card.Title class="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-				<AnimatedNumber value={tasks.open} />
+				<AnimatedNumber value={stickies} />
 			</Card.Title>
-			{#if tasks.overdue > 0}
-				<Card.Action>
-					<Badge variant="destructive">{tasks.overdue} overdue</Badge>
-				</Card.Action>
-			{/if}
 		</Card.Header>
 		<Card.Footer class="flex-col items-start gap-1 text-sm">
-			<div class="text-muted-foreground">Not done, not archived</div>
-			<a href="/tasks" class="text-primary text-xs underline-offset-4 hover:underline">
-				Open tasks →
+			<div class="text-muted-foreground">Quick notes on your wall</div>
+			<a href="/stickies" class="text-primary text-xs underline-offset-4 hover:underline">
+				Open stickies →
 			</a>
 		</Card.Footer>
 	</Card.Root>

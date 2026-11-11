@@ -8,7 +8,7 @@ import Code from '@lucide/svelte/icons/code';
 import Wallet from '@lucide/svelte/icons/wallet';
 import ReceiptText from '@lucide/svelte/icons/receipt-text';
 import Wrench from '@lucide/svelte/icons/wrench';
-import ListChecks from '@lucide/svelte/icons/list-checks';
+import NotebookPen from '@lucide/svelte/icons/notebook-pen';
 import Columns3 from '@lucide/svelte/icons/columns-3';
 import PenTool from '@lucide/svelte/icons/pen-tool';
 import Vault from '@lucide/svelte/icons/vault';
@@ -34,7 +34,7 @@ const SECTION_PREFIXES = [
 	'/spends',
 	'/bills',
 	'/vault',
-	'/tasks',
+	'/stickies',
 	'/boards',
 	'/kanban',
 	'/tools'
@@ -57,6 +57,7 @@ export const navSections: NavSection[] = [
 		title: 'Catalog',
 		links: [
 			{ href: '/', label: 'All', icon: LayoutGrid, match: catalogType(null) },
+			{ href: '/stickies', label: 'Stickies', icon: NotebookPen, match: under('/stickies') },
 			{
 				href: '/?type=bookmark',
 				label: 'Bookmark',
@@ -91,7 +92,6 @@ export const navSections: NavSection[] = [
 		title: 'Productivity',
 		links: [
 			{ href: '/tools', label: 'Tools', icon: Wrench, match: under('/tools') },
-			{ href: '/tasks', label: 'Tasks', icon: ListChecks, match: under('/tasks') },
 			{ href: '/kanban', label: 'Kanban', icon: Columns3, match: under('/kanban') },
 			{ href: '/boards', label: 'Boards', icon: PenTool, match: under('/boards') }
 		]

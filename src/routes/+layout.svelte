@@ -38,13 +38,16 @@
 			<SiteHeader onSearch={() => palette?.open()} />
 			<main
 				id="main"
-				class={['@container/main flex flex-1 flex-col', bleed ? 'min-h-0' : 'px-3 py-4 sm:px-4 lg:px-6 lg:py-6']}
+				class={[
+					'@container/main flex flex-1 flex-col',
+					bleed ? 'min-h-0' : 'px-3 py-4 sm:px-4 lg:px-6 lg:py-6'
+				]}
 			>
 				{@render children()}
 			</main>
 			<footer
 				hidden={bleed}
-					class="text-muted-foreground safe-bottom border-t px-4 py-3 text-center text-xs lg:px-6"
+				class="text-muted-foreground safe-bottom border-t px-4 py-3 text-center text-xs lg:px-6"
 			>
 				Personal Dashboard · v0.1
 			</footer>

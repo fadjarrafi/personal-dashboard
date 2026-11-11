@@ -13,7 +13,7 @@ import {
 } from '$lib/server/items';
 import { currentMonthRange, getDailyTotals, getSummary } from '$lib/server/spends';
 import { listBills } from '$lib/server/bills';
-import { listTasks } from '$lib/server/tasks';
+import { countStickies } from '$lib/server/stickies';
 
 const TYPES = new Set<ItemType>(['bookmark', 'note', 'snippet']);
 
@@ -33,7 +33,6 @@ function loadOverview(userId: number) {
 	const daily = getDailyTotals(userId, from, to);
 
 	const bills = listBills(userId);
-	const tasks = listTasks({ userId });
 
 	return {
 		spend: { total: summary.total, previousTotal: summary.previousTotal, count: summary.count },
@@ -41,10 +40,7 @@ function loadOverview(userId: number) {
 			overdue: bills.filter((b) => b.status === 'overdue').length,
 			dueSoon: bills.filter((b) => b.status === 'due_soon').length
 		},
-		tasks: {
-			open: tasks.length,
-			overdue: tasks.filter((t) => t.status === 'overdue').length
-		},
+		stickies: countStickies(userId),
 		daily
 	};
 }

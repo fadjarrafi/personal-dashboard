@@ -219,6 +219,22 @@ export const taskTags = sqliteTable(
 	})
 );
 
+export const stickies = sqliteTable('stickies', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	userId: integer('user_id')
+		.notNull()
+		.references(() => users.id),
+	content: text('content').notNull().default(''),
+	color: text('color').notNull().default('blue'),
+	position: integer('position').notNull().default(0),
+	createdAt: text('created_at')
+		.notNull()
+		.default(sql`(datetime('now'))`),
+	updatedAt: text('updated_at')
+		.notNull()
+		.default(sql`(datetime('now'))`)
+});
+
 export const boards = sqliteTable('boards', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	userId: integer('user_id')

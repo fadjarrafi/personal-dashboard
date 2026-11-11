@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '@excalidraw/excalidraw/index.css';
 	import ConfirmAction from '$lib/components/ConfirmAction.svelte';
-		import { Button } from '$lib/components/ui/button/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import Archive from '@lucide/svelte/icons/archive';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
@@ -82,7 +82,7 @@
 			<form method="post" action="?/rename" class="min-w-0">
 				<input
 					bind:this={titleInput}
-					class="focus-visible:ring-ring w-full min-w-24 max-w-64 truncate rounded bg-transparent px-1.5 py-0.5 font-medium outline-none hover:bg-muted focus-visible:ring-2"
+					class="focus-visible:ring-ring hover:bg-muted w-full max-w-64 min-w-24 truncate rounded bg-transparent px-1.5 py-0.5 font-medium outline-none focus-visible:ring-2"
 					name="title"
 					value={data.board.title}
 					aria-label="Board title"
