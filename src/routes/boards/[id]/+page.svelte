@@ -1,9 +1,8 @@
 <script lang="ts">
 	import '@excalidraw/excalidraw/index.css';
 	import ConfirmAction from '$lib/components/ConfirmAction.svelte';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
+		import { Button } from '$lib/components/ui/button/index.js';
+	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import Archive from '@lucide/svelte/icons/archive';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import { onMount, onDestroy } from 'svelte';
@@ -12,6 +11,7 @@
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
 	let container: HTMLDivElement;
+	let titleInput: HTMLInputElement;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	let root: any;
 	let saveTimer: ReturnType<typeof setTimeout> | undefined;
@@ -74,28 +74,30 @@
 	});
 </script>
 
-<div class="space-y-3">
-	<header class="flex flex-wrap items-center justify-between gap-2 px-1">
-		<div class="flex items-center gap-2">
-			<Button variant="ghost" size="sm" class="-ms-2" href="/boards"><ArrowLeft />Boards</Button>
-			<form method="post" action="?/rename" class="flex items-center gap-1">
-				<Input
-					class="h-8"
+<div class="flex min-h-0 flex-1 flex-col">
+	<header class="bg-background flex h-11 shrink-0 items-center justify-between gap-2 border-b px-3">
+		<nav class="flex min-w-0 items-center gap-1 text-sm" aria-label="Breadcrumb">
+			<a href="/boards" class="text-muted-foreground hover:text-foreground shrink-0">Boards</a>
+			<ChevronRight class="text-muted-foreground size-4 shrink-0" />
+			<form method="post" action="?/rename" class="min-w-0">
+				<input
+					bind:this={titleInput}
+					class="focus-visible:ring-ring w-full min-w-24 max-w-64 truncate rounded bg-transparent px-1.5 py-0.5 font-medium outline-none hover:bg-muted focus-visible:ring-2"
 					name="title"
 					value={data.board.title}
 					aria-label="Board title"
 					autocomplete="off"
+					onchange={() => titleInput.form?.requestSubmit()}
 				/>
-				<Button variant="ghost" size="sm" type="submit">Save name</Button>
 			</form>
-		</div>
-		<div class="flex items-center gap-2">
-			<span class="text-muted-foreground text-xs" aria-live="polite">
+		</nav>
+		<div class="flex shrink-0 items-center gap-1">
+			<span class="text-muted-foreground me-1 text-xs" aria-live="polite">
 				{saveState === 'saving' ? 'Saving…' : saveState === 'saved' ? 'Saved' : ''}
 			</span>
 			<form method="post" action="?/archive">
-				<Button variant="ghost" size="sm" class="tap-target" type="submit"
-					><Archive />Archive</Button
+				<Button variant="ghost" size="sm" class="tap-target lg:min-h-0" type="submit"
+					><Archive /><span class="hidden sm:inline">Archive</span></Button
 				>
 			</form>
 			<ConfirmAction
@@ -105,20 +107,19 @@
 				confirmLabel="Delete"
 				destructive
 				size="sm"
-				class="tap-target"
+				class="tap-target lg:min-h-0"
 			>
-				<Trash2 />Delete
+				<Trash2 /><span class="hidden sm:inline">Delete</span>
 			</ConfirmAction>
 		</div>
 	</header>
 
 	{#if form && 'error' in form && form.error}
-		<p role="alert" class="text-destructive text-sm">{form.error}</p>
+		<p role="alert" class="text-destructive px-3 py-1 text-sm">{form.error}</p>
 	{/if}
 
-	<div
-		bind:this={container}
-		class="relative w-full overflow-hidden rounded-lg border"
-		style="height: 75vh;"
-	></div>
+	<!-- Full-bleed canvas: Excalidraw supplies the menu, toolbar, library, zoom and help chrome. -->
+	<div class="relative min-h-[420px] flex-1">
+		<div bind:this={container} class="absolute inset-0"></div>
+	</div>
 </div>
