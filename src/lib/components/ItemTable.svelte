@@ -65,7 +65,7 @@
 		{emptyText}
 	</p>
 {:else}
-	<AnimatedGroup class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+	<AnimatedGroup class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
 		{#each shown as item (item.id)}
 			<div
 				role="button"
@@ -80,7 +80,7 @@
 						src={item.previewImageUrl}
 						alt=""
 						loading="lazy"
-						class="mb-2 h-28 w-full rounded-md object-cover"
+						class="mb-2 h-auto max-h-72 w-full rounded-md object-contain"
 						onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
 					/>
 				{/if}
